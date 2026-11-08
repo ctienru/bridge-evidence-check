@@ -1,0 +1,158 @@
+# Rules table v1 for the Medicare GLP-1 Bridge evidence checker.
+# Policy text is from CMS; project-specific policies are marked as such.
+# Human-maintained — do not generate.
+
+version: bridge-v1
+
+policy_snapshot:
+  accessed: 2026-11-08
+  sources:
+    - id: faq
+      doc: CMS Information for Providers FAQ
+      url: https://www.cms.gov/medicare/coverage/prescription-drug-coverage/medicare-glp-1-bridge/information-providers
+      last_modified: 2026-08-06
+    - id: factsheet
+      doc: CMS Prescriber fact sheet, Product No. 12235, June 2026
+      url: https://www.cms.gov/files/document/glp-1-prescribers-c-1.pdf
+    - id: form
+      doc: CMS PA request form
+      url: https://www.cms.gov/files/document/glp-1-bridge.pdf
+    - id: partd
+      doc: CMS Information for Part D Plans
+      url: https://www.cms.gov/medicare/coverage/prescription-drug-coverage/medicare-glp-1-bridge/information-part-d-plans
+      last_modified: 2026-08-06
+
+# Values and sources: 13 §10. BMI comparisons use the unrounded value (project policy).
+thresholds:
+  bmi: [27, 30, 35]                       # CMS FAQ; compared with >=
+  age: 18                                 # CMS FAQ
+  htn: {sbp_gt: 140, dbp_gt: 90, min_drugs: 2}   # CMS fact sheet; strictly greater than
+  prediabetes: {a1c_pct: [5.7, 6.4], fpg_mg_dl: [100, 125]}   # ADA
+  diabetes: {a1c_pct_ge: 6.5, fpg_mg_dl_ge: 126}             # ADA
+  ckd_3a_egfr_lt: 60                      # KDIGO
+  osa_moderate_ahi_ge: 15                 # AASM
+
+# One entry per fixed condition / sub-result ID in 13 §2 (claim.* and lifestyle.* are
+# reported separately and have no row here). `requires` names come from the compute
+# column of 13 §7.3. Exclusions carry `max_status: review`: positive exclusion
+# evidence returns `review`, never `supported` (13 §3.3).
+conditions:
+  - id: age_18
+    requires: [age_interval_at_initiation, initiation_date]
+    rule: age interval at initiation entirely >= 18
+    source: {id: faq, quote: "The beneficiary is at least eighteen (18) years of age"}
+
+  - id: bmi_path_a
+    requires: [bmi_candidates, initiation_date, initiation_purpose]
+    rule: bmi_raw >= 35 at initiation (unrounded)
+    source: {id: faq, quote: "has a BMI greater than or equal to thirty-five (≥35) at the time of initiation of GLP-1 therapy"}
+
+  - id: bmi_path_b
+    requires: [bmi_candidates, initiation_date, initiation_purpose]
+    rule: bmi_path_b.bmi supported and any of hfpef / htn / ckd supported (aggregation in 13 §3.4)
+    source: {id: faq, quote: "has a BMI greater than or equal to thirty (≥30) at the time of initiating GLP-1 therapy with a diagnosis"}
+
+  - id: bmi_path_b.bmi
+    requires: [bmi_candidates, initiation_date]
+    rule: bmi_raw >= 30 at initiation (unrounded)
+    source: {id: faq, quote: "has a BMI greater than or equal to thirty (≥30) at the time of initiating GLP-1 therapy"}
+
+  - id: bmi_path_b.hfpef
+    requires: [dx]
+    rule: patient diagnosis of HFpEF, present or historical
+    source: {id: faq, quote: "(A) heart failure with preserved ejection fraction"}
+
+  - id: bmi_path_b.htn
+    requires: [bp_at_initiation, med_periods, distinct_antihypertensives_overlapping]
+    rule: any reading with sbp > 140 or dbp > 90 while >= 2 distinct antihypertensives overlap that date
+    source: {id: factsheet, quote: "despite concurrent treatment with two antihypertensive medications"}
+
+  - id: bmi_path_b.ckd
+    requires: [dx, egfr]
+    rule: CKD diagnosis with stage >= 3a; diagnosis with eGFR only -> review
+    source: {id: faq, quote: "(C) chronic kidney disease stage 3a or above"}
+
+  - id: bmi_path_c
+    requires: [bmi_candidates, initiation_date, initiation_purpose]
+    rule: bmi_path_c.bmi supported and any of prediabetes / mi / stroke / pad supported (aggregation in 13 §3.4)
+    source: {id: faq, quote: "has a BMI greater than or equal to twenty-seven (≥27) at the time of initiating GLP-1 therapy"}
+
+  - id: bmi_path_c.bmi
+    requires: [bmi_candidates, initiation_date]
+    rule: bmi_raw >= 27 at initiation (unrounded)
+    source: {id: faq, quote: "has a BMI greater than or equal to twenty-seven (≥27) at the time of initiating GLP-1 therapy"}
+
+  - id: bmi_path_c.prediabetes
+    requires: [dx, a1c, fpg_mg_dl]
+    rule: patient diagnosis of prediabetes; ADA-range lab without diagnosis -> review
+    source: {id: faq, quote: "(A) pre-diabetes (as defined by American Diabetes Association guidelines)"}
+
+  - id: bmi_path_c.mi
+    requires: [dx]
+    rule: patient diagnosis of previous myocardial infarction, present or historical
+    source: {id: faq, quote: "(B) previous myocardial infarction"}
+
+  - id: bmi_path_c.stroke
+    requires: [dx]
+    rule: patient diagnosis of previous stroke, present or historical (TIA does not count)
+    source: {id: faq, quote: "(C) previous stroke"}
+
+  # PENDING: PA form Q9 (symptomatic PAD) footnote — exact wording and how it affects this condition not yet confirmed against the form.
+  - id: bmi_path_c.pad
+    requires: [dx]
+    rule: PAD diagnosis with symptomatic=yes; symptoms unknown -> review
+    source: {id: faq, quote: "(D) symptomatic peripheral artery disease"}
+
+  - id: exclusion.t2dm
+    requires: [dx, a1c, fpg_mg_dl]
+    rule: patient T2DM diagnosis (present/uncertain/historical/resolved) or lab in diabetes range without dx -> review
+    max_status: review
+    source: {id: form, quote: "Does the patient have type 2 diabetes?"}
+
+  - id: exclusion.osa
+    requires: [dx]
+    rule: OSA diagnosis moderate/severe or AHI >= 15 -> review; explicit mild -> not_supported
+    max_status: review
+    source: {id: form, quote: "Does the patient have moderate to severe obstructive sleep apnea (OSA)?"}
+
+  - id: exclusion.mash
+    requires: [dx]
+    rule: MASH with fibrosis F2-F3 and no cirrhosis -> review; F0-F1 or cirrhosis -> not_supported
+    max_status: review
+    source: {id: form, quote: "Does the patient have noncirrhotic metabolic dysfunction-associated steatohepatitis (MASH)"}
+
+  - id: exclusion.part_d_glp1
+    requires: [prior_glp1]
+    rule: any prior GLP-1 with payer part_d filled in 2026 -> review
+    max_status: review
+    # CMS checks this against its own claims data; prescriber documents usually lack it.
+    source: {id: partd, quote: "they are not eligible for coverage through Medicare GLP-1 Bridge in 2026"}
+
+  - id: patient_identity
+    requires: [doc_facts.identity_status, wrong_patient]
+    rule: every document's patient ID (or DOB when no ID) matches primary_patient; names are not compared
+    source: {id: form, quote: "Medicare beneficiary MBI:"}
+
+# Project policies — NOT CMS rules. Each is this project's choice (02 §6); the key
+# is what rules.py reads, the value is the status or option it applies.
+project_policies:
+  bmi_comparison: unrounded
+  bmi_precision_unknown: review            # integer-only BMI that may cross a threshold -> review
+  bmi_bucket_from_raw: true                # display bucket chosen from the unrounded value
+  initiation_bmi_accepts: [at]             # only the measurement at initiation; precedence in 13 §5
+  path_c_cv_history_requires_review: true  # path C supported only by MI/stroke/PAD -> review
+  htn_not_supported_by_complete_list: true # explicitly complete list with < 2 antihypertensives -> not_supported
+  htn_not_supported_by_readings: false     # readings under threshold never yield not_supported
+  lab_in_diabetes_range_without_dx: review # A1c >= 6.5 / FPG >= 126 without diagnosis -> exclusion.t2dm review
+  unknown_med_period: not_ongoing
+  combination_pill_counts_as_two: review   # a single combination pill alone -> review (CMS silent)
+  fatty_liver_is_mash: false               # needs MASH + F2-F3 + noncirrhotic written out
+  pediatric_bmi_percentile_is_bmi: false   # "N% of the 95th percentile" is not kg/m2
+  mash_noninvasive_staging_counts: review  # FibroScan read as F2-F3 -> review; kPa alone not converted
+  payer_from_amount_only: unknown          # "$50" alone -> payer unknown; only an explicit "Bridge" counts
+  pa_draft_claims_support_alone: false     # PA draft checkboxes are claims to verify, never evidence
+  mace_purpose_all_pathways: review        # stated purpose is MACE reduction -> every pathway review
+  a1c_prediabetes_range_without_dx: review # A1c in ADA prediabetes range without diagnosis -> review
+  ckd_dx_egfr_only: review                 # CKD diagnosis with eGFR only -> review, list every eGFR
+  bp_threshold_strict: true                # 140 is not > 140; 90 is not > 90
+  infer_dx_from_drug: false                # metformin, SGLT2i, Ozempic never imply diabetes

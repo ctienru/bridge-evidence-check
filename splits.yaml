@@ -1,4 +1,8 @@
 # Frozen input variants. Each entry is added before the pipeline first runs on it.
-# Format will grow in item 1 (per-file sha256, gold and replay hashes).
+# One entry per (case_id, variant_id); `files` maps paths relative to cases/<variant_id>/
+# to their sha256 (input.yaml, docs/*, expected.json). MTSamples documents are listed
+# by hash but never committed. Changing a frozen entry requires a higher gold_version
+# and may only change the expected.json hash; `split` never changes.
+# Checked by scripts/freeze_splits.py --check (format: that script's docstring).
 version: 1
 variants: []
