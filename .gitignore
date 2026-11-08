@@ -218,3 +218,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Project-specific
+.env
+*.db
+.claude/worktrees/
+.cache/
+public-report/
+# MTSamples text is downloaded at runtime and never committed
+cases/*/docs/D2-mtsamples-*.txt
+excerpts/E19*/excerpt.txt
+excerpts/E2[0-3]*/excerpt.txt
