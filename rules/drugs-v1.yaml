@@ -1,0 +1,42 @@
+# Antihypertensive drug table (13 §10). Human-maintained — do not generate.
+# Names (generic and brand, case-insensitive) map to one `drug_canonical`; `class` only
+# decides whether the drug counts as an antihypertensive; `class_ambiguous: true` marks
+# drugs whose antihypertensive use is uncertain in context (e.g. diuretics for heart
+# failure) — counting them toward the two-drug minimum yields `review` (13 §3.2).
+# Combination pills list their `components`; a combination alone yields `review`.
+#
+# P1 scope: only the drugs appearing in cases 01 and 15. Add entries batch by batch.
+#
+# Shape of a combination-pill entry:
+#   - names: [Exforge, valsartan/amlodipine, amlodipine-valsartan]
+#     drug_canonical: valsartan/amlodipine
+#     class: arb
+#     components:
+#       - {drug_canonical: valsartan, class: arb}
+#       - {drug_canonical: amlodipine, class: calcium_channel_blocker}
+#
+
+version: 1
+drugs:
+  # --- case 01 ---
+  - names: [Norvasc, amlodipine, amlodipine besylate]
+    drug_canonical: amlodipine
+    class: calcium_channel_blocker
+  - names: [Lopressor, metoprolol, metoprolol tartrate, Toprol-XL, metoprolol succinate]
+    drug_canonical: metoprolol
+    class: beta_blocker
+  # --- case 15 ---
+  - names: [amiloride/HCTZ, amiloride-hydrochlorothiazide, amiloride/hydrochlorothiazide, Moduretic]
+    drug_canonical: amiloride/hydrochlorothiazide
+    class: thiazide_diuretic
+    class_ambiguous: true   # diuretic in a heart-failure patient; antihypertensive intent unclear
+    components:
+      - {drug_canonical: amiloride, class: potassium_sparing_diuretic}
+      - {drug_canonical: hydrochlorothiazide, class: thiazide_diuretic}
+  - names: [furosemide, Lasix]
+    drug_canonical: furosemide
+    class: loop_diuretic
+    class_ambiguous: true   # loop diuretic for volume control in heart failure
+  - names: [dapagliflozin, Farxiga]
+    drug_canonical: dapagliflozin
+    class: sglt2_inhibitor  # not an antihypertensive class; listed so it is recognized and not counted
