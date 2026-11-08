@@ -1,0 +1,4 @@
+# Frozen input variants. Each entry is added before the pipeline first runs on it.
+# Format will grow in item 1 (per-file sha256, gold and replay hashes).
+version: 1
+variants: []
