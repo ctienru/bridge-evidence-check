@@ -179,97 +179,97 @@ Each subsection points to the decision table in the contract and lists the traps
 
 ## 7. Clinical judgement clauses
 
-Each clause names a public source. `Source: TODO(terri)` means the planning documents name no source; Terri fills it in before the clause is reviewed. A gold fact decided by a clause records the clause ID in `guideline_clause`. The report counts facts decided by these clauses and states that no physician reviewed them.
+Each clause names a public source and, where the rule goes beyond it, says that the rest is project policy. The sources were filled in by the coding agent on 2026-11-08 and Terri checks each edition and URL before marking the clause reviewed; `TODO(terri)` marks a source still missing. A gold fact decided by a clause records the clause ID in `guideline_clause`. The report counts facts decided by these clauses and states that no physician reviewed them.
 
 ### G-01 Ischemic heart disease is not prior MI
 
 Coronary artery disease, ischemic heart disease, angina, demand ischemia, a positive stress test or an isolated troponin rise are not labelled `concept: mi`. Only an infarction stated as such (MI, myocardial infarction, heart attack, STEMI, NSTEMI) is `mi`.
 
-- Source: TODO(terri)
+- Source: [CMS PA form](https://www.cms.gov/files/document/glp-1-bridge.pdf) Q7, "previous myocardial infarction"; the MI-only boundary is project policy (contract §3.2); accessed 2026-11-08 by the coding agent, versions to be checked by Terri
 - Reviewed: no
 
 ### G-02 SGLT2 inhibitors, metformin and GLP-1 agonists do not imply diabetes
 
 A medication is labelled as a medication. Metformin (possible PCOS or prediabetes use), SGLT2 inhibitors (possible heart failure or CKD use) and GLP-1 agonists (possible weight indication) never produce a `t2dm` or `prediabetes` diagnosis fact. A diagnosis needs a diagnosis statement.
 
-- Source: TODO(terri) (project policy; see `docs/adr/0001-project-policies.md`, to be added)
+- Source: project policy (`docs/adr/0001-project-policies.md`, to be added; contract §3.2–3.3); [CMS PA form](https://www.cms.gov/files/document/glp-1-bridge.pdf) Q4/Q6 ask about diagnoses, not medications; accessed 2026-11-08 by the coding agent, versions to be checked by Terri
 - Reviewed: no
 
 ### G-03 Hepatic steatosis is not MASH
 
 Fatty liver, hepatic steatosis, MASLD / NAFLD, or an elevated ALT is not labelled `concept: mash`. `mash` requires the text to state MASH (or NASH, steatohepatitis). Fibrosis stage is labelled only when written.
 
-- Source: AASLD practice guidance on MASLD (edition TODO(terri))
+- Source: [CMS PA form](https://www.cms.gov/files/document/glp-1-bridge.pdf) Q3, "formerly known as nonalcoholic steatohepatitis (NASH)"; [AASLD, Liver Pathology: Steatohepatitis](https://www.aasld.org/liver-fellow-network/core-series/pathology-pearls/liver-pathology-steatohepatitis) (2020-10-25); accessed 2026-11-08 by the coding agent, versions to be checked by Terri
 - Reviewed: no
 
 ### G-04 Insulin-dependent is not type 1
 
 "Insulin-dependent diabetes", "on insulin" or "IDDM" does not fix the diabetes type. Label `concept: t2dm` only when type 2 is stated; label other or unspecified diabetes as `concept: other` with the wording noted in `reason`, and set `exclusion.t2dm` to `review`.
 
-- Source: ADA Standards of Care, classification of diabetes (edition TODO(terri))
+- Source: [CMS PA form](https://www.cms.gov/files/document/glp-1-bridge.pdf) Q4, "type 2 diabetes"; [ADA, Diabetes diagnosis](https://diabetes.org/about-diabetes/diagnosis) (classification); project policy for the `other` + `review` routing (contract §3.3); accessed 2026-11-08 by the coding agent, versions to be checked by Terri
 - Reviewed: no
 
 ### G-05 Reading fibrosis staging (SAF, METAVIR, elastography)
 
 Record the stage exactly as the text writes it (F0–F4; SAF activity and fibrosis components are separate numbers, and only the fibrosis component is `fibrosis_stage`). Never derive a stage from a kPa value, a FIB-4 or a NAFLD fibrosis score; a stiffness value without a written stage leaves `fibrosis_stage` null. Cirrhosis is `cirrhosis: true` only when written.
 
-- Source: AASLD practice guidance on MASLD (edition TODO(terri)); SAF scoring reference TODO(terri)
+- Source: Bedossa et al. 2012, [SAF histopathological algorithm](https://onlinelibrary.wiley.com/doi/full/10.1002/hep.25889); [AASLD, Liver Pathology: Steatohepatitis](https://www.aasld.org/liver-fellow-network/core-series/pathology-pearls/liver-pathology-steatohepatitis) (2020-10-25), scoring-system section; not converting kPa or FIB-4 into a stage is project policy (contract §3.3); accessed 2026-11-08 by the coding agent, versions to be checked by Terri
 - Reviewed: no
 
 ### G-06 TIA is not stroke
 
 A transient ischemic attack is labelled `concept: other` with the wording noted; it never produces a `stroke` fact and never supports `bmi_path_c.stroke`.
 
-- Source: TODO(terri)
+- Source: [CMS PA form](https://www.cms.gov/files/document/glp-1-bridge.pdf) Q8, "previous stroke"; TIA exclusion is project policy (contract §3.2); accessed 2026-11-08 by the coding agent, versions to be checked by Terri
 - Reviewed: no
 
 ### G-07 A diastolic dysfunction finding is not an HFpEF diagnosis
 
 Echocardiographic findings (diastolic dysfunction grade, preserved or normal ejection fraction, a stated EF percentage, elevated filling pressures) are not labelled `concept: hfpef`. `hfpef` requires a heart-failure diagnosis with preserved ejection fraction stated as a diagnosis (HFpEF, diastolic heart failure, heart failure with preserved EF).
 
-- Source: TODO(terri)
+- Source: [CMS PA form](https://www.cms.gov/files/document/glp-1-bridge.pdf) Q10 (HFpEF); the written-diagnosis-only rule is project policy (contract §3.2), not an echocardiographic criterion; accessed 2026-11-08 by the coding agent, versions to be checked by Terri
 - Reviewed: no
 
 ### G-08 Lab values in the prediabetes or diabetes range are labs, not diagnoses
 
 An A1c of 5.7–6.4% or a fasting glucose of 100–125 mg/dL without a diagnosis statement is a `labs` fact and sends `bmi_path_c.prediabetes` to `review`; an A1c ≥ 6.5% or a fasting glucose ≥ 126 mg/dL without a diagnosis is a `labs` fact and sends `exclusion.t2dm` to `review`. The annotator never writes a diagnosis fact from the number.
 
-- Source: ADA Standards of Care, diagnostic criteria (edition TODO(terri)); CMS GLP-1 Bridge FAQ for "prediabetes per ADA"
+- Source: [ADA, Diabetes diagnosis](https://diabetes.org/about-diabetes/diagnosis), A1C / fasting glucose tables; [CMS PA form](https://www.cms.gov/files/document/glp-1-bridge.pdf) Q6 "as defined by American Diabetes Association guidelines"; accessed 2026-11-08 by the coding agent, versions to be checked by Terri
 - Reviewed: no
 
 ### G-09 CKD stage is read, not computed
 
 `ckd_stage` is labelled only when the text writes a stage (3a, 3b, "stage 3", …). An eGFR value is a `labs` fact; the annotator does not assign a stage from it. With a CKD diagnosis and eGFR values only, `bmi_path_b.ckd` is `review` and the reason lists every eGFR with its date.
 
-- Source: KDIGO CKD guideline, GFR categories (edition TODO(terri))
+- Source: [KDIGO 2024 CKD guideline](https://kdigo.org/wp-content/uploads/2024/03/KDIGO-2024-CKD-Guideline.pdf), Table 2 (GFR categories); [CMS PA form](https://www.cms.gov/files/document/glp-1-bridge.pdf) Q12 "stage 3a or above"; reading rather than computing the stage is project policy (contract §3.2); accessed 2026-11-08 by the coding agent, versions to be checked by Terri
 - Reviewed: no
 
 ### G-10 OSA severity is read, not inferred
 
 `osa_severity` is `moderate` / `severe` when the text writes it or when an AHI ≥ 15 is written; `mild` when written or AHI < 15; otherwise `unspecified`. CPAP use, a sleep study without a result, or a referral does not set severity.
 
-- Source: AASM scoring manual / clinical guideline for OSA severity by AHI (edition TODO(terri))
+- Source: AASM AHI severity categories (mild 5–<15, moderate 15–<30, severe ≥30; edition TODO(terri)); [CMS PA form](https://www.cms.gov/files/document/glp-1-bridge.pdf) Q2 "moderate to severe obstructive sleep apnea"; accessed 2026-11-08 by the coding agent, versions to be checked by Terri
 - Reviewed: no
 
 ### G-11 Treated, controlled or operated is not resolved
 
 CMS asks the prescriber to distinguish "no longer applies" from "well controlled". The annotator makes no such distinction: a treated or controlled exclusion diagnosis is labelled `present` and the exclusion is `review`; only a textual statement of remission or resolution is `resolved`, and the exclusion is still `review`.
 
-- Source: CMS Medicare GLP-1 Bridge provider FAQ / prescriber instructions (URL TODO(terri))
+- Source: [CMS provider FAQ](https://www.cms.gov/medicare/coverage/prescription-drug-coverage/medicare-glp-1-bridge/information-providers), clinical-judgment guidance on diagnoses that "may no longer apply"; accessed 2026-11-08 by the coding agent, versions to be checked by Terri
 - Reviewed: no
 
 ### G-12 Payer is read from the text
 
 `payer` is `part_d` only when Part D (or a Part D plan name) is written; `medicaid`, `self_pay`, `commercial` likewise; `bridge` only when Bridge is written. A copay amount alone is `unknown`.
 
-- Source: CMS, Information for Part D plans (Medicare GLP-1 Bridge) (URL TODO(terri))
+- Source: [CMS Information for Part D Plans](https://www.cms.gov/medicare/coverage/prescription-drug-coverage/medicare-glp-1-bridge/information-part-d-plans); accessed 2026-11-08 by the coding agent, versions to be checked by Terri
 - Reviewed: no
 
 ### G-13 MASH outside F2–F3 is not this exclusion
 
 MASH with a written stage F0–F1, or MASH with cirrhosis (F4) written, is labelled with `fibrosis_stage` / `cirrhosis` as written and `exclusion.mash` is `not_supported` with the reason stating the stage. The gold still contains the `mash` fact.
 
-- Source: CMS GLP-1 Bridge PA form, Q3 wording ("non-cirrhotic MASH with moderate to advanced fibrosis") (URL TODO(terri))
+- Source: [CMS PA form](https://www.cms.gov/files/document/glp-1-bridge.pdf) Q3, noncirrhotic MASH with moderate-to-advanced fibrosis; [AASLD, Liver Pathology: Steatohepatitis](https://www.aasld.org/liver-fellow-network/core-series/pathology-pearls/liver-pathology-steatohepatitis) (2020-10-25), fibrosis staging section; accessed 2026-11-08 by the coding agent, versions to be checked by Terri
 - Reviewed: no
 
 ## 8. Keyword scan and cue words

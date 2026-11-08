@@ -148,7 +148,7 @@ Tests: `test_htn_boundary_reading_with_ambiguous_diuretics_is_insufficient` (cas
 
 - Whole interval ≥ 18 → `supported`; whole interval < 18 → `not_supported`; interval straddles 18 → `review`.
 - Neither date of birth nor age, or no initiation date and the interval straddles 18 → `insufficient`.
-- Examples: age 85 written three years after initiation → ≥ 81 at initiation → `supported`; age 19 written three years after initiation → possibly 16–19 at initiation → `review`; age 13 written ten years before initiation → about 23 at initiation → `supported`.
+- Examples: age 85 written three years after initiation → ≥ 81 at initiation → `supported`; age 19 written three years after initiation (day-precision document date) → 16 at initiation → `not_supported`; the same sentence with a year-precision document date → the interval straddles 18 → `review`; age 13 written ten years before initiation → about 23 at initiation → `supported`.
 - Test: `test_age_stated_after_initiation_uses_interval`.
 
 **Identity** `patient_identity` (the primary patient identifier comes from the input, §7.1): **compare IDs only; compare date of birth only when the document has no ID; never compare names**.
@@ -205,7 +205,7 @@ Tests: `test_htn_boundary_reading_with_ambiguous_diuretics_is_insufficient` (cas
 
 - Cues act only **within scope**: negation words, family words etc. affect only what is to their right and stop at a terminator (`but`, `however`, `except`, `;`, a full stop, a list-item separator). A mention not inside any cue's scope → default values (present / patient / current).
 - The LLM gives the default values and there is no cue in scope → `matched`; the LLM says negated / family / resolved etc. and no cue is found in scope → `unrecognized` (cannot support `supported`; the sub-result is `review`); the cue contradicts the LLM → `mismatch` (evidence excluded with `assertion_mismatch`); scope cannot be determined → `unrecognized`.
-- A quote spanning sentences takes the union of the sentences. The terminator list and the cue-word table live together in the annotation guide (`docs/annotation-guide.md`).
+- In a quote spanning sentences, each mention looks only at the cues in its own sentence; cues do not cross a full stop ("No diabetes. Prior MI." → diabetes: negated; MI: defaults). The terminator list and the cue-word table live together in the annotation guide (`docs/annotation-guide.md`).
 - Example: "No diabetes, but mother had MI" → diabetes: negated; MI: family.
 
 **Table detection** (`table_source`): the line containing the quote has `|`, or 2 or more tabs, or fields separated by 3 or more consecutive spaces. P1 does not parse tables; sub-results that use them are `review`.
@@ -276,7 +276,7 @@ Not found means an empty array. Every fact shares: `doc_id`, `quote`, `certainty
 | `lifestyle[]` | `kind`, `program_type`, `attendance`, `start`, `end`, `end_kind`, `limitation`, `description` |
 | `pa_form_claims[]` | `claim_id`, `claimed_value` |
 
-- `concept` ∈ `t2dm`, `prediabetes`, `osa`, `mash`, `hfpef`, `ckd`, `mi`, `stroke`, `pad`, `hypertension`, `other`. `bmi_percentile` is never treated as kg/m².
+- `concept` ∈ `t2dm`, `prediabetes`, `osa`, `mash`, `hfpef`, `ckd`, `mi`, `stroke`, `pad`, `hypertension`, `other`. `bmi_percentile` is never treated as kg/m². NASH (the older name) maps to `mash`; the original spelling stays in the quote.
 - The `MEDICATIONS:` section of an MTSamples document does not count as explicitly complete. `complete=true` with no antihypertensive in the list → can express "complete, but no antihypertensives".
 - Convert with the SDK's `transform_schema()` before sending to the API; the local Pydantic model keeps the full constraints.
 - **Fallback for the union limit** (used only if the schema smoke test exceeds the limit): make `event_date` a non-null string, add `none` to `date_precision`, and have a `model_validator` require `precision=none ⇔ event_date==""` — this is the only exception to "reject empty strings".
