@@ -657,6 +657,16 @@ class Store:
             return None
         return SavedAttempt(int(row[0]), int(row[1]), str(row[2]))
 
+    def cost_for_run(self, run_id: int, *, unknown_outcome_as: float = 0.0) -> float:
+        """USD recorded on this run's attempts so far; an `unknown_outcome` attempt (cost
+        NULL, possibly billed) counts as `unknown_outcome_as`; other NULL costs count 0."""
+        row = self.conn.execute(
+            "SELECT COALESCE(SUM(CASE WHEN status = 'unknown_outcome' THEN ? "
+            "ELSE COALESCE(cost_usd, 0.0) END), 0.0) FROM attempts WHERE case_run_id = ?",
+            (unknown_outcome_as, run_id),
+        ).fetchone()
+        return float(row[0])
+
     def attempts_for_run(self, run_id: int) -> list[dict[str, Any]]:
         rows = self.conn.execute(
             "SELECT id, attempt_no, status, latency_ms, error_type, input_tokens, "

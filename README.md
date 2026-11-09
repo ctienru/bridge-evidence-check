@@ -24,7 +24,9 @@ BRIDGE_FAKE_CLIENT=1 uv run bridge check fixtures/synthetic/case-smoke --json   
 uv run bridge history fixtures/synthetic/case-smoke
 ```
 
-`BRIDGE_FAKE_CLIENT` selects a hand-written reply from `fixtures/synthetic/extract/` (`1`/`valid`, `bad_json`, `truncated`, `refusal`, `timeout`, `server_error`, `bad_request`); without it the real API is called and `ANTHROPIC_API_KEY` is needed. Exit codes: 0 completed, 3 failed, 4 another run holds the lock. Logs are JSON lines on stderr and never contain document text.
+`BRIDGE_FAKE_CLIENT` selects a hand-written reply from `fixtures/synthetic/extract/` (`1`/`valid`, `bad_json`, `truncated`, `refusal`, `timeout`, `server_error`, `bad_request`); without it the real API is called and `ANTHROPIC_API_KEY` is needed (`uv run --env-file .env bridge check …` reads it from the git-ignored `.env`). Exit codes: 0 completed, 3 failed, 4 another run holds the lock. Logs are JSON lines on stderr and never contain document text.
+
+Every run is bounded by the limits in `docs/adr/0001-global-limits.md` (`Limits` in `src/bridge_check/extract.py`): at most 4 API attempts, 1 of them parse-class, 5 minutes of wall clock, a request timeout, `max_tokens`, and two cost ceilings (per run and per eval) checked before each API call against the cost already spent plus a reservation for the next call; a call that would exceed a ceiling is refused with a message on stderr and exit 3, and nothing downstream runs. `uv run pytest -q -m live` makes one real call on the synthetic smoke case to check that the API accepts the compiled schema (needs the key; excluded from CI). The first attempt is recorded in `docs/live-run-01.md`.
 
 ## Data-line tools
 
