@@ -1,0 +1,3 @@
+Patient ID: P-0001.
+Vitals
+| BMI | 31.2 | kg/m2 |

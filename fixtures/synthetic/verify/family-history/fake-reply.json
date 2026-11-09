@@ -1,0 +1,18 @@
+{
+  "id": "msg_synthetic_verify_family_history",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-sonnet-5-5",
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"patient_identity\": [{\"doc_id\": \"D2-clinical\", \"quote\": \"Patient ID: P-0001.\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"\", \"date_precision\": \"none\", \"relative_to_glp1_initiation\": \"unknown\", \"patient_id\": \"P-0001\", \"name\": \"\", \"dob\": null, \"stated_age\": null}], \"diagnoses\": [{\"doc_id\": \"D2-clinical\", \"quote\": \"mother with diabetes\", \"certainty\": \"present\", \"subject\": \"family\", \"temporality\": \"current\", \"event_date\": \"\", \"date_precision\": \"none\", \"relative_to_glp1_initiation\": \"unknown\", \"concept\": \"t2dm\", \"osa_severity\": \"unspecified\", \"ahi\": null, \"fibrosis_stage\": \"\", \"cirrhosis\": null, \"ckd_stage\": \"\", \"symptomatic\": \"unknown\"}, {\"doc_id\": \"D2-clinical\", \"quote\": \"father with stroke\", \"certainty\": \"present\", \"subject\": \"family\", \"temporality\": \"current\", \"event_date\": \"\", \"date_precision\": \"none\", \"relative_to_glp1_initiation\": \"unknown\", \"concept\": \"stroke\", \"osa_severity\": \"unspecified\", \"ahi\": null, \"fibrosis_stage\": \"\", \"cirrhosis\": null, \"ckd_stage\": \"\", \"symptomatic\": \"unknown\"}, {\"doc_id\": \"D2-clinical\", \"quote\": \"patient denies diabetes\", \"certainty\": \"negated\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"\", \"date_precision\": \"none\", \"relative_to_glp1_initiation\": \"unknown\", \"concept\": \"t2dm\", \"osa_severity\": \"unspecified\", \"ahi\": null, \"fibrosis_stage\": \"\", \"cirrhosis\": null, \"ckd_stage\": \"\", \"symptomatic\": \"unknown\"}, {\"doc_id\": \"D2-clinical\", \"quote\": \"denies diabetes or stroke\", \"certainty\": \"negated\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"\", \"date_precision\": \"none\", \"relative_to_glp1_initiation\": \"unknown\", \"concept\": \"stroke\", \"osa_severity\": \"unspecified\", \"ahi\": null, \"fibrosis_stage\": \"\", \"cirrhosis\": null, \"ckd_stage\": \"\", \"symptomatic\": \"unknown\"}]}"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 900,
+    "output_tokens": 300
+  }
+}

@@ -14,3 +14,11 @@ These files are never used by `eval` and are not recorded model responses.
   extraction of `case-smoke` (every quote verbatim), invalid JSON, a schema violation,
   a truncated reply (`max_tokens`) and a refusal. Timeouts and HTTP errors are raised as
   SDK exceptions by the fake client, not stored as files.
+- `verify/<name>/` — negative fixtures for quote verification: `input.yaml`, `docs/` and one
+  scripted extraction reply (`fake-reply.json`) each. With `BRIDGE_FAKE_CLIENT=1`, `bridge
+  check fixtures/synthetic/verify/<name> --json --stop-after verify` uses that reply and shows
+  one verifier behaviour: a fabricated quote, a paraphrased quote, a changed value, negation
+  scope, family history (guide A-10), repeated quotes, a table line, a wrong-patient
+  document, a PA-draft-only fact, a CRLF document and an NFKC document. The first line of
+  each `input.yaml` says what it demonstrates. `verify/crlf/docs/` is kept byte-exact by
+  `.gitattributes`.

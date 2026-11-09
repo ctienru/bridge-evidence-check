@@ -288,7 +288,7 @@ FAILED_STAGES: tuple[str, ...] = (
     "interrupted",
 )
 # A run may be asked to stop at a stage boundary (CLI `--stop-after`, tests only).
-STOP_AFTER_STAGES: tuple[str, ...] = ("extract",)
+STOP_AFTER_STAGES: tuple[str, ...] = ("extract", "verify")
 AttemptStatus = Literal[
     "started",
     "response_saved",

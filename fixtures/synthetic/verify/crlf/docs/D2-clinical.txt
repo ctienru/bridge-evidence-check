@@ -1,0 +1,5 @@
+Patient ID: P-0001.
+BMI 31.2 kg/m2 at
+initiation.
+No history of
+stroke.

@@ -1,0 +1,8 @@
+# Synthetic verify fixture: Guide A-10: a family scope, then a denies scope after the semicolon; four facts, all matched.
+# Every name, id, date and sentence is invented.
+variant_id: verify-family-history
+assessment_date: 2026-10-15
+target_course: {drug: Wegovy, start: 2025-03-15}
+primary_patient: {patient_id: P-0001, name: "Synthetic Patient", dob: 1960-01-01}
+documents:
+  - {doc_id: D2-clinical, role: clinical}

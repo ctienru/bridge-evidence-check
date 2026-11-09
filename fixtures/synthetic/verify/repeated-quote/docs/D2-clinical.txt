@@ -1,0 +1,5 @@
+Patient ID: P-0001.
+Hypertension noted.
+Plan reviewed.
+Hypertension noted.
+Mother: hypertension. Patient: no hypertension.

@@ -1,0 +1,2 @@
+Patient ID: P-0001.
+Patient is ﬁt for surgery. BMI ３１.２ kg/m² today.

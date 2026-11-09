@@ -1,0 +1,8 @@
+# Synthetic verify fixture: A quote found twice with equal assertions (ambiguous_match) and one found twice with differing assertions (candidate).
+# Every name, id, date and sentence is invented.
+variant_id: verify-repeated-quote
+assessment_date: 2026-10-15
+target_course: {drug: Wegovy, start: 2025-03-15}
+primary_patient: {patient_id: P-0001, name: "Synthetic Patient", dob: 1960-01-01}
+documents:
+  - {doc_id: D2-clinical, role: clinical}

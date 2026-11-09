@@ -1,0 +1,4 @@
+PRIOR AUTHORIZATION REQUEST - DRAFT
+Patient ID: P-0001
+Diagnosis: HFpEF
+HFpEF: yes

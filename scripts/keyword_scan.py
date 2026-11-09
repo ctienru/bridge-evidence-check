@@ -21,9 +21,9 @@ from typing import Any
 
 import yaml
 
-from bridge_check.dataside.sentences import split_sentences
 from bridge_check.manifest import inputs_problem, is_safe_id, read_problem, write_problem
 from bridge_check.rules_schema import load_drugs
+from bridge_check.sentences import split_sentences
 from bridge_check.text import read_doc, sha8
 
 ROOT = Path(__file__).resolve().parent.parent

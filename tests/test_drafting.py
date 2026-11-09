@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from conftest import FIXTURES
 
-from bridge_check.dataside.cues import Cues, load_cues
+from bridge_check.cues import Cues, load_cues
 from bridge_check.dataside.drafting import (
     CheckResult,
     DraftSpec,
