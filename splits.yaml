@@ -5,4 +5,15 @@
 # and may only change the expected.json hash; `split` never changes.
 # Checked by scripts/freeze_splits.py --check (format: that script's docstring).
 version: 1
-variants: []
+variants:
+  - case_id: case-01
+    variant_id: case-01
+    split: dev
+    frozen_at: 2026-11-09
+    gold_version: 1
+    files:
+      input.yaml: e659621473908c2edf433a30ce95827346430051220da4239031cf18560419af
+      docs/D0-pa-form-draft.txt: bf0751514d01d28025ebef4d3e63223b6a29a09297a6b2a731bdf0f03fcf78d8
+      docs/D1-referral.txt: 29bf838174a475554aeb5f813ff463bfb371b449011cd83661f64b5578a17623
+      docs/D2-mtsamples-4985.txt: a3eb773b768baaa6d88d31ddc37be19d9917b041725954ee3e96e794db8bdd45
+      expected.json: bb5391b3276f2df2a472bc2c0a305b9d7b6fc47abfb0918b2b87dbbb8b9f0c64

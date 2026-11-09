@@ -1,0 +1,212 @@
+{
+  "variant_id": "case-01",
+  "drafted_at": "2026-11-09",
+  "conditions": [
+    {
+      "id": "age_18",
+      "status": "supported"
+    },
+    {
+      "id": "bmi_path_a",
+      "status": "supported"
+    },
+    {
+      "id": "bmi_path_b",
+      "status": "insufficient"
+    },
+    {
+      "id": "bmi_path_b.bmi",
+      "status": "supported"
+    },
+    {
+      "id": "bmi_path_b.hfpef",
+      "status": "insufficient"
+    },
+    {
+      "id": "bmi_path_b.htn",
+      "status": "insufficient"
+    },
+    {
+      "id": "bmi_path_b.ckd",
+      "status": "insufficient"
+    },
+    {
+      "id": "bmi_path_c",
+      "status": "insufficient"
+    },
+    {
+      "id": "bmi_path_c.bmi",
+      "status": "supported"
+    },
+    {
+      "id": "bmi_path_c.prediabetes",
+      "status": "insufficient"
+    },
+    {
+      "id": "bmi_path_c.mi",
+      "status": "insufficient"
+    },
+    {
+      "id": "bmi_path_c.stroke",
+      "status": "not_supported"
+    },
+    {
+      "id": "bmi_path_c.pad",
+      "status": "insufficient"
+    },
+    {
+      "id": "exclusion.t2dm",
+      "status": "insufficient"
+    },
+    {
+      "id": "exclusion.osa",
+      "status": "insufficient"
+    },
+    {
+      "id": "exclusion.mash",
+      "status": "insufficient"
+    },
+    {
+      "id": "exclusion.part_d_glp1",
+      "status": "insufficient"
+    },
+    {
+      "id": "patient_identity",
+      "status": "review"
+    },
+    {
+      "id": "lifestyle.nutrition",
+      "status": "insufficient"
+    },
+    {
+      "id": "lifestyle.activity",
+      "status": "insufficient"
+    }
+  ],
+  "inventory": [
+    {
+      "field": "anthropometrics",
+      "kind": "bmi",
+      "presence": "present",
+      "location": "D2-mtsamples-4985 / HPI, Assessment"
+    },
+    {
+      "field": "anthropometrics",
+      "kind": "height",
+      "presence": "present",
+      "location": "D2-mtsamples-4985 / HPI"
+    },
+    {
+      "field": "anthropometrics",
+      "kind": "weight",
+      "presence": "present",
+      "location": "D2-mtsamples-4985 / HPI"
+    },
+    {
+      "field": "glp1_start",
+      "kind": "drug_and_date",
+      "presence": "present",
+      "location": "D1-referral / Wegovy start sentence"
+    },
+    {
+      "field": "prior_glp1",
+      "kind": "payer",
+      "presence": "absent",
+      "location": null
+    },
+    {
+      "field": "diagnoses",
+      "concept": "t2dm",
+      "presence": "absent",
+      "location": null
+    },
+    {
+      "field": "diagnoses",
+      "concept": "osa",
+      "presence": "absent",
+      "location": null
+    },
+    {
+      "field": "diagnoses",
+      "concept": "mash",
+      "presence": "absent",
+      "location": null
+    },
+    {
+      "field": "diagnoses",
+      "concept": "prediabetes",
+      "presence": "absent",
+      "location": null
+    },
+    {
+      "field": "diagnoses",
+      "concept": "hfpef",
+      "presence": "absent",
+      "location": null
+    },
+    {
+      "field": "diagnoses",
+      "concept": "ckd",
+      "presence": "absent",
+      "location": null
+    },
+    {
+      "field": "bp_readings",
+      "kind": "bp",
+      "presence": "absent",
+      "location": null
+    },
+    {
+      "field": "medications",
+      "kind": "antihypertensive",
+      "presence": "present",
+      "location": "D2-mtsamples-4985 / Past Medical History, Medications"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "mi",
+      "presence": "absent",
+      "location": null
+    },
+    {
+      "field": "diagnoses",
+      "concept": "stroke",
+      "presence": "present",
+      "location": "D2-mtsamples-4985 / Review of Systems"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "pad",
+      "presence": "absent",
+      "location": null
+    },
+    {
+      "field": "lifestyle",
+      "kind": "nutrition",
+      "presence": "present",
+      "location": "D2-mtsamples-4985 / HPI, Plan"
+    },
+    {
+      "field": "lifestyle",
+      "kind": "activity",
+      "presence": "absent",
+      "location": null
+    },
+    {
+      "field": "patient_identity",
+      "kind": "age",
+      "presence": "present",
+      "location": "D2-mtsamples-4985 / HPI, Assessment"
+    },
+    {
+      "field": "patient_identity",
+      "kind": "identifier",
+      "presence": "present",
+      "location": "D0-pa-form-draft / patient header; D1-referral / first paragraph"
+    }
+  ],
+  "notes": [
+    "D2-mtsamples-4985 / HPI, Assessment and D1-referral / first paragraph: the consult note records an age of 55; from the DOB in the referral the patient is 63 on the consult day, which is also the initiation day. Both ages satisfy 18 or older.",
+    "D2-mtsamples-4985 / Medications: aspirin and Premarin are both recorded as discontinued; no stop date given."
+  ]
+}

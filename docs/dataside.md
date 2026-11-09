@@ -7,7 +7,8 @@ is never involved here.
 
 ## Route 1 — authored documents (referral letter, PA draft)
 
-1. **Terri writes the spec** (private repo): `case_id`, the documents (`doc_id`, `role`,
+1. **Terri writes, or reviews and approves, the spec** (private repo; a draft may be proposed by
+   the coding agent and is kept under `records/<case>/drafts/`): `case_id`, the documents (`doc_id`, `role`,
    instructions) and the facts each must contain (value, unit, three axes, `event_date`,
    `must_use` dirty wordings).
 2. **`scripts/draft_authored.py`** `--spec` `--prompt` `--out-docs` `--out-record` `--raw-out`:

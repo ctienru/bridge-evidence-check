@@ -1,0 +1,747 @@
+{
+  "variant_id": "case-01",
+  "guideline_version": 0,
+  "facts": [
+    {
+      "doc_id": "D0-pa-form-draft",
+      "field": "patient_identity",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "event_date": "2026-10-10",
+      "relative_to_glp1_initiation": "after",
+      "start": 100,
+      "end": 117,
+      "quote": "Member ID: P-1042",
+      "identity_match": "match",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "K-01",
+      "patient_id": "P-1042"
+    },
+    {
+      "doc_id": "D0-pa-form-draft",
+      "field": "patient_identity",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "event_date": "2026-10-10",
+      "relative_to_glp1_initiation": "after",
+      "start": 118,
+      "end": 133,
+      "quote": "DOB: 1961-04-02",
+      "identity_match": "match",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "K-01",
+      "dob": "1961-04-02"
+    },
+    {
+      "doc_id": "D0-pa-form-draft",
+      "field": "pa_form_claims",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "claim_id": "claim.age_18",
+      "claimed_value": "yes",
+      "event_date": "2026-10-10",
+      "relative_to_glp1_initiation": "after",
+      "start": 228,
+      "end": 255,
+      "quote": "Patient is 18 or older: Yes",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "K-02"
+    },
+    {
+      "doc_id": "D0-pa-form-draft",
+      "field": "pa_form_claims",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "claim_id": "claim.drug",
+      "claimed_value": "Wegovy",
+      "event_date": "2026-10-10",
+      "relative_to_glp1_initiation": "after",
+      "start": 256,
+      "end": 278,
+      "quote": "Requested drug: Wegovy",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "K-02"
+    },
+    {
+      "doc_id": "D0-pa-form-draft",
+      "field": "pa_form_claims",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "claim_id": "claim.bmi_bracket",
+      "claimed_value": "≥40",
+      "event_date": "2026-10-10",
+      "relative_to_glp1_initiation": "after",
+      "start": 279,
+      "end": 336,
+      "quote": "BMI category: <27 / 27-29.9 / 30-34.9 / 35-39.9 / [X] ≥40",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "K-02"
+    },
+    {
+      "doc_id": "D0-pa-form-draft",
+      "field": "pa_form_claims",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "claim_id": "claim.exclusion.t2dm",
+      "claimed_value": "no",
+      "event_date": "2026-10-10",
+      "relative_to_glp1_initiation": "after",
+      "start": 337,
+      "end": 356,
+      "quote": "Type 2 diabetes: No",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "K-02"
+    },
+    {
+      "doc_id": "D0-pa-form-draft",
+      "field": "pa_form_claims",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "claim_id": "claim.bmi_path_b.hfpef",
+      "claimed_value": "no",
+      "event_date": "2026-10-10",
+      "relative_to_glp1_initiation": "after",
+      "start": 357,
+      "end": 407,
+      "quote": "Heart failure with preserved ejection fraction: No",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "K-02"
+    },
+    {
+      "doc_id": "D0-pa-form-draft",
+      "field": "pa_form_claims",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "claim_id": "claim.exclusion.part_d_glp1",
+      "claimed_value": "no",
+      "event_date": "2026-10-10",
+      "relative_to_glp1_initiation": "after",
+      "start": 428,
+      "end": 476,
+      "quote": "GLP-1 received under Medicare Part D in 2026: No",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "K-02"
+    },
+    {
+      "doc_id": "D0-pa-form-draft",
+      "field": "pa_form_claims",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "claim_id": "claim.lifestyle.nutrition",
+      "claimed_value": "yes",
+      "event_date": "2026-10-10",
+      "relative_to_glp1_initiation": "after",
+      "start": 477,
+      "end": 524,
+      "quote": "Enrolled in a structured nutrition program: Yes",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "K-02"
+    },
+    {
+      "doc_id": "D0-pa-form-draft",
+      "field": "pa_form_claims",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "claim_id": "claim.lifestyle.activity",
+      "claimed_value": "yes",
+      "event_date": "2026-10-10",
+      "relative_to_glp1_initiation": "after",
+      "start": 525,
+      "end": 555,
+      "quote": "Regular physical activity: Yes",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "K-02"
+    },
+    {
+      "doc_id": "D0-pa-form-draft",
+      "field": "pa_form_claims",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "claim_id": "claim.bmi_path_c.stroke",
+      "claimed_value": "no",
+      "event_date": "2026-10-10",
+      "relative_to_glp1_initiation": "after",
+      "start": 408,
+      "end": 427,
+      "quote": "Previous stroke: No",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "A-03"
+    },
+    {
+      "doc_id": "D1-referral",
+      "field": "patient_identity",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "event_date": "2026-10-08",
+      "relative_to_glp1_initiation": "after",
+      "start": 55,
+      "end": 128,
+      "quote": "I am referring Dolores Whitfield, MRN P-1042, to your prescribing clinic.",
+      "identity_match": "match",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "C-17",
+      "patient_id": "P-1042"
+    },
+    {
+      "doc_id": "D1-referral",
+      "field": "patient_identity",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "event_date": "2026-10-08",
+      "relative_to_glp1_initiation": "after",
+      "start": 129,
+      "end": 151,
+      "quote": "Her DOB is 1961-04-02.",
+      "identity_match": "match",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "C-17",
+      "dob": "1961-04-02"
+    },
+    {
+      "doc_id": "D1-referral",
+      "field": "glp1_start",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "drug_canonical": "semaglutide",
+      "date": "2025-03-15",
+      "event_date": "2025-03-15",
+      "payer": "unknown",
+      "purpose": "weight",
+      "relative_to_glp1_initiation": "at",
+      "start": 152,
+      "end": 207,
+      "quote": "She started Wegovy on 03/15/2025 for weight management.",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "T-08"
+    },
+    {
+      "doc_id": "D1-referral",
+      "field": "doc_dates",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "target_doc_id": "D2-mtsamples-4985",
+      "date": "2025-03-15",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "start": 208,
+      "end": 277,
+      "quote": "The enclosed bariatric surgery consultation note is dated 2025-03-15.",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "T-05"
+    },
+    {
+      "doc_id": "D2-mtsamples-4985",
+      "field": "patient_identity",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "start": 0,
+      "end": 166,
+      "quote_sha256": "eb594d8399709be865b5f2bdae6c69933ff21016e12010f757061fe1efa78aef",
+      "identity_match": "missing",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "C-01",
+      "stated_age": 55
+    },
+    {
+      "doc_id": "D2-mtsamples-4985",
+      "field": "anthropometrics",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "kind": "bmi",
+      "norm_value": 46,
+      "norm_unit": "kg/m2",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "start": 505,
+      "end": 636,
+      "quote_sha256": "361081fa15bcbf0da3b56c279f6a6a1b635b6ab097b890a7b28a5952a9610d2d",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "C-02"
+    },
+    {
+      "doc_id": "D2-mtsamples-4985",
+      "field": "diagnoses",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "concept": "hypertension",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "start": 638,
+      "end": 730,
+      "quote_sha256": "78e6125b87a3b09fb63278f7c2a4ff1df43218d68c9b6cc4f77cb37425bda698",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "C-07"
+    },
+    {
+      "doc_id": "D2-mtsamples-4985",
+      "field": "diagnoses",
+      "certainty": "present",
+      "subject": "family",
+      "temporality": "current",
+      "concept": "hypertension",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "start": 1871,
+      "end": 1975,
+      "quote_sha256": "0ae7773ee4276bf146822559cb63c4a07528641325887eaa5f6a44c76b6fb478",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "A-10"
+    },
+    {
+      "doc_id": "D2-mtsamples-4985",
+      "field": "diagnoses",
+      "certainty": "present",
+      "subject": "family",
+      "temporality": "current",
+      "concept": "other",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "start": 1871,
+      "end": 1975,
+      "quote_sha256": "0ae7773ee4276bf146822559cb63c4a07528641325887eaa5f6a44c76b6fb478",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "G-04"
+    },
+    {
+      "doc_id": "D2-mtsamples-4985",
+      "field": "diagnoses",
+      "certainty": "present",
+      "subject": "family",
+      "temporality": "current",
+      "concept": "hypertension",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "start": 2026,
+      "end": 2088,
+      "quote_sha256": "414605e3de79b57215853629bdd0a5c76932ff5ef41b1a30fa54fd06081186ef",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "A-10"
+    },
+    {
+      "doc_id": "D2-mtsamples-4985",
+      "field": "diagnoses",
+      "certainty": "present",
+      "subject": "family",
+      "temporality": "current",
+      "concept": "other",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "start": 2026,
+      "end": 2088,
+      "quote_sha256": "414605e3de79b57215853629bdd0a5c76932ff5ef41b1a30fa54fd06081186ef",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "G-04"
+    },
+    {
+      "doc_id": "D2-mtsamples-4985",
+      "field": "diagnoses",
+      "certainty": "negated",
+      "subject": "patient",
+      "temporality": "current",
+      "concept": "stroke",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "start": 2580,
+      "end": 2639,
+      "quote_sha256": "8211b41c7997312d7432d171a6d2ec3525be773555f677535ca3d59aa558b4e7",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "A-01"
+    },
+    {
+      "doc_id": "D2-mtsamples-4985",
+      "field": "medications",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "drug_canonical": "amlodipine",
+      "end_kind": "ongoing",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "start": 731,
+      "end": 839,
+      "quote_sha256": "d003afdc775c6977e955f1f99bc8cf9601a33115d5af721e2f0bce74ea2d92be",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "T-09"
+    },
+    {
+      "doc_id": "D2-mtsamples-4985",
+      "field": "medications",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "drug_canonical": "metoprolol",
+      "end_kind": "ongoing",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "start": 731,
+      "end": 839,
+      "quote_sha256": "d003afdc775c6977e955f1f99bc8cf9601a33115d5af721e2f0bce74ea2d92be",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "T-09"
+    },
+    {
+      "doc_id": "D2-mtsamples-4985",
+      "field": "medication_lists",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "start": 1328,
+      "end": 1659,
+      "quote_sha256": "f9605386cbaa8798f35d4f3ea432c921e138fd24d70286a28f1c122db27a40d8",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "T-09",
+      "complete": false
+    },
+    {
+      "doc_id": "D2-mtsamples-4985",
+      "field": "lifestyle",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "historical",
+      "kind": "nutrition",
+      "program_type": "commercial",
+      "end_kind": "ended",
+      "relative_to_glp1_initiation": "unknown",
+      "start": 168,
+      "end": 503,
+      "quote_sha256": "df204d0460980b85a0ffc87e8ed380f2e9ee0993082b824c3113dc5743ff8458",
+      "event_date": null,
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "C-18"
+    },
+    {
+      "doc_id": "D2-mtsamples-4985",
+      "field": "lifestyle",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "kind": "nutrition",
+      "program_type": "referral_pending",
+      "end_kind": "unknown",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "start": 4056,
+      "end": 4144,
+      "quote_sha256": "64c40460b3beb79165455c696fc2e0a6ac0d55adf64001456eeabe27b654616a",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "C-18"
+    },
+    {
+      "doc_id": "D2-mtsamples-4985",
+      "field": "anthropometrics",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "kind": "height",
+      "norm_value": 167.6,
+      "norm_unit": "cm",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "start": 505,
+      "end": 636,
+      "quote_sha256": "361081fa15bcbf0da3b56c279f6a6a1b635b6ab097b890a7b28a5952a9610d2d",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "C-02"
+    },
+    {
+      "doc_id": "D2-mtsamples-4985",
+      "field": "anthropometrics",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "kind": "weight",
+      "norm_value": 129.5,
+      "norm_unit": "kg",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "start": 505,
+      "end": 636,
+      "quote_sha256": "361081fa15bcbf0da3b56c279f6a6a1b635b6ab097b890a7b28a5952a9610d2d",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "C-02"
+    },
+    {
+      "doc_id": "D2-mtsamples-4985",
+      "field": "lifestyle",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "kind": "nutrition",
+      "program_type": "advice_only",
+      "end_kind": "unknown",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "start": 4146,
+      "end": 4294,
+      "quote_sha256": "7cabdf4da87af2de89536a644e4918ae2986ec55293ff3665f30f5debee222ef",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "C-18"
+    }
+  ],
+  "expected_absent": [
+    {
+      "field": "diagnoses",
+      "concept": "t2dm"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "osa"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "mash"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "prediabetes"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "hfpef"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "mi"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "pad"
+    },
+    {
+      "field": "prior_glp1",
+      "kind": "payer"
+    },
+    {
+      "field": "bp_readings",
+      "kind": "bp"
+    },
+    {
+      "field": "lifestyle",
+      "kind": "activity"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "ckd"
+    }
+  ],
+  "conditions": [
+    {
+      "id": "age_18",
+      "status": "supported",
+      "flags": [
+        "inconsistent_values"
+      ],
+      "reason": "DOB 1961-04-02 in D1-referral[129:151] e3ef7ba8 gives 63 at initiation 2025-03-15, while the consult note states 55 at D2-mtsamples-4985[0:166] eb594d83 dated to the same day; both satisfy 18 or older, the two ages disagree (inconsistent_values)"
+    },
+    {
+      "id": "bmi_path_a",
+      "status": "supported",
+      "flags": [],
+      "reason": "stated BMI 46 and computed 46.1 at D2-mtsamples-4985[505:636] 361081fa, dated to the initiation day 2025-03-15 by D1-referral[208:277] e30011f8; both at least 35"
+    },
+    {
+      "id": "bmi_path_b",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "BMI sub-result supported; no comorbidity supported: hfpef, htn and ckd all insufficient; the pathway takes the highest-ranked comorbidity status, insufficient (C-19)"
+    },
+    {
+      "id": "bmi_path_b.bmi",
+      "status": "supported",
+      "flags": [],
+      "reason": "BMI 46 at initiation (D2-mtsamples-4985[505:636] 361081fa), at least 30"
+    },
+    {
+      "id": "bmi_path_b.hfpef",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "no heart-failure statement about the patient; the only heart-failure mention concerns a relative at D2-mtsamples-4985[1977:2024] 86d8edc6 and is not labelled (A-05, C-08); an explicit HFpEF diagnosis of the patient would be needed"
+    },
+    {
+      "id": "bmi_path_b.htn",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "hypertension diagnosed (D2-mtsamples-4985[638:730] 78e6125b) and two antihypertensives in use (D2-mtsamples-4985[731:839] d003afdc), but no blood-pressure reading anywhere; a reading dated at initiation above 140/90 would be needed (C-07: readings are checked before drugs)"
+    },
+    {
+      "id": "bmi_path_b.ckd",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "no CKD diagnosis and no eGFR in any document; the generic denial of kidney disease at D2-mtsamples-4985[2471:2578] 2ea367f6 is not a CKD statement (C-09); a CKD diagnosis with a stage, or eGFR values, would be needed"
+    },
+    {
+      "id": "bmi_path_c",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "BMI sub-result supported; no comorbidity supported: prediabetes, mi, pad insufficient, stroke not_supported; highest-ranked comorbidity status insufficient (C-19)"
+    },
+    {
+      "id": "bmi_path_c.bmi",
+      "status": "supported",
+      "flags": [],
+      "reason": "BMI 46 at initiation (D2-mtsamples-4985[505:636] 361081fa), at least 27"
+    },
+    {
+      "id": "bmi_path_c.prediabetes",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "no prediabetes diagnosis, no A1c and no fasting glucose in any document; a diagnosis statement or a lab value would be needed"
+    },
+    {
+      "id": "bmi_path_c.mi",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "no myocardial infarction mention; the denial of cardiac disease at D2-mtsamples-4985[2580:2639] 8211b41c is not an MI statement (G-01); an infarction stated as such would be needed"
+    },
+    {
+      "id": "bmi_path_c.stroke",
+      "status": "not_supported",
+      "flags": [],
+      "reason": "stroke denied at D2-mtsamples-4985[2580:2639] 8211b41c (negated); nothing contradicts it"
+    },
+    {
+      "id": "bmi_path_c.pad",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "no peripheral artery disease mention in any document; a diagnosis statement with symptoms would be needed"
+    },
+    {
+      "id": "exclusion.t2dm",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "no diabetes statement about the patient; diabetes appears only in the family history at D2-mtsamples-4985[1871:1975] 0ae7773e and D2-mtsamples-4985[2026:2088] 414605e3 (subject family, type not stated)"
+    },
+    {
+      "id": "exclusion.osa",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "no sleep apnea, CPAP or sleep-study mention in any document"
+    },
+    {
+      "id": "exclusion.mash",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "no MASH or fibrosis mention; the denial of liver disease at D2-mtsamples-4985[2471:2578] 2ea367f6 is not a MASH statement (C-15)"
+    },
+    {
+      "id": "exclusion.part_d_glp1",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "no prior GLP-1 course and no payer statement in any document; the only GLP-1 sentence is the course under assessment at D1-referral[152:207] a607a58e"
+    },
+    {
+      "id": "patient_identity",
+      "status": "review",
+      "flags": [
+        "id_missing"
+      ],
+      "reason": "D0-pa-form-draft[100:117] 38985609 and D1-referral[55:128] 769e9d6b carry the input ID and the DOB matches; D2-mtsamples-4985 carries neither an ID nor a DOB (id_missing), its evidence stays usable (C-17)"
+    },
+    {
+      "id": "lifestyle.nutrition",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "records applicable on 2025-03-15: a pending dietitian visit (referral_pending) at D2-mtsamples-4985[4056:4144] 64c40460 and a recommended meal-replacement plan (advice_only) at D2-mtsamples-4985[4146:4294] 7cabdf4d; advice and a visit not yet attended give insufficient (contract §3.5 item 4, C-18); the past commercial programmes at D2-mtsamples-4985[168:503] df204d04 are ended and not applicable"
+    },
+    {
+      "id": "lifestyle.activity",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "no physical-activity record in any document (expected_absent); a statement of current activity or of none would be needed"
+    }
+  ],
+  "case_flags": [],
+  "claims": [
+    {
+      "id": "claim.age_18",
+      "status": "supported"
+    },
+    {
+      "id": "claim.drug",
+      "status": "supported"
+    },
+    {
+      "id": "claim.bmi_bracket",
+      "status": "supported"
+    },
+    {
+      "id": "claim.exclusion.t2dm",
+      "status": "insufficient"
+    },
+    {
+      "id": "claim.bmi_path_b.hfpef",
+      "status": "insufficient"
+    },
+    {
+      "id": "claim.bmi_path_c.stroke",
+      "status": "supported"
+    },
+    {
+      "id": "claim.exclusion.part_d_glp1",
+      "status": "insufficient"
+    },
+    {
+      "id": "claim.lifestyle.nutrition",
+      "status": "insufficient"
+    },
+    {
+      "id": "claim.lifestyle.activity",
+      "status": "insufficient"
+    }
+  ],
+  "gold_version": 1,
+  "changes": []
+}

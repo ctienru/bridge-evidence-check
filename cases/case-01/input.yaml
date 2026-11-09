@@ -1,0 +1,10 @@
+# Approved by Terri on 2026-11-09 (W07 Segment 1), no edits; copied from records/case-01/drafts/input.draft.yaml.
+# Only the draft's first 2 header lines are replaced by these two; every other line is identical.
+variant_id: case-01
+assessment_date: 2026-10-15
+target_course: {drug: Wegovy, start: 2025-03-15}
+primary_patient: {patient_id: P-1042, name: "Dolores Whitfield", dob: 1961-04-02}   # fictional name
+documents:
+  - {doc_id: D0-pa-form-draft, role: pa_draft}
+  - {doc_id: D1-referral, role: referral}
+  - {doc_id: D2-mtsamples-4985, role: clinical}
