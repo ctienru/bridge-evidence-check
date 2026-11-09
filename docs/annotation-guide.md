@@ -1,6 +1,6 @@
 # Annotation guide
 
-Status: 77 of 100 clauses reviewed by Terri. A clause counts only when its `Reviewed:` marker is `yes`. Revision 01 applied on 2026-11-09 (issue #15). The clauses changed and the frozen gold items examined are listed in [`annotation-guide-revision-01.md`](./annotation-guide-revision-01.md).
+Status: 84 of 100 clauses reviewed by Terri. A clause counts only when its `Reviewed:` marker is `yes`. Revision 01 applied on 2026-11-09 (issue #15). The clauses changed and the frozen gold items examined are listed in [`annotation-guide-revision-01.md`](./annotation-guide-revision-01.md).
 
 Guideline version: 1. Machine-level names (condition IDs, status codes, enums, gold format) are defined in [`contracts.md`](./contracts.md); when this guide and the contract disagree, the contract wins and this guide is corrected.
 
@@ -29,7 +29,7 @@ The five codes are defined in contract §1. This section says when an annotator 
 
 - **S-01** `supported`: at least one verifiable quote from the right patient, with assertion present / patient and the required timepoint, establishes the condition. Example: "Weight 128 kg, height 170 cm, BMI 44.3 at the start of semaglutide on 2025-03-15." → `bmi_path_a` `supported`. `Reviewed: yes`
 - **S-02** `not_supported`: positive counter-evidence or evidence of absence. Negation of the concept, an explicitly complete list that lacks the required item, or a BMI below the threshold. A lab or a reading below a threshold is not counter-evidence: an A1c below the prediabetes range (contract §3.2 step 6) and a BP reading with systolic ≤ 140 and diastolic ≤ 90 (`htn_not_supported_by_readings: false`) leave the sub-result `insufficient`. Example: "Denies diabetes or prediabetes; A1c 5.2% last month." → `bmi_path_c.prediabetes` `not_supported`. `Reviewed: yes`
-- **S-08** A denial of an organ system or a disease class (denies kidney disease, liver disease, cardiac disease, lung disease) is not a negated mention of a tracked concept (`ckd`, `mash`, `mi`, `hfpef`, `osa`); it produces no fact and leaves the sub-result `insufficient` when nothing else is written. Only a denial that names the concept or one of its listed wordings (C-xx) is labelled `negated`. `Reviewed: no`
+- **S-08** A denial of an organ system or a disease class (denies kidney disease, liver disease, cardiac disease, lung disease) is not a negated mention of a tracked concept (`ckd`, `mash`, `mi`, `hfpef`, `osa`); it produces no fact and leaves the sub-result `insufficient` when nothing else is written. Only a denial that names the concept or one of its listed wordings (C-xx) is labelled `negated`. `Reviewed: yes`
 - **S-03** `insufficient`: nothing is said, or what is said cannot carry a conclusion either way (wrong timepoint, no diagnosis behind a lab, only advice given, payer unknown). Example: "Patient was encouraged to eat more vegetables." → `lifestyle.nutrition` `insufficient`. `Reviewed: yes`
 - **S-04** `conflict`: two verified values for the same fact (contract §4) sit on opposite sides of the threshold the condition uses, or a diagnosis is both asserted and negated at the same timepoint. Example: a clinic note "BMI 29.6 at initiation" and the referral letter "BMI 30.4 when Wegovy was started" → `bmi_path_b.bmi` `conflict`; `bmi_path_c.bmi` is not in conflict (both values ≥ 27) and, because the two values differ by more than the ±0.2 tolerance, is decided as usual with flag `inconsistent_values` (contract §3.1 step 5, §4). `Reviewed: yes`
 - **S-05** `review`: evidence exists and a human must judge it: positive exclusion evidence, an uncertain diagnosis, a policy grey zone, an imprecise source, a table, a combination pill, an unrecognized wording. Example: "Sleep study years ago showed OSA; has not used CPAP since tonsillectomy." → `exclusion.osa` `review` (severity unspecified, post-surgical status unknown). `Reviewed: yes`
@@ -87,7 +87,7 @@ Draft list; the deterministic `check_assertion` uses a frozen copy of this table
 | Possible prediabetes, A1c pending | uncertain | patient | current | `bmi_path_c.prediabetes` → `review` |
 
 - **A-11** The rows above are the reference set for the "common-sense completion" risk: a treated condition, a suspected condition and a relative's condition each get their own three-axis label; none of them becomes `present / patient / current` by inference. `Reviewed: yes`
-- **A-12** For real-text gold, label a tracked mention `subject: family` when its subject is a pronoun that unambiguously refers to a relative identified in the immediately preceding sentence. Cite A-12 in the adjudication log. If the referent is ambiguous, record the evidence location and the ambiguity under A-12, omit the unresolved fact, and do not assert expected absence on that basis. Use `review` with flag `unrecognized` when the ambiguity prevents a condition decision. This is an annotation exception to A-05. Verifier cue scope remains sentence-local under contract §6. `Reviewed: no`
+- **A-12** For real-text gold, label a tracked mention `subject: family` when its subject is a pronoun that unambiguously refers to a relative identified in the immediately preceding sentence. Cite A-12 in the adjudication log. If the referent is ambiguous, record the evidence location and the ambiguity under A-12, omit the unresolved fact, and do not assert expected absence on that basis. Use `review` with flag `unrecognized` when the ambiguity prevents a condition decision. This is an annotation exception to A-05. Verifier cue scope remains sentence-local under contract §6. `Reviewed: yes`
 
 ## 4. Timepoints
 
@@ -100,7 +100,7 @@ Draft list; the deterministic `check_assertion` uses a frozen copy of this table
 - **T-07** `assessment_date` (in `input.yaml`) is the reference date for "current and ongoing" (lifestyle) and for nothing else; it is never the run date and never the initiation date. Example: `assessment_date` 2026-10-15; a nutrition program recorded as ended in 2026-06 is not current, whatever the run date. `Reviewed: yes`
 - **T-08** The initiation date itself is a gold fact (`glp1_start`) and must be found in the visible text; `target_course` in `input.yaml` only says which course is assessed. If the text does not contain it, every BMI sub-result is `insufficient` regardless of what the annotator knows. Label evidence of the assessed course's initiation as `glp1_start` without duplicating the same initiation as `medications`. Apply P-06 to repeated evidence. In gold, record `purpose` from the stated reason (`weight`, `mace`, `other`) and `payer` from the text (G-12). Use `unknown` for each unstated field. Example: the referral letter says "started Wegovy on 2025-03-15" → `glp1_start` fact with `drug: Wegovy`, `date: 2025-03-15`; if no document names the date, `bmi_path_a`, `bmi_path_b.bmi` and `bmi_path_c.bmi` are `insufficient` even though `target_course` carries it. `Reviewed: yes`
 - **T-09** Medication periods: `start`, `end` and `end_kind` are labelled at the text's precision. An undated list labelled as current medications in the same document as a BP reading is in use on that document's date (`same_note_list`). Whether the list is explicitly complete (`medication_lists[].complete`) is labelled from wording such as "complete medication list" or "no other medications"; a section header alone is not completeness. Example: "Current medications: amlodipine 5 mg, metoprolol 50 mg" in a note dated 2025-03-14 that also records BP 152/94 → both drugs in use on 2025-03-14 (`same_note_list`); `complete: false` because the header does not say the list is complete. `Reviewed: yes`
-- **T-11** Label a `medications` fact only for a drug recognized by the active drug table (currently `rules/drugs-v1.yaml`). Record an out-of-table medication candidate with `decision: reject` and note that it is outside the table. Record proposed additions for a separate versioned rules change. Apply T-08 and C-16 separately to `glp1_start` and `prior_glp1`. `Reviewed: no`
+- **T-11** Label a `medications` fact only for a drug recognized by the active drug table (currently `rules/drugs-v1.yaml`). Record an out-of-table medication candidate with `decision: reject` and note that it is outside the table. Record proposed additions for a separate versioned rules change. Apply T-08 and C-16 separately to `glp1_start` and `prior_glp1`. `Reviewed: yes`
 - **T-10** Exclusion evidence after initiation is still labelled and still counts (`post_initiation_exclusion` → `review`); the "after initiation is not used" rule applies to BMI and pathway facts only. Example: "A1c 7.1%, new diagnosis of type 2 diabetes" dated four months after initiation → `t2dm` fact, `after` → `exclusion.t2dm` `review` + `post_initiation_exclusion`. `Reviewed: yes`
 
 ## 5. Per-condition labelling rules
@@ -149,7 +149,7 @@ Each subsection points to the decision table in the contract and lists the traps
 
 ### 5.10 `exclusion.osa` (contract §3.3)
 
-- **C-14** Label `osa_severity` (`mild` / `moderate` / `severe` / `unspecified`) and `ahi` when written. Traps: "on CPAP" read as moderate-to-severe; "s/p tonsillectomy" read as resolved (A-04); "mild" or AHI < 15 not labelled, so the `not_supported` row is missed. `Reviewed: no`
+- **C-14** Label `osa_severity` (`mild` / `moderate` / `severe` / `unspecified`) and `ahi` when written. Traps: "on CPAP" read as moderate-to-severe; "s/p tonsillectomy" read as resolved (A-04); "mild" or AHI < 15 not labelled, so the `not_supported` row is missed. `Reviewed: yes`
 
 ### 5.11 `exclusion.mash` (contract §3.3)
 
@@ -157,7 +157,7 @@ Each subsection points to the decision table in the contract and lists the traps
 
 ### 5.12 `exclusion.part_d_glp1` (contract §3.3)
 
-- **C-16** Label every prior GLP-1 mention as `prior_glp1` with `drug`, `date`, `payer`, `compounded`. `payer` is `bridge` only when the text names Bridge; an amount alone is `unknown`. Traps: any prior GLP-1 use labelled as Part D; a 2025 fill or a Medicaid fill labelled as a 2026 Part D fill; "not found" turned into `not_supported` (it is `insufficient`). `Reviewed: no`
+- **C-16** Label every prior GLP-1 mention as `prior_glp1` with `drug`, `date`, `payer`, `compounded`. `payer` is `bridge` only when the text names Bridge; an amount alone is `unknown`. Traps: any prior GLP-1 use labelled as Part D; a 2025 fill or a Medicaid fill labelled as a 2026 Part D fill; "not found" turned into `not_supported` (it is `insufficient`). `Reviewed: yes`
 
 ### 5.13 `patient_identity` (contract §3.5)
 
@@ -171,7 +171,7 @@ Each subsection points to the decision table in the contract and lists the traps
 
 - **C-19** The pathway status is derived by hand from its sub-results with the contract §3.4 table: all comorbidities `not_supported` → `not_supported`; BMI `not_supported` → `not_supported`; BMI `insufficient` / `conflict` / `review` → the pathway equals the BMI sub-result; BMI `supported` with any comorbidity `supported` → `supported`, otherwise the highest-ranked comorbidity (`conflict` > `review` > `insufficient`). Pathway A equals the BMI ≥ 35 sub-result. Sub-results keep their own status whatever the pathway. Example: `bmi_path_b.bmi` `insufficient` (no height), `hfpef` `supported`, `htn` `insufficient`, `ckd` `review` → `bmi_path_b` `insufficient`. `Reviewed: yes`
 - **C-20** `mace_purpose` is a case flag, not a status: label it in `case_flags` only when a verified, non-excluded `glp1_start` fact for the primary patient that refers to the course named in `target_course` has `purpose: mace` (the text states that this course is for cardiovascular risk reduction). A `mace` purpose on another course, on a prior GLP-1, or in an excluded document (wrong patient, PA draft) does not set the flag. With the flag set, every pathway that would be `supported` is `review`; the sub-results stay as they are. `Reviewed: no`
-- **C-21** Pathway C established only through `mi` / `stroke` / `pad` with `prediabetes` not `supported` is `review` with flag `cv_history_only`; the sub-results stay `supported`. Pathway flags are part of gold and are matched, so the annotator writes them. `Reviewed: no`
+- **C-21** Pathway C established only through `mi` / `stroke` / `pad` with `prediabetes` not `supported` is `review` with flag `cv_history_only`; each sub-result keeps its own status. Pathway flags are part of gold and are matched, so the annotator writes them. `Reviewed: yes`
 - **C-22** Without a verified initiation date the BMI sub-result is `insufficient` and aggregation still runs (all comorbidities `not_supported` still gives `not_supported`). Example: no start date in the text; `hfpef`, `htn` and `ckd` all `not_supported` → `bmi_path_b` `not_supported`. `Reviewed: yes`
 
 ## 6. PA draft claims
@@ -267,7 +267,7 @@ CMS asks the prescriber to distinguish "no longer applies" from "well controlled
 `payer` is `part_d` only when Part D (or a Part D plan name) is written; `medicaid`, `self_pay`, `commercial` likewise; `bridge` only when Bridge is written. A copay amount alone is `unknown`.
 
 - Source: CMS: [CMS Information for Part D Plans](https://www.cms.gov/medicare/coverage/prescription-drug-coverage/medicare-glp-1-bridge/information-part-d-plans) (page last modified 2026-08-06): a GLP-1 filled through the Part D plan in 2026 makes the beneficiary "not eligible for coverage through Medicare GLP-1 Bridge in 2026". Clinical: none. Project policy: `payer_from_amount_only: unknown`. Checked by the coding agent 2026-11-08; Terri confirms.
-- Reviewed: no
+- Reviewed: yes
 
 ### G-13 MASH outside F2–F3 is not this exclusion
 
