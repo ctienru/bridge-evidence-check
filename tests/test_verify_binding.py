@@ -973,3 +973,207 @@ def test_t05_explicitly_dated_measurement_never_inherits_the_document_date() -> 
     assert doc_date.exclusion_reasons == () and doc_date.flags == ()
     assert bmi.event_date_source is None
     assert bmi.attributes["quote_date"] == {"date": "2025-03-16", "precision": "day"}
+
+
+# --- PA-form checkboxes bind to their own label (guide K-01, K-02) -------------------------------
+
+FORM = "Prior authorization draft.\nType 2 diabetes: No\nPrevious stroke: Yes\n"
+
+
+def _claim_ev(doc: str, role: str, quote: str, claim_id: str, value: str) -> CheckedEvidence:
+    f = fact("pa_form_claims", quote, claim_id=claim_id, claimed_value=value)
+    return run_verify({"D1": (role, doc)}, {"pa_form_claims": [f]}).evidence[0]
+
+
+def test_claim_value_binds_to_its_own_checkbox() -> None:
+    ev = _claim_ev(FORM, "pa_draft", "Type 2 diabetes: No", "claim.exclusion.t2dm", "no")
+    assert ev.exclusion_reasons == () and ev.flags == () and ev.assertion_check == "matched"
+
+
+def test_claim_value_from_another_checkbox_is_not_the_claim() -> None:
+    ev = _claim_ev(FORM, "pa_draft", "Previous stroke: Yes", "claim.exclusion.t2dm", "yes")
+    assert "value_not_in_quote" in ev.exclusion_reasons
+
+
+def test_claim_without_its_field_is_not_in_the_quote() -> None:
+    ev = _claim_ev(FORM, "pa_draft", "Previous stroke: Yes", "claim.bmi_path_b.hfpef", "yes")
+    assert "value_not_in_quote" in ev.exclusion_reasons
+
+
+def test_claim_from_a_clinical_document_is_unrecognized() -> None:
+    doc = "Clinic note.\nType 2 diabetes: No\n"
+    ev = _claim_ev(doc, "clinical", "Type 2 diabetes: No", "claim.exclusion.t2dm", "no")
+    assert "unrecognized" in ev.flags
+
+
+def test_blank_yes_no_pair_is_kept_as_unrecognized() -> None:
+    form = "Prior authorization draft.\nType 2 diabetes: [ ] Yes [ ] No\n"
+    ev = _claim_ev(form, "pa_draft", "No", "claim.exclusion.t2dm", "no")
+    assert ev.exclusion_reasons == () and "unrecognized" in ev.flags
+    marked = "Prior authorization draft.\nType 2 diabetes: [ ] Yes [X] No\n"
+    ev = _claim_ev(marked, "pa_draft", "No", "claim.exclusion.t2dm", "no")
+    assert ev.exclusion_reasons == () and ev.flags == ()
+    other = _claim_ev(marked, "pa_draft", "Yes", "claim.exclusion.t2dm", "yes")
+    assert "unrecognized" in other.flags
+
+
+def test_two_unselected_drug_options_are_unrecognized() -> None:
+    form = "Prior authorization draft.\nRequested drug: Wegovy / Ozempic\n"
+    ev = _claim_ev(form, "pa_draft", "Requested drug: Wegovy / Ozempic", "claim.drug", "Wegovy")
+    assert "unrecognized" in ev.flags
+
+
+def test_value_of_a_later_unregistered_field_does_not_bind_back() -> None:
+    form = "Prior authorization draft.\nType 2 diabetes: Yes   Smoker: No\n"
+    ev = _claim_ev(form, "pa_draft", "Smoker: No", "claim.exclusion.t2dm", "no")
+    assert "value_not_in_quote" in ev.exclusion_reasons
+
+
+def test_relatives_question_is_not_the_patients_claim() -> None:
+    form = "Prior authorization draft.\nDaughter's type 2 diabetes: Yes\n"
+    ev = _claim_ev(
+        form, "pa_draft", "Daughter's type 2 diabetes: Yes", "claim.exclusion.t2dm", "yes"
+    )
+    # the whole field label is not the patient's question: the value is not this claim's
+    assert "value_not_in_quote" in ev.exclusion_reasons
+
+
+def test_possessed_case_summary_dates_the_possessor() -> None:
+    doc = "Referral letter.\nThe referral's case summary dated 2025-03-15 is enclosed.\n"
+    f = fact(
+        "doc_dates",
+        "The referral's case summary dated 2025-03-15 is enclosed.",
+        target_doc_id="D2",
+        date="2025-03-15",
+    )
+    ev = run_verify(
+        {"D1": ("referral", doc), "D2": ("clinical", "x")}, {"doc_dates": [f]}
+    ).evidence[0]
+    assert "value_not_in_quote" in ev.exclusion_reasons
+    ok = fact(
+        "doc_dates",
+        "I enclose the case summary dated 2025-03-15.",
+        target_doc_id="D2",
+        date="2025-03-15",
+    )
+    ev = run_verify(
+        {
+            "D1": ("referral", "I enclose the case summary dated 2025-03-15.\n"),
+            "D2": ("clinical", "x"),
+        },
+        {"doc_dates": [ok]},
+    ).evidence[0]
+    assert ev.exclusion_reasons == () and ev.flags == ()
+
+
+def test_explicitly_unchecked_single_option_is_not_selected() -> None:
+    form = "Prior authorization draft.\nType 2 diabetes: [ ] No\n"
+    ev = _claim_ev(form, "pa_draft", "Type 2 diabetes: [ ] No", "claim.exclusion.t2dm", "no")
+    assert ev.exclusion_reasons == () and "unrecognized" in ev.flags
+    plain = _claim_ev(FORM, "pa_draft", "Type 2 diabetes: No", "claim.exclusion.t2dm", "no")
+    assert plain.flags == ()
+
+
+def test_mash_box_without_the_fibrosis_qualifier_is_not_the_claim() -> None:
+    form = "Prior authorization draft.\nNoncirrhotic MASH: No\n"
+    ev = _claim_ev(form, "pa_draft", "Noncirrhotic MASH: No", "claim.exclusion.mash", "no")
+    assert "value_not_in_quote" in ev.exclusion_reasons
+    full = "Prior authorization draft.\nNoncirrhotic MASH with fibrosis F2-F3: No\n"
+    ev = _claim_ev(
+        full, "pa_draft", "Noncirrhotic MASH with fibrosis F2-F3: No", "claim.exclusion.mash", "no"
+    )
+    assert ev.exclusion_reasons == () and ev.flags == ()
+
+
+def test_case_summary_without_an_attachment_word_dates_nothing_else() -> None:
+    doc = "Referral letter.\nThis case summary dated 2025-03-15 covers the course so far.\n"
+    f = fact(
+        "doc_dates",
+        "This case summary dated 2025-03-15 covers the course so far.",
+        target_doc_id="D2",
+        date="2025-03-15",
+    )
+    ev = run_verify(
+        {"D1": ("referral", doc), "D2": ("clinical", "x")}, {"doc_dates": [f]}
+    ).evidence[0]
+    assert "unrecognized" in ev.flags
+
+
+def test_list_status_comes_from_the_heading_not_from_one_entry() -> None:
+    doc = (
+        "Current medications: amlodipine 5 mg; metoprolol 50 mg (stopped last week).\n"
+        "Medications planned for the next visit: lisinopril.\n"
+    )
+    current = fact("medication_lists", doc.splitlines()[0], list_id="L1")
+    planned = fact("medication_lists", doc.splitlines()[1], list_id="L2")
+    rows = run_verify({"D1": doc}, {"medication_lists": [current, planned]}).evidence
+    assert rows[0].attributes["list_status"] == "current"  # one stopped entry is that drug's
+    assert rows[1].attributes["list_status"] == "unknown"  # "medications" alone is no label
+
+
+def test_attachment_cue_must_be_about_the_dated_document() -> None:
+    cases = {
+        "This case summary dated 2025-03-15 is not attached to the letter.": "unrecognized",
+        "This case summary dated 2025-03-15 covers the course; see the attached lab report.": (
+            "unrecognized"
+        ),
+        "This case summary dated 2025-03-15 is not yet attached.": "unrecognized",
+        "Please attach the case summary dated 2025-03-15.": "unrecognized",
+        "Attach the case summary dated 2025-03-15.": "unrecognized",
+        "Then attach the case summary dated 2025-03-15.": "unrecognized",
+        "After review, attach the case summary dated 2025-03-15.": "unrecognized",
+        "This letter encloses the case summary dated 2025-03-15.": "ok",
+        "I didn't attach the case summary dated 2025-03-15.": "unrecognized",
+        "We attach the case summary dated 2025-03-15.": "ok",
+        "I will attach the case summary dated 2025-03-15 later.": "unrecognized",
+        "The case summary dated 2025-03-15 mentions the attached lab result.": "unrecognized",
+        "The attached lab result and the case summary dated 2025-03-15 agree.": "unrecognized",
+        "The enclosed bariatric surgery case summary dated 2025-03-15 lists the course.": "ok",
+        "The case summary dated 2025-03-15 is attached.": "ok",
+        "The case summary dated 2025-03-15 is enclosed; the lab report is not.": "ok",
+        "I enclose the case summary dated 2025-03-15.": "ok",
+        "The attached case summary dated 2025-03-15 lists the course.": "ok",
+    }
+    for sentence, expected in cases.items():
+        f = fact("doc_dates", sentence, target_doc_id="D2", date="2025-03-15")
+        ev = run_verify(
+            {"D1": ("referral", "Referral letter.\n" + sentence + "\n"), "D2": ("clinical", "x")},
+            {"doc_dates": [f]},
+        ).evidence[0]
+        assert ("unrecognized" in ev.flags) == (expected == "unrecognized"), sentence
+
+
+def test_empty_checkbox_syntax_is_normalized() -> None:
+    for box in ("［ ］", "[  ]", "( )"):
+        form = f"Prior authorization draft.\nType 2 diabetes: {box} No\n"
+        ev = _claim_ev(form, "pa_draft", f"Type 2 diabetes: {box} No", "claim.exclusion.t2dm", "no")
+        assert "unrecognized" in ev.flags, box
+    marked = "Prior authorization draft.\nType 2 diabetes: ［Ｘ］ No\n"
+    ev = _claim_ev(marked, "pa_draft", "Type 2 diabetes: ［Ｘ］ No", "claim.exclusion.t2dm", "no")
+    assert ev.flags == () and ev.exclusion_reasons == ()
+
+
+def test_medication_list_status_is_read_from_the_heading() -> None:
+    doc = (
+        "Discontinued medications: amlodipine 5 mg; metoprolol 50 mg.\n"
+        "Current medications: aspirin.\n"
+    )
+    stopped = fact(
+        "medication_lists",
+        "Discontinued medications: amlodipine 5 mg; metoprolol 50 mg.",
+        list_id="L1",
+    )
+    current = fact("medication_lists", "Current medications: aspirin.", list_id="L2")
+    rows = run_verify({"D1": doc}, {"medication_lists": [stopped, current]}).evidence
+    assert rows[0].attributes["list_status"] == "discontinued"
+    assert rows[1].attributes["list_status"] == "current"
+
+
+def test_date_must_belong_to_the_attached_mention() -> None:
+    quote = "I enclose the consult note. The case summary dated 2025-03-15 is a separate record."
+    f = fact("doc_dates", quote, target_doc_id="D2", date="2025-03-15")
+    ev = run_verify(
+        {"D1": ("referral", "Referral letter.\n" + quote + "\n"), "D2": ("clinical", "x")},
+        {"doc_dates": [f]},
+    ).evidence[0]
+    assert "value_not_in_quote" in ev.exclusion_reasons

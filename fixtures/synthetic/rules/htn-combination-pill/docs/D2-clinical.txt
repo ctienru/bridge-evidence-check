@@ -1,0 +1,4 @@
+Clinic visit 2025-03-15.
+Patient ID: P-0100.
+Blood pressure 152/94 mmHg.
+Current medications: Moduretic daily; metoprolol 50 mg daily.

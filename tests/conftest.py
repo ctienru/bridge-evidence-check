@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from types import ModuleType
 from typing import TYPE_CHECKING
@@ -12,7 +12,9 @@ from typing import TYPE_CHECKING
 import pytest
 
 if TYPE_CHECKING:
-    from bridge_check.verify import VerifyResult
+    from bridge_check.compute import CaseContext
+    from bridge_check.rules import Decision, Policy
+    from bridge_check.verify import CheckedEvidence, VerifyResult
 
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURES = ROOT / "fixtures" / "synthetic"
@@ -116,3 +118,128 @@ def run_verify(
         {"patient_id": patient_id, "name": "Synthetic Patient", "dob": dob}
     )
     return verify_case(ext, documents, VerifyContext.load(primary))
+
+
+# --- Compute and rules helpers: CheckedEvidence and CaseContext without a database ----------
+
+_VALUE_FIELDS = frozenset({"anthropometrics", "labs"})
+
+
+def checked(
+    fact_field: str,
+    *,
+    doc_id: str = "D1",
+    evidence_id: int | None = None,
+    event_date: str | None = None,
+    event_date_source: str | None = None,
+    quote_date: str | None = None,
+    relative_llm: str = "at",
+    certainty: str = "present",
+    subject: str = "patient",
+    temporality: str = "current",
+    position_status: str = "verbatim",
+    assertion_check: str | None = "matched",
+    exclusion_reasons: tuple[str, ...] = (),
+    flags: tuple[str, ...] = (),
+    **attrs: object,
+) -> CheckedEvidence:
+    """One already-verified fact with the field's defaults; `attrs` override the attributes
+    (`kind`, `concept`, `raw_value`, `raw_unit` go to their own columns). The model's
+    timepoint defaults to `at` (the usual test fact sits on the initiation day); pass
+    `relative_llm` when the fact is dated elsewhere."""
+    from bridge_check.verify import CheckedEvidence
+
+    attributes: dict[str, object] = {**_FACT_DEFAULTS[fact_field], **attrs}
+    kind = attributes.pop("kind", None) if fact_field in _VALUE_FIELDS | {"lifestyle"} else None
+    concept = attributes.pop("concept", None) if fact_field == "diagnoses" else None
+    raw_value = attributes.pop("raw_value", None) if fact_field in _VALUE_FIELDS else None
+    raw_unit = attributes.pop("raw_unit", None) if fact_field in _VALUE_FIELDS else None
+    if fact_field == "medication_lists":
+        attributes.setdefault("list_status", "current")  # what verify reads off the heading
+    if quote_date is not None:
+        attributes["quote_date"] = {
+            "date": quote_date,
+            "precision": {4: "year", 7: "month", 10: "day"}[len(quote_date)],
+        }
+    if event_date is not None and event_date_source is None:
+        event_date_source = "llm"
+    precision = {4: "year", 7: "month", 10: "day"}[len(event_date)] if event_date else None
+    tag = evidence_id if evidence_id is not None else 0
+    return CheckedEvidence(
+        field=fact_field,
+        fact_path=f"{fact_field}[{tag}]",
+        kind=str(kind) if kind is not None else None,
+        concept=str(concept) if concept is not None else None,
+        doc_id=doc_id,
+        doc_sha256="0" * 64,
+        start=0 if position_status != "not_found" else None,
+        end=1 if position_status != "not_found" else None,
+        quote="x",
+        raw_value=str(raw_value) if raw_value is not None else None,
+        raw_unit=str(raw_unit) if raw_unit is not None else None,
+        event_date=event_date,
+        date_precision=precision,
+        certainty_llm=certainty,
+        subject_llm=subject,
+        temporality_llm=temporality,
+        certainty_checked=certainty if assertion_check else None,
+        subject_checked=subject if assertion_check else None,
+        temporality_checked=temporality if assertion_check else None,
+        relative_llm=relative_llm,
+        position_status=position_status,
+        assertion_check=assertion_check,
+        exclusion_reasons=exclusion_reasons,
+        flags=flags,
+        ref=f"{doc_id}[0:1] {tag:08x}",
+        event_date_source=event_date_source,
+        attributes=attributes,
+    )
+
+
+def ctx(**overrides: object) -> CaseContext:
+    """A `CaseContext` for a Wegovy course started 2025-03-15, assessed 2026-10-15, with the
+    committed drug table and documents `D1` (clinical) and `D2` (clinical), both `match`."""
+    from datetime import date
+
+    from bridge_check.compute import CaseContext
+    from bridge_check.rules_schema import load_drugs
+
+    values: dict[str, object] = {
+        "target_drug": "Wegovy",
+        "target_start": date(2025, 3, 15),
+        "assessment_date": date(2026, 10, 15),
+        "doc_roles": {"D1": "clinical", "D2": "clinical"},
+        "doc_identity": {"D1": "match", "D2": "match"},
+        "drugs": load_drugs(ROOT / "rules" / "drugs-v1.yaml"),
+        "evidence_ids": None,
+    }
+    values.update(overrides)
+    return CaseContext(**values)  # type: ignore[arg-type]
+
+
+def policy() -> Policy:
+    from bridge_check.rules import Policy
+    from bridge_check.rules_schema import load_rules
+
+    return Policy.from_rules(load_rules(ROOT / "rules" / "bridge-v1.yaml"))
+
+
+def decide(evidence: Sequence[CheckedEvidence], **overrides: object) -> dict[str, Decision]:
+    """compute + evaluate_rules over `evidence`, keyed by condition id."""
+    from bridge_check.compute import compute
+    from bridge_check.rules import evaluate_rules
+
+    pol = overrides.pop("policy", None)
+    facts = compute(evidence, ctx(**overrides))
+    return {d.condition: d for d in evaluate_rules(facts, pol or policy())}  # type: ignore[arg-type]
+
+
+INITIATION = checked(
+    "glp1_start",
+    drug="Wegovy",
+    date="2025-03-15",
+    event_date="2025-03-15",
+    relative_llm="at",
+    purpose="weight",
+)
+"""A verified start of the target course on 2025-03-15 in `D1`."""

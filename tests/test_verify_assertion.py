@@ -226,7 +226,7 @@ def test_table_source_flag(doc: str, table: bool) -> None:
 
 def test_terms_table_loads_with_drug_and_glp1_names() -> None:
     terms = load_terms()
-    assert terms.version == "verify-terms-v1"
+    assert terms.version == "verify-terms-v2"
     assert "other" not in terms.concept_terms
     assert {"insulin", "CPAP", "Wegovy", "amlodipine"} <= set(terms.treatment_terms)
 

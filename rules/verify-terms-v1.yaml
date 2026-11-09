@@ -12,7 +12,7 @@
 # (MI, PAD, OSA, HTN, T2DM, HFpEF) is matched case-sensitively so that "pad" or "mi" in prose
 # does not count. Word-bounded at alphanumeric ends; leftmost-longest and non-overlapping
 # across `concept_terms` and `blocking_terms` together, so a longer term wins.
-version: verify-terms-v1
+version: verify-terms-v2
 
 # Concept -> the words that name it in a quote. Used (1) by layer 3: a diagnosis fact's
 # concept must be named in its quote (this is the alias table: T2DM = type 2 diabetes,
@@ -213,13 +213,77 @@ a09_fillers: ["on", of, use, use of, taking, the, a, an, any, with, currently, l
 
 # `doc_dates` (contract §5 item 3): the quote must name the target document, by its doc_id or
 # by a word for its role; a quote naming another document's doc_id dates that document.
+# A document of another role named only by a role word ("the case summary") dates the target
+# only when the sentence says it is attached to the quoting document; without such a word the
+# writer may be describing the quoting document itself.
+attachment_terms: [enclosed, enclose, encloses, enclosing, attached, attach, attaches, attaching, accompanying, accompanies, forwarded, forwards, appended, appends, see the attached]
+# Words that turn an attachment cue into a denial, a request or a promise ("not yet
+# attached", "please attach", "will attach"): the cue then affirms nothing.
+attachment_negations: ["not", "no", "never", "without", "un", "please", "kindly", "will", "would", "could", "can", "cannot", "may", "shall", "should", "to", "later", "soon", "forgot", "forgotten", "failed", "unable", "yet", "request", "requested", "ask", "asks", "asked", "didn't", "don't", "doesn't", "haven't", "hasn't", "hadn't", "won't", "can't", "couldn't", "wouldn't", "shouldn't", "isn't", "aren't", "wasn't", "weren't"]
+# Finite forms of the attachment cues: they affirm only with a subject before them ("I enclose",
+# "we attach"); a bare imperative ("Attach the summary") is a request.
+attachment_finite_forms: [enclose, encloses, attach, attaches, forward, forwards, append, appends, enclosing, attaching, forwarding, appending]
+# The explicit subjects that make a finite form affirmative ("I enclose", "this letter encloses");
+# an adverb or a clause before the verb ("Then attach", "After review, attach") is an imperative.
+attachment_subjects: [I, we, you, he, she, they, it, letter, note, referral, office, clinic, practice, team, which, that, who]
 doc_role_terms:
   clinical:
     [consult, consultation, consult note, clinic note, clinical note, progress note,
      visit note, office note, office visit, encounter, note, H&P, history and physical,
-     discharge summary, visit]
+     discharge summary, case summary, visit]
   referral: [referral, referral letter, referral note, letter]
   pa_draft: [prior authorization, PA request, PA form, draft]
+
+# PA-form checkboxes (guide K-01, K-02). A field of the draft is `<label>: <options>`; the
+# whole label, normalized and case-insensitive, must be one of the entries below, so a label
+# that adds a subject or a qualifier ("daughter's type 2 diabetes", "CKD stage 2") is not the
+# qualifying question. The entries are the questions of the public CMS PA request form
+# (https://www.cms.gov/files/document/glp-1-bridge.pdf; the `source.id: form` quotes of
+# rules/bridge-v1.yaml) and the short field labels of the synthetic drafts; the answers are
+# the tokens on the same line after the colon. `claim_label_blockers` is a second guard:
+# a field whose label holds one of these words asks something else.
+claim_labels:
+  claim.age_18: [patient is 18 or older, patient is at least 18, at least eighteen years of age, 18 or older, aged 18 or over]
+  claim.drug: [requested drug, drug requested, GLP-1 requested, drug]
+  claim.bmi_bracket: [BMI category, BMI bracket, BMI range, BMI]
+  claim.exclusion.t2dm: [type 2 diabetes, type II diabetes, T2DM, patient has type 2 diabetes]
+  claim.exclusion.osa: [moderate to severe obstructive sleep apnea, moderate-to-severe obstructive sleep apnea, moderate to severe OSA, moderate-to-severe OSA]
+  claim.exclusion.mash: [noncirrhotic metabolic dysfunction-associated steatohepatitis with moderate to advanced liver fibrosis, noncirrhotic MASH with moderate to advanced liver fibrosis, noncirrhotic MASH with fibrosis F2-F3, noncirrhotic MASH with fibrosis stage F2-F3, non-cirrhotic MASH with fibrosis F2-F3]
+  claim.exclusion.part_d_glp1: [GLP-1 received under Medicare Part D in 2026, GLP-1 under Medicare Part D in 2026, Medicare Part D in 2026, Part D in 2026]
+  claim.bmi_path_b.hfpef: [heart failure with preserved ejection fraction, HFpEF]
+  claim.bmi_path_b.htn: [uncontrolled hypertension, uncontrolled HTN, uncontrolled HTN on two or more antihypertensives, uncontrolled hypertension on two or more antihypertensives]
+  claim.bmi_path_b.ckd: [chronic kidney disease stage 3a or above, chronic kidney disease stage 3a or higher, CKD stage 3a or above, CKD stage 3a or higher, CKD 3a or above]
+  claim.bmi_path_c.prediabetes: [prediabetes, pre-diabetes]
+  claim.bmi_path_c.mi: [previous myocardial infarction, prior myocardial infarction, previous MI, prior MI]
+  claim.bmi_path_c.stroke: [previous stroke, prior stroke]
+  claim.bmi_path_c.pad: [symptomatic peripheral artery disease, symptomatic PAD]
+  claim.lifestyle.nutrition: [enrolled in a structured nutrition program, structured nutrition program, nutrition program]
+  claim.lifestyle.activity: [regular physical activity, physical activity]
+claim_label_blockers: [family history, family, mother, father, daughter, son, sibling, parent, relative, stage 1, stage 2, mild, asymptomatic]
+# GLP-1 products a drug field may offer side by side are the names of `GLP1_NAMES`.
+# Answer tokens a PA line may offer side by side ("[ ] Yes [X] No"), and the selection markers
+# of the chosen one ("[X] No", "☒ 35-39.9").
+answer_tokens: ["yes", "no"]
+answer_markers: ["[X]", "[x]", "(X)", "(x)", "☒", "☑", "✓", "✔"]
+# An empty checkbox: the answer beside it was offered and not chosen ("[ ] No").
+empty_markers: ["[ ]", "[]", "( )", "☐"]
+
+# Section headings whose words are the heading's name, not an assertion about the sentence
+# that follows them on the same line ("HISTORY OF PRESENT ILLNESS: a 55-year-old ..." is not
+# historical; guide A-06). Family-history headings are not listed: their words stay cues.
+section_headings:
+  [history of present illness, HPI, chief complaint, past medical history, PMH,
+   past surgical history, PSH, social history, review of systems, ROS, physical examination,
+   physical exam, hospital course, assessment and plan, impression, medications, allergies]
+
+# Medication lists (guide T-09): a list's entries are in use on the note's date only when the
+# list's own heading (its `section_title`, or the text before the first colon of the quote)
+# labels it as current; a heading of stopped or past medications proves nothing about use, and
+# a bare "Medications" heading is `unknown`. A stop word inside one entry concerns that drug
+# only and never reclassifies the list.
+medication_list_status:
+  current: [current medications, current meds, active medications, medications on admission, home medications, current medication list, active medication list]
+  discontinued: [discontinued, stopped, held, past medications, previous medications, prior medications, former medications]
 
 # Lifestyle (contract §3.5): each extracted value needs a cue in the quote; a value without one
 # is `unrecognized` (review), like a non-default assertion without a cue (A-05). `unknown`

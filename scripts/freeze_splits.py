@@ -284,6 +284,14 @@ def check_gold_quotes(manifest: Manifest, root: Path) -> list[str]:
 # --- entry point ------------------------------------------------------------------------
 
 
+def _display(path: Path, root: Path) -> str:
+    """`path` relative to the repo root when it lies inside it (no home directory in logs)."""
+    try:
+        return path.resolve().relative_to(root).as_posix()
+    except ValueError:
+        return str(path)
+
+
 def check(root: Path, manifest_path: Path, base: str | None) -> int:
     try:
         text = manifest_path.read_text(encoding="utf-8")
@@ -313,7 +321,7 @@ def check(root: Path, manifest_path: Path, base: str | None) -> int:
         return 1
     splits = {s: sum(1 for v in manifest.variants if v.split == s) for s in ("dev", "holdout")}
     print(
-        f"freeze_splits: {manifest_path} OK ({len(manifest.variants)} variants: "
+        f"freeze_splits: {_display(manifest_path, root)} OK ({len(manifest.variants)} variants: "
         f"{splits['dev']} dev, {splits['holdout']} holdout)"
     )
     return 0

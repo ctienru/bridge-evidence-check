@@ -22,3 +22,12 @@ These files are never used by `eval` and are not recorded model responses.
   document, a PA-draft-only fact, a CRLF document and an NFKC document. The first line of
   each `input.yaml` says what it demonstrates. `verify/crlf/docs/` is kept byte-exact by
   `.gitattributes`.
+- `rules/<name>/` — single-factor fixtures for compute and rules: `input.yaml`, `docs/` and one
+  scripted reply (`fake-reply.json`) each. `BRIDGE_FAKE_CLIENT=1 bridge check
+  fixtures/synthetic/rules/<name> --json` completes and shows one decision-table row: a BMI
+  conflict across 30, an integer BMI, a 140/90 boundary reading, two antihypertensives on a
+  same-note list, a class-ambiguous combination diuretic, an A1c in the prediabetes range, an
+  A1c in the diabetes range without a diagnosis, mild OSA, a 2025 Part D fill, a MACE purpose,
+  pathway C through cardiovascular history only, an age interval straddling 18, a wrong-patient
+  clinic note and a commercial nutrition program. The first line of each `input.yaml` says what
+  it demonstrates; `tests/test_rules_fixtures.py` holds the expected decisions.

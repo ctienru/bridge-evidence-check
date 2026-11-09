@@ -7,7 +7,7 @@ SQLite `CHECK` constraints (contract §11).
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Literal, get_args
 
 # --- Status codes (contract §1) ----------------------------------------------------
 
@@ -64,7 +64,7 @@ AXIS_DEFAULTS: dict[str, str] = {
 
 # --- Flags (contract §6) -------------------------------------------------------------
 
-FLAGS: tuple[str, ...] = (
+Flag = Literal[
     "id_missing",
     "inconsistent_values",
     "imprecise_source",
@@ -80,7 +80,8 @@ FLAGS: tuple[str, ...] = (
     "same_note_list",
     "height_from_other_date",
     "uncovered_keyword",
-)
+]
+FLAGS: tuple[str, ...] = get_args(Flag)
 
 # --- Documents (contract §6, §7.1) ----------------------------------------------------
 
@@ -315,7 +316,8 @@ ExtractionSource = Literal["cache", "replay", "api"]
 EXTRACTION_SOURCES: tuple[str, ...] = ("cache", "replay", "api")
 POSITION_STATUSES: tuple[str, ...] = ("verbatim", "normalized", "candidate", "not_found")
 ASSERTION_CHECKS: tuple[str, ...] = ("matched", "mismatch", "unrecognized")
-DECISION_KINDS: tuple[str, ...] = ("condition", "path", "sub", "exclusion", "lifestyle", "claim")
+DecisionKind = Literal["condition", "path", "sub", "exclusion", "lifestyle", "claim"]
+DECISION_KINDS: tuple[str, ...] = get_args(DecisionKind)
 EVIDENCE_EXCLUSION_REASONS: tuple[str, ...] = (
     "quote_not_found",
     "value_not_in_quote",

@@ -1,0 +1,9 @@
+# Synthetic rules fixture: two BMI values at initiation on both sides of 30: bmi_path_b.bmi conflict, bmi_path_c.bmi supported.
+# Every name, id, date and sentence is invented.
+variant_id: rules-bmi-29-9-vs-30-1
+assessment_date: 2026-10-15
+target_course: {drug: Wegovy, start: 2025-03-15}
+primary_patient: {patient_id: P-0100, name: "Synthetic Patient", dob: 1960-05-02}
+documents:
+  - {doc_id: D1-referral, role: referral}
+  - {doc_id: D2-clinical, role: clinical}

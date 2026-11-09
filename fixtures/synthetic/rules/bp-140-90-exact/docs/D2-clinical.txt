@@ -1,0 +1,4 @@
+Clinic visit 2025-03-15.
+Patient ID: P-0100.
+Blood pressure 140/90 mmHg.
+Current medications: amlodipine 5 mg daily; metoprolol 50 mg daily.
