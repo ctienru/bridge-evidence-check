@@ -1,0 +1,16 @@
+Medicare GLP-1 Bridge prior-authorization form — prescriber's draft
+Patient name: Dolores Whitfield
+Member ID: P-1042
+DOB: 1961-04-02
+Prescriber name: Amelia Carter, MD
+Prescriber NPI: 1234567893
+Form signature date: 2026-10-10
+Patient is 18 or older: Yes
+Requested drug: Wegovy
+BMI category: <27 / 27-29.9 / 30-34.9 / 35-39.9 / [X] ≥40
+Type 2 diabetes: No
+Heart failure with preserved ejection fraction: No
+Previous stroke: No
+GLP-1 received under Medicare Part D in 2026: No
+Enrolled in a structured nutrition program: Yes
+Regular physical activity: Yes

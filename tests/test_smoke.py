@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from bridge_check import __version__
 from bridge_check.cli import EXIT_FAILED, main
@@ -28,7 +29,23 @@ def _run_freeze(manifest: Path) -> int:
     return subprocess.run(cmd, capture_output=True, check=False).returncode
 
 
+def _listed_mtsamples_docs(manifest: Path) -> list[Path]:
+    """MTSamples documents listed in the manifest (never committed; fetched at run time)."""
+    data = yaml.safe_load(manifest.read_text(encoding="utf-8"))
+    return [
+        ROOT / "cases" / variant["variant_id"] / rel
+        for variant in data.get("variants") or []
+        for rel in variant.get("files", {})
+        if rel.startswith("docs/D2-mtsamples-")
+    ]
+
+
 def test_committed_manifest_is_valid() -> None:
+    missing = [p for p in _listed_mtsamples_docs(ROOT / "splits.yaml") if not p.is_file()]
+    if missing:
+        # The full check, MTSamples hashes included, runs in the data-integrity CI job after
+        # scripts/fetch_mtsamples.py; without the documents the check stops on them.
+        pytest.skip(f"{len(missing)} MTSamples document(s) not fetched (fetch_mtsamples.py)")
     assert _run_freeze(ROOT / "splits.yaml") == 0
 
 
