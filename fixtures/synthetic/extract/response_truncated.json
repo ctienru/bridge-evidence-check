@@ -5,8 +5,10 @@
   "model": "claude-sonnet-5-5",
   "content": [
     {
-      "type": "text",
-      "text": "{\"patient_identity\": [{\"doc_id\": \"D1-referral\", \"quote\": \"Patient ID: P-0000. Date of birth 1958-06-01.\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"\", \"dat"
+      "type": "tool_use",
+      "id": "toolu_synthetic_truncated",
+      "name": "record_extraction",
+      "input": {}
     }
   ],
   "stop_reason": "max_tokens",

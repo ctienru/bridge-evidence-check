@@ -1,4 +1,4 @@
-"""Extraction schema v1 (contract §7.2): constraints, placeholders, and API compilation."""
+"""Extraction schema v2 (contract §7.2): constraints, placeholders, and API compilation."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from anthropic import transform_schema
 from pydantic import ValidationError
 
 from bridge_check import enums
-from bridge_check.enums import EXTRACTION_FIELDS
+from bridge_check.enums import CLAIM_IDS, EXTRACTION_FIELDS
 from bridge_check.schema import (
     UNION_LIMIT,
     Extraction,
@@ -27,8 +27,7 @@ FIXTURES = Path(__file__).resolve().parent.parent / "fixtures" / "synthetic" / "
 
 def _valid() -> dict[str, Any]:
     resp = json.loads((FIXTURES / "response_valid.json").read_text(encoding="utf-8"))
-    text = next(b["text"] for b in resp["content"] if b["type"] == "text")
-    data: dict[str, Any] = json.loads(text)
+    data: dict[str, Any] = next(b["input"] for b in resp["content"] if b["type"] == "tool_use")
     return data
 
 
@@ -225,6 +224,8 @@ def test_claimed_value_must_fit_the_claim() -> None:
 
 
 def test_schema_compiles_with_transform_schema() -> None:
+    """Local check only (ADR 0002): the schema is sent as a tool `input_schema`, but it must
+    still compile under the structured-output rules and stay closed."""
     schema = extraction_json_schema()
     assert schema == transform_schema(pydantic_json_schema())
     assert schema["type"] == "object"
@@ -241,8 +242,14 @@ def test_schema_is_within_structured_output_limits() -> None:
     assert count_optional_params(schema) == 0
 
 
+def test_claim_id_enum_is_in_the_sent_schema() -> None:
+    sent = pydantic_json_schema()
+    claim = sent["$defs"]["PaFormClaim"]["properties"]["claim_id"]
+    assert claim["enum"] == list(CLAIM_IDS)
+
+
 def test_schema_has_no_patient_data_in_names_or_enums() -> None:
-    text = json.dumps(extraction_json_schema())
+    text = json.dumps(pydantic_json_schema())
     for needle in ("P-0000", "Synthetic Patient", "1958-06-01"):
         assert needle not in text
 

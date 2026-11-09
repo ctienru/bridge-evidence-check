@@ -17,6 +17,7 @@ CONTRACT = ROOT / "docs" / "contracts.md"
 GUIDE = ROOT / "docs" / "annotation-guide.md"
 LIVE_RUN = ROOT / "docs" / "live-run-01.md"
 ADR_LIMITS = ROOT / "docs" / "adr" / "0001-global-limits.md"
+ADR_OUTPUT_MODE = ROOT / "docs" / "adr" / "0002-extraction-output-mode.md"
 WINDOW = 40
 
 _G_HEADING = re.compile(r"^### (G-\d+)\b", re.MULTILINE)
@@ -49,7 +50,7 @@ def test_both_documents_exist() -> None:
 
 
 def test_live_run_and_adr_exist_and_name_no_plan_tickets() -> None:
-    for doc in (LIVE_RUN, ADR_LIMITS):
+    for doc in (LIVE_RUN, ADR_LIMITS, ADR_OUTPUT_MODE):
         text = _read(doc)
         assert not re.search(r"\bW\d{2}\b", text), f"{doc.name} names a plan ticket"
         assert "/Users/" not in text, f"{doc.name} contains a home-directory path"
@@ -97,8 +98,8 @@ def _assert_no_shared_windows(target: str, target_name: str, source: str, source
 
 @pytest.mark.parametrize(
     "doc",
-    [CONTRACT, GUIDE, LIVE_RUN, ADR_LIMITS],
-    ids=["contracts", "annotation-guide", "live-run-01", "adr-0001"],
+    [CONTRACT, GUIDE, LIVE_RUN, ADR_LIMITS, ADR_OUTPUT_MODE],
+    ids=["contracts", "annotation-guide", "live-run-01", "adr-0001", "adr-0002"],
 )
 def test_documents_contain_no_mtsamples_window(doc: Path) -> None:
     sources = _mtsamples_files()

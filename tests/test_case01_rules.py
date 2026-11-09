@@ -20,6 +20,7 @@ from conftest import ROOT
 
 from bridge_check import cli
 from bridge_check.cli import EXIT_OK, main
+from bridge_check.extract import TOOL_NAME
 from bridge_check.fake_client import FakeClient
 from bridge_check.input import DOCS_DIR, load_input
 
@@ -120,8 +121,15 @@ def _reply_from_gold(case_dir: Path, fields: dict[int, dict[str, Any]]) -> dict[
         "type": "message",
         "role": "assistant",
         "model": "claude-sonnet-5-5",
-        "content": [{"type": "text", "text": json.dumps(extraction, ensure_ascii=False)}],
-        "stop_reason": "end_turn",
+        "content": [
+            {
+                "type": "tool_use",
+                "id": "toolu_synthetic_gold_reply",
+                "name": TOOL_NAME,
+                "input": extraction,
+            }
+        ],
+        "stop_reason": "tool_use",
         "stop_sequence": None,
         "usage": {"input_tokens": 1, "output_tokens": 1},
     }

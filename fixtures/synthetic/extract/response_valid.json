@@ -10,11 +10,259 @@
       "signature": "synthetic"
     },
     {
-      "type": "text",
-      "text": "{\"patient_identity\": [{\"doc_id\": \"D1-referral\", \"quote\": \"Patient ID: P-0000. Date of birth 1958-06-01.\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"\", \"date_precision\": \"none\", \"relative_to_glp1_initiation\": \"unknown\", \"patient_id\": \"P-0000\", \"name\": \"\", \"dob\": \"1958-06-01\", \"stated_age\": null}, {\"doc_id\": \"D0-pa-form-draft\", \"quote\": \"Patient ID: P-0000\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"\", \"date_precision\": \"none\", \"relative_to_glp1_initiation\": \"unknown\", \"patient_id\": \"P-0000\", \"name\": \"\", \"dob\": null, \"stated_age\": null}], \"doc_dates\": [{\"doc_id\": \"D1-referral\", \"quote\": \"Referral note, written 2025-03-20.\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"2025-03-20\", \"date_precision\": \"day\", \"relative_to_glp1_initiation\": \"unknown\", \"target_doc_id\": \"D1-referral\", \"date\": \"2025-03-20\"}, {\"doc_id\": \"D2-clinical\", \"quote\": \"Clinic visit 2025-03-15.\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"2025-03-15\", \"date_precision\": \"day\", \"relative_to_glp1_initiation\": \"unknown\", \"target_doc_id\": \"D2-clinical\", \"date\": \"2025-03-15\"}], \"glp1_start\": [{\"doc_id\": \"D1-referral\", \"quote\": \"Semaglutide (Wegovy) was started on 2025-03-15 for weight management.\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"2025-03-15\", \"date_precision\": \"day\", \"relative_to_glp1_initiation\": \"at\", \"drug\": \"Wegovy\", \"date\": \"2025-03-15\", \"purpose\": \"weight\"}], \"prior_glp1\": [], \"anthropometrics\": [{\"doc_id\": \"D1-referral\", \"quote\": \"weight 98.0 kg\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"\", \"date_precision\": \"none\", \"relative_to_glp1_initiation\": \"at\", \"kind\": \"weight\", \"raw_value\": \"98.0\", \"raw_unit\": \"kg\"}, {\"doc_id\": \"D1-referral\", \"quote\": \"height 170 cm\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"\", \"date_precision\": \"none\", \"relative_to_glp1_initiation\": \"at\", \"kind\": \"height\", \"raw_value\": \"170\", \"raw_unit\": \"cm\"}], \"bp_readings\": [{\"doc_id\": \"D2-clinical\", \"quote\": \"Blood pressure 146/92 mmHg.\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"2025-03-15\", \"date_precision\": \"day\", \"relative_to_glp1_initiation\": \"unknown\", \"sbp\": 146, \"dbp\": 92}], \"labs\": [], \"medications\": [{\"doc_id\": \"D2-clinical\", \"quote\": \"lisinopril 20 mg daily\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"\", \"date_precision\": \"none\", \"relative_to_glp1_initiation\": \"unknown\", \"name\": \"lisinopril\", \"dose\": \"20 mg daily\", \"indication\": \"\", \"start\": null, \"start_precision\": null, \"end\": null, \"end_precision\": null, \"end_kind\": \"ongoing\", \"list_id\": \"L1\"}, {\"doc_id\": \"D2-clinical\", \"quote\": \"amlodipine 5 mg daily\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"\", \"date_precision\": \"none\", \"relative_to_glp1_initiation\": \"unknown\", \"name\": \"amlodipine\", \"dose\": \"5 mg daily\", \"indication\": \"\", \"start\": null, \"start_precision\": null, \"end\": null, \"end_precision\": null, \"end_kind\": \"ongoing\", \"list_id\": \"L1\"}], \"medication_lists\": [{\"doc_id\": \"D2-clinical\", \"quote\": \"Current medications: lisinopril 20 mg daily; amlodipine 5 mg daily.\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"\", \"date_precision\": \"none\", \"relative_to_glp1_initiation\": \"unknown\", \"list_id\": \"L1\", \"complete\": false, \"section_title\": \"Current medications\"}], \"diagnoses\": [{\"doc_id\": \"D2-clinical\", \"quote\": \"History of hypertension.\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"historical\", \"event_date\": \"\", \"date_precision\": \"none\", \"relative_to_glp1_initiation\": \"unknown\", \"concept\": \"hypertension\", \"osa_severity\": \"unspecified\", \"ahi\": null, \"fibrosis_stage\": \"\", \"cirrhosis\": null, \"ckd_stage\": \"\", \"symptomatic\": \"unknown\"}, {\"doc_id\": \"D2-clinical\", \"quote\": \"No history of stroke.\", \"certainty\": \"negated\", \"subject\": \"patient\", \"temporality\": \"historical\", \"event_date\": \"\", \"date_precision\": \"none\", \"relative_to_glp1_initiation\": \"unknown\", \"concept\": \"stroke\", \"osa_severity\": \"unspecified\", \"ahi\": null, \"fibrosis_stage\": \"\", \"cirrhosis\": null, \"ckd_stage\": \"\", \"symptomatic\": \"unknown\"}], \"lifestyle\": [], \"pa_form_claims\": [{\"doc_id\": \"D0-pa-form-draft\", \"quote\": \"Drug requested: Wegovy\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"\", \"date_precision\": \"none\", \"relative_to_glp1_initiation\": \"unknown\", \"claim_id\": \"claim.drug\", \"claimed_value\": \"Wegovy\"}, {\"doc_id\": \"D0-pa-form-draft\", \"quote\": \"BMI bracket: 30-34.9\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"\", \"date_precision\": \"none\", \"relative_to_glp1_initiation\": \"unknown\", \"claim_id\": \"claim.bmi_bracket\", \"claimed_value\": \"30-34.9\"}, {\"doc_id\": \"D0-pa-form-draft\", \"quote\": \"Type 2 diabetes: unchecked\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"\", \"date_precision\": \"none\", \"relative_to_glp1_initiation\": \"unknown\", \"claim_id\": \"claim.exclusion.t2dm\", \"claimed_value\": \"unchecked\"}]}"
+      "type": "tool_use",
+      "id": "toolu_synthetic_synthetic_end_turn",
+      "name": "record_extraction",
+      "input": {
+        "patient_identity": [
+          {
+            "doc_id": "D1-referral",
+            "quote": "Patient ID: P-0000. Date of birth 1958-06-01.",
+            "certainty": "present",
+            "subject": "patient",
+            "temporality": "current",
+            "event_date": "",
+            "date_precision": "none",
+            "relative_to_glp1_initiation": "unknown",
+            "patient_id": "P-0000",
+            "name": "",
+            "dob": "1958-06-01",
+            "stated_age": null
+          },
+          {
+            "doc_id": "D0-pa-form-draft",
+            "quote": "Patient ID: P-0000",
+            "certainty": "present",
+            "subject": "patient",
+            "temporality": "current",
+            "event_date": "",
+            "date_precision": "none",
+            "relative_to_glp1_initiation": "unknown",
+            "patient_id": "P-0000",
+            "name": "",
+            "dob": null,
+            "stated_age": null
+          }
+        ],
+        "doc_dates": [
+          {
+            "doc_id": "D1-referral",
+            "quote": "Referral note, written 2025-03-20.",
+            "certainty": "present",
+            "subject": "patient",
+            "temporality": "current",
+            "event_date": "2025-03-20",
+            "date_precision": "day",
+            "relative_to_glp1_initiation": "unknown",
+            "target_doc_id": "D1-referral",
+            "date": "2025-03-20"
+          },
+          {
+            "doc_id": "D2-clinical",
+            "quote": "Clinic visit 2025-03-15.",
+            "certainty": "present",
+            "subject": "patient",
+            "temporality": "current",
+            "event_date": "2025-03-15",
+            "date_precision": "day",
+            "relative_to_glp1_initiation": "unknown",
+            "target_doc_id": "D2-clinical",
+            "date": "2025-03-15"
+          }
+        ],
+        "glp1_start": [
+          {
+            "doc_id": "D1-referral",
+            "quote": "Semaglutide (Wegovy) was started on 2025-03-15 for weight management.",
+            "certainty": "present",
+            "subject": "patient",
+            "temporality": "current",
+            "event_date": "2025-03-15",
+            "date_precision": "day",
+            "relative_to_glp1_initiation": "at",
+            "drug": "Wegovy",
+            "date": "2025-03-15",
+            "purpose": "weight"
+          }
+        ],
+        "prior_glp1": [],
+        "anthropometrics": [
+          {
+            "doc_id": "D1-referral",
+            "quote": "weight 98.0 kg",
+            "certainty": "present",
+            "subject": "patient",
+            "temporality": "current",
+            "event_date": "",
+            "date_precision": "none",
+            "relative_to_glp1_initiation": "at",
+            "kind": "weight",
+            "raw_value": "98.0",
+            "raw_unit": "kg"
+          },
+          {
+            "doc_id": "D1-referral",
+            "quote": "height 170 cm",
+            "certainty": "present",
+            "subject": "patient",
+            "temporality": "current",
+            "event_date": "",
+            "date_precision": "none",
+            "relative_to_glp1_initiation": "at",
+            "kind": "height",
+            "raw_value": "170",
+            "raw_unit": "cm"
+          }
+        ],
+        "bp_readings": [
+          {
+            "doc_id": "D2-clinical",
+            "quote": "Blood pressure 146/92 mmHg.",
+            "certainty": "present",
+            "subject": "patient",
+            "temporality": "current",
+            "event_date": "2025-03-15",
+            "date_precision": "day",
+            "relative_to_glp1_initiation": "unknown",
+            "sbp": 146,
+            "dbp": 92
+          }
+        ],
+        "labs": [],
+        "medications": [
+          {
+            "doc_id": "D2-clinical",
+            "quote": "lisinopril 20 mg daily",
+            "certainty": "present",
+            "subject": "patient",
+            "temporality": "current",
+            "event_date": "",
+            "date_precision": "none",
+            "relative_to_glp1_initiation": "unknown",
+            "name": "lisinopril",
+            "dose": "20 mg daily",
+            "indication": "",
+            "start": null,
+            "start_precision": null,
+            "end": null,
+            "end_precision": null,
+            "end_kind": "ongoing",
+            "list_id": "L1"
+          },
+          {
+            "doc_id": "D2-clinical",
+            "quote": "amlodipine 5 mg daily",
+            "certainty": "present",
+            "subject": "patient",
+            "temporality": "current",
+            "event_date": "",
+            "date_precision": "none",
+            "relative_to_glp1_initiation": "unknown",
+            "name": "amlodipine",
+            "dose": "5 mg daily",
+            "indication": "",
+            "start": null,
+            "start_precision": null,
+            "end": null,
+            "end_precision": null,
+            "end_kind": "ongoing",
+            "list_id": "L1"
+          }
+        ],
+        "medication_lists": [
+          {
+            "doc_id": "D2-clinical",
+            "quote": "Current medications: lisinopril 20 mg daily; amlodipine 5 mg daily.",
+            "certainty": "present",
+            "subject": "patient",
+            "temporality": "current",
+            "event_date": "",
+            "date_precision": "none",
+            "relative_to_glp1_initiation": "unknown",
+            "list_id": "L1",
+            "complete": false,
+            "section_title": "Current medications"
+          }
+        ],
+        "diagnoses": [
+          {
+            "doc_id": "D2-clinical",
+            "quote": "History of hypertension.",
+            "certainty": "present",
+            "subject": "patient",
+            "temporality": "historical",
+            "event_date": "",
+            "date_precision": "none",
+            "relative_to_glp1_initiation": "unknown",
+            "concept": "hypertension",
+            "osa_severity": "unspecified",
+            "ahi": null,
+            "fibrosis_stage": "",
+            "cirrhosis": null,
+            "ckd_stage": "",
+            "symptomatic": "unknown"
+          },
+          {
+            "doc_id": "D2-clinical",
+            "quote": "No history of stroke.",
+            "certainty": "negated",
+            "subject": "patient",
+            "temporality": "historical",
+            "event_date": "",
+            "date_precision": "none",
+            "relative_to_glp1_initiation": "unknown",
+            "concept": "stroke",
+            "osa_severity": "unspecified",
+            "ahi": null,
+            "fibrosis_stage": "",
+            "cirrhosis": null,
+            "ckd_stage": "",
+            "symptomatic": "unknown"
+          }
+        ],
+        "lifestyle": [],
+        "pa_form_claims": [
+          {
+            "doc_id": "D0-pa-form-draft",
+            "quote": "Drug requested: Wegovy",
+            "certainty": "present",
+            "subject": "patient",
+            "temporality": "current",
+            "event_date": "",
+            "date_precision": "none",
+            "relative_to_glp1_initiation": "unknown",
+            "claim_id": "claim.drug",
+            "claimed_value": "Wegovy"
+          },
+          {
+            "doc_id": "D0-pa-form-draft",
+            "quote": "BMI bracket: 30-34.9",
+            "certainty": "present",
+            "subject": "patient",
+            "temporality": "current",
+            "event_date": "",
+            "date_precision": "none",
+            "relative_to_glp1_initiation": "unknown",
+            "claim_id": "claim.bmi_bracket",
+            "claimed_value": "30-34.9"
+          },
+          {
+            "doc_id": "D0-pa-form-draft",
+            "quote": "Type 2 diabetes: unchecked",
+            "certainty": "present",
+            "subject": "patient",
+            "temporality": "current",
+            "event_date": "",
+            "date_precision": "none",
+            "relative_to_glp1_initiation": "unknown",
+            "claim_id": "claim.exclusion.t2dm",
+            "claimed_value": "unchecked"
+          }
+        ]
+      }
     }
   ],
-  "stop_reason": "end_turn",
+  "stop_reason": "tool_use",
   "stop_sequence": null,
   "usage": {
     "input_tokens": 5200,

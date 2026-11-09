@@ -1,9 +1,13 @@
-"""Extraction output schema v1 (contract §7.2).
+"""Extraction output schema v2 (contract §7.2).
 
 The model returns one JSON object with twelve arrays; a fact the documents do not contain
 is simply absent (an empty array). The local Pydantic models keep every constraint; the
-API receives `extraction_json_schema()`, which is the same schema passed through the SDK's
-`transform_schema()` (contract §7.2).
+API receives `pydantic_json_schema()` as the `input_schema` of the `record_extraction`
+tool (`extract.py`, ADR 0002). `extraction_json_schema()`, the same schema passed through
+the SDK's `transform_schema()`, is no longer sent: it is kept as a local check that the
+schema still compiles under the structured-output rules. v2 differs from v1 only in that
+`claim_id` carries its allowed values as an `enum` in the JSON schema (the Python validator
+already enforced them); the version marks the change of output mode.
 
 Empty and placeholder values. Numeric fields are typed numbers and the strict config
 rejects strings, so `"unknown"`, `"N/A"` and `""` never pass. Date fields accept only
@@ -58,9 +62,10 @@ from bridge_check.enums import (
     Temporality,
 )
 
-SCHEMA_VERSION = "v1"
+SCHEMA_VERSION = "v2"
 UNION_LIMIT = 16
-"""Structured outputs: at most 16 union-typed parameters per request (06 §2.1)."""
+"""Structured outputs: at most 16 union-typed parameters per request. Not enforced on a
+non-strict tool schema; checked locally so the schema could still be sent that way."""
 
 _DATE = re.compile(r"^\d{4}(-\d{2}(-\d{2})?)?$")
 _SAFE_ID = re.compile(SAFE_ID_PATTERN)
@@ -348,8 +353,16 @@ class Lifestyle(Fact):
 
 
 class PaFormClaim(Fact):
-    claim_id: str
-    claimed_value: str = Field(description="Box or bracket as written on the form")
+    claim_id: str = Field(
+        description="Which form field the claim is; one of the listed ids",
+        json_schema_extra={"enum": list(CLAIM_IDS)},
+    )
+    claimed_value: str = Field(
+        description=(
+            "Box or bracket as written on the form: the drug name for claim.drug, the BMI "
+            "bracket for claim.bmi_bracket, else yes / no / checked / unchecked / unknown"
+        )
+    )
 
     @field_validator("claim_id")
     @classmethod
@@ -405,7 +418,8 @@ def pydantic_json_schema() -> dict[str, Any]:
 
 
 def extraction_json_schema() -> dict[str, Any]:
-    """The schema sent as `output_config.format.schema`: `transform_schema()` output."""
+    """`transform_schema()` output of the local schema. Not sent (ADR 0002); a local check
+    that the schema still compiles under the structured-output rules, and its size."""
     from anthropic import transform_schema
 
     return transform_schema(pydantic_json_schema())

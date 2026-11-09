@@ -192,7 +192,7 @@ def test_history_lists_every_run_with_its_source(
 def test_failed_parse_exits_3(
     db: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv("BRIDGE_FAKE_CLIENT", "bad_json")
+    monkeypatch.setenv("BRIDGE_FAKE_CLIENT", "no_tool_call")
     code, report, _ = _json(capsys, "check", str(SMOKE), "--db", str(db), "--json")
     assert code == EXIT_FAILED
     assert report["failed_stage"] == "parse"
@@ -247,19 +247,17 @@ def _plant_sentinel(tmp_path: Path) -> tuple[Path, Path, Path]:
         inp.read_text(encoding="utf-8").replace("Synthetic Patient", SENTINEL), encoding="utf-8"
     )
     resp = json.loads(fixture("valid").read_text(encoding="utf-8"))
-    block = next(b for b in resp["content"] if b["type"] == "text")
-    ext = json.loads(block["text"])
+    block = next(b for b in resp["content"] if b["type"] == "tool_use")
+    ext = block["input"]
     ext["diagnoses"].append({**ext["diagnoses"][0], "quote": f"Note: {SENTINEL}."})
     # A quote the documents do not contain: reported as `doc_id[-:-] sha8` only.
     ext["diagnoses"].append({**ext["diagnoses"][0], "quote": f"Absent {SENTINEL} quote."})
     # Chart text copied into `doc_id` (it fits the id pattern): never echoed in a ref.
     ext["diagnoses"].append({**ext["diagnoses"][0], "doc_id": SENTINEL, "quote": "Anything."})
     ext["patient_identity"][0]["name"] = SENTINEL
-    block["text"] = json.dumps(ext)
     valid = tmp_path / "valid.json"
     valid.write_text(json.dumps(resp), encoding="utf-8")
     ext["diagnoses"][0][SENTINEL] = SENTINEL
-    block["text"] = json.dumps(ext)
     invalid = tmp_path / "invalid.json"
     invalid.write_text(json.dumps(resp), encoding="utf-8")
     return case, valid, invalid
