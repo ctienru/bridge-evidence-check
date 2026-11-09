@@ -21,6 +21,7 @@ from conftest import ROOT
 from bridge_check import cli
 from bridge_check.cli import EXIT_OK, main
 from bridge_check.fake_client import FakeClient
+from bridge_check.input import DOCS_DIR, load_input
 
 CASE_01 = ROOT / "cases" / "case-01"
 PRIVATE_ENV = "BRIDGE_PRIVATE_CHECKOUT"
@@ -42,6 +43,17 @@ _CASE_01_FIELDS: dict[int, dict[str, Any]] = {
     28: {"kind": "height", "raw_value": "5'6\"", "raw_unit": ""},
     29: {"kind": "weight", "raw_value": "285.4", "raw_unit": "pounds"},
 }
+
+
+def _skip_unless_fetched(case_dir: Path) -> None:
+    """Skip when a document listed in `input.yaml` is absent (MTSamples documents are never
+    committed; the `tests` CI job fetches them when the mirror is up)."""
+    docs = case_dir / DOCS_DIR
+    missing = [
+        d for d in load_input(case_dir).documents if not (docs / f"{d.doc_id}.txt").is_file()
+    ]
+    if missing:
+        pytest.skip(f"{len(missing)} MTSamples document(s) not fetched (fetch_mtsamples.py)")
 
 
 def _reply_from_gold(case_dir: Path, fields: dict[int, dict[str, Any]]) -> dict[str, Any]:
@@ -156,6 +168,7 @@ def _compare(
 def test_case_01_gold_statuses_are_reproduced_by_the_rules(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    _skip_unless_fetched(CASE_01)
     reply = tmp_path / "reply.json"
     reply.write_text(json.dumps(_reply_from_gold(CASE_01, _CASE_01_FIELDS)), encoding="utf-8")
     report = _run(CASE_01, reply, tmp_path / "c.db", monkeypatch, capsys)
