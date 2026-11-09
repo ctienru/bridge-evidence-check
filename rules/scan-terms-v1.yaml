@@ -5,7 +5,7 @@
 # file named in `include_drug_names_from` is scanned as well. A change here follows a
 # change to W-01 and bumps `version`.
 version: scan-terms-v1
-include_drug_names_from: rules/drugs-v1.yaml
+include_drug_names_from: rules/drugs-v2.yaml
 terms:
   # from the planning documents
   - diabetes

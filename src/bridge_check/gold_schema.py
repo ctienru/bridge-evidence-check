@@ -99,7 +99,7 @@ def _check_clause(value: str | None) -> str | None:
     return value
 
 
-_DRUGS_PATH = Path(__file__).resolve().parent.parent.parent / "rules" / "drugs-v1.yaml"
+_DRUGS_PATH = Path(__file__).resolve().parent.parent.parent / "rules" / "drugs-v2.yaml"
 _SAFE_ID = re.compile(SAFE_ID_PATTERN)
 _drug_canonicals: frozenset[str] | None = None
 

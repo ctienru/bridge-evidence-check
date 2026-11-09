@@ -397,7 +397,7 @@ def _computed(store: Store, run_id: int) -> tuple[ComputedFacts, list[int]]:
         assessment_date=date(2026, 10, 15),
         doc_roles={"D1": "clinical"},
         doc_identity={d.doc_id: d.identity_status for d in result.doc_facts},
-        drugs=load_drugs(ROOT / "rules" / "drugs-v1.yaml"),
+        drugs=load_drugs(ROOT / "rules" / "drugs-v2.yaml"),
         evidence_ids=ids,
     )
     # one more verified row gives a medication period and a document date

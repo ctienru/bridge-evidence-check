@@ -385,7 +385,7 @@ Required tests: `test_family_bp_is_not_patient_tp`, `test_wrong_med_period_is_no
 - **BMI display bracket** (`bmi_bucket_from_raw: true`): the unrounded value selects a half-open bracket `[27,30)`, `[30,35)`, `[35,40)`, `≥40`; formatting never re-selects the bracket.
 - Hypertension: `htn_not_supported_by_complete_list: true`; `htn_not_supported_by_readings: false`.
 - `lab_in_diabetes_range_without_dx: review`; `path_c_cv_history_requires_review: true`.
-- **Antihypertensives** `rules/drugs-v1.yaml`: drug name (including brand names and combinations) → `drug_canonical`, `class`; uncertain ones are marked `class_ambiguous`. P1 only includes the drugs of cases 01 and 15; the rest are added batch by batch.
+- **Antihypertensives** `rules/drugs-v2.yaml`: drug name (including brand names and combinations) → `drug_canonical`, `class`; uncertain ones are marked `class_ambiguous`. Version 2 includes the drugs of cases 01, 15, 03 and 04 plus chlorthalidone and spironolactone; `class_ambiguous` is allowed only on diuretic, mineralocorticoid-antagonist and alpha-blocker classes, and every combination component also has a standalone entry; the rest are added batch by batch. GLP-1 names are not in this table (`bridge_check.enums.GLP1_NAMES`).
 - The rules table's `source.quote` holds one short quotation (no more than one sentence).
 
 ## 11. Execution, storage, CI

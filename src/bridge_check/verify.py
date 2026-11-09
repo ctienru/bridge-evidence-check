@@ -78,7 +78,7 @@ from bridge_check.text import locate, sha8
 
 RULES_DIR = Path(__file__).resolve().parents[2] / "rules"
 DEFAULT_TERMS_PATH = RULES_DIR / "verify-terms-v1.yaml"
-DEFAULT_DRUGS_PATH = RULES_DIR / "drugs-v1.yaml"
+DEFAULT_DRUGS_PATH = RULES_DIR / "drugs-v2.yaml"
 
 CANDIDATE_RATIO = 0.8
 """Minimum `SequenceMatcher.ratio()` between the normalized quote and the best window for a

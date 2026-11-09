@@ -210,7 +210,7 @@ def ctx(**overrides: object) -> CaseContext:
         "assessment_date": date(2026, 10, 15),
         "doc_roles": {"D1": "clinical", "D2": "clinical"},
         "doc_identity": {"D1": "match", "D2": "match"},
-        "drugs": load_drugs(ROOT / "rules" / "drugs-v1.yaml"),
+        "drugs": load_drugs(ROOT / "rules" / "drugs-v2.yaml"),
         "evidence_ids": None,
     }
     values.update(overrides)

@@ -640,7 +640,7 @@ def glp1_canonical(name: str) -> str:
 
 
 class DrugIndex:
-    """Case-insensitive name → entry lookup over `rules/drugs-v1.yaml`."""
+    """Case-insensitive name → entry lookup over `rules/drugs-v2.yaml`."""
 
     def __init__(self, table: DrugTable) -> None:
         self._by_name: dict[str, Drug] = {}
