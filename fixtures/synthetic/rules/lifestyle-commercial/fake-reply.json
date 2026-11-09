@@ -1,0 +1,18 @@
+{
+ "id": "msg_synthetic_rules_lifestyle_commercial",
+ "type": "message",
+ "role": "assistant",
+ "model": "claude-sonnet-5-5",
+ "content": [
+  {
+   "type": "text",
+   "text": "{\n \"patient_identity\": [\n  {\n   \"doc_id\": \"D1-referral\",\n   \"quote\": \"Patient ID: P-0100. Date of birth 1960-05-02.\",\n   \"certainty\": \"present\",\n   \"subject\": \"patient\",\n   \"temporality\": \"current\",\n   \"event_date\": \"\",\n   \"date_precision\": \"none\",\n   \"relative_to_glp1_initiation\": \"after\",\n   \"patient_id\": \"P-0100\",\n   \"name\": \"\",\n   \"dob\": \"1960-05-02\",\n   \"stated_age\": null\n  },\n  {\n   \"doc_id\": \"D2-clinical\",\n   \"quote\": \"Patient ID: P-0100.\",\n   \"certainty\": \"present\",\n   \"subject\": \"patient\",\n   \"temporality\": \"current\",\n   \"event_date\": \"\",\n   \"date_precision\": \"none\",\n   \"relative_to_glp1_initiation\": \"at\",\n   \"patient_id\": \"P-0100\",\n   \"name\": \"\",\n   \"dob\": null,\n   \"stated_age\": null\n  }\n ],\n \"doc_dates\": [\n  {\n   \"doc_id\": \"D1-referral\",\n   \"quote\": \"Referral note, written 2025-03-20.\",\n   \"certainty\": \"present\",\n   \"subject\": \"patient\",\n   \"temporality\": \"current\",\n   \"event_date\": \"2025-03-20\",\n   \"date_precision\": \"day\",\n   \"relative_to_glp1_initiation\": \"after\",\n   \"target_doc_id\": \"D1-referral\",\n   \"date\": \"2025-03-20\"\n  },\n  {\n   \"doc_id\": \"D2-clinical\",\n   \"quote\": \"Clinic visit 2025-03-15.\",\n   \"certainty\": \"present\",\n   \"subject\": \"patient\",\n   \"temporality\": \"current\",\n   \"event_date\": \"2025-03-15\",\n   \"date_precision\": \"day\",\n   \"relative_to_glp1_initiation\": \"at\",\n   \"target_doc_id\": \"D2-clinical\",\n   \"date\": \"2025-03-15\"\n  }\n ],\n \"glp1_start\": [\n  {\n   \"doc_id\": \"D1-referral\",\n   \"quote\": \"Semaglutide (Wegovy) was started on 2025-03-15 for weight management.\",\n   \"certainty\": \"present\",\n   \"subject\": \"patient\",\n   \"temporality\": \"current\",\n   \"event_date\": \"2025-03-15\",\n   \"date_precision\": \"day\",\n   \"relative_to_glp1_initiation\": \"at\",\n   \"drug\": \"Wegovy\",\n   \"date\": \"2025-03-15\",\n   \"purpose\": \"weight\"\n  }\n ],\n \"lifestyle\": [\n  {\n   \"doc_id\": \"D2-clinical\",\n   \"quote\": \"She is currently following Noom.\",\n   \"certainty\": \"present\",\n   \"subject\": \"patient\",\n   \"temporality\": \"current\",\n   \"event_date\": \"\",\n   \"date_precision\": \"none\",\n   \"relative_to_glp1_initiation\": \"at\",\n   \"kind\": \"nutrition\",\n   \"program_type\": \"commercial\",\n   \"attendance\": \"unknown\",\n   \"start\": null,\n   \"end\": null,\n   \"end_kind\": \"ongoing\",\n   \"limitation\": \"\",\n   \"description\": \"commercial program\"\n  }\n ]\n}"
+  }
+ ],
+ "stop_reason": "end_turn",
+ "stop_sequence": null,
+ "usage": {
+  "input_tokens": 900,
+  "output_tokens": 400
+ }
+}

@@ -16,6 +16,7 @@ import pytest
 
 from bridge_check import cli, verify
 from bridge_check.cli import EXIT_FAILED, EXIT_OK, main
+from bridge_check.enums import CONDITION_IDS
 from bridge_check.fake_client import FakeClient, fixture
 from bridge_check.input import InputError, load_case
 from bridge_check.logs import LOG_KEYS, log_event
@@ -45,21 +46,41 @@ def _json(capsys: pytest.CaptureFixture[str], *argv: str) -> tuple[int, dict[str
     return code, json.loads(out.out), out.err
 
 
-def test_check_without_stop_after_fails_at_compute(
-    db: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_full_check_completes_with_decisions(db: Path, capsys: pytest.CaptureFixture[str]) -> None:
     code, report, _ = _json(capsys, "check", str(SMOKE), "--db", str(db), "--json")
-    assert code == EXIT_FAILED == 3
-    assert report["status"] == "failed"
-    assert report["failed_stage"] == "compute"
-    assert "not implemented" in report["message"]
+    assert code == EXIT_OK
+    assert report["status"] == "completed"
+    assert report["failed_stage"] is None
+    assert "decisions" in report["message"]
     assert report["extraction"]["source"] == "api"
     assert report["attempt_summary"]["by_status"] == {"parsed": 1}
-    assert [(d["stage"], d["error_type"]) for d in report["dead_letters"]] == [
-        ("compute", "NotImplemented")
-    ]
+    assert report["dead_letters"] == []
     assert report["verification"]["evidence_count"] == 16
     assert report["versions"]["splitter"] == "sentences-v1"
+    by_id = {d["condition"]: d for d in report["decisions"]}
+    assert set(by_id) >= set(CONDITION_IDS)
+    assert set(by_id) - set(CONDITION_IDS) == {
+        "claim.drug",
+        "claim.bmi_bracket",
+        "claim.exclusion.t2dm",
+    }
+    # the referral's weight and height inherit the referral's own date (2025-03-20): after
+    # initiation, so no BMI sub-result is supported and the model's `at` is flagged
+    assert by_id["bmi_path_a"]["status"] == "insufficient"
+    assert {x["reason"] for x in by_id["bmi_path_a"]["excluded_evidence"]} == {"after_initiation"}
+    assert by_id["bmi_path_c.stroke"]["status"] == "not_supported"
+    assert by_id["patient_identity"] == {
+        **by_id["patient_identity"],
+        "status": "review",
+        "flags": ["id_missing"],
+    }
+    assert by_id["claim.drug"]["status"] == "supported"
+    assert report["case_flags"] == []
+    assert report["human_workload"] == 8
+    for d in report["decisions"]:
+        assert d["rule_id"].startswith(d["condition"] + ":")
+        for u in d["used_evidence"]:
+            assert re.fullmatch(r"[A-Za-z0-9_-]+\[\d+:\d+\] [0-9a-f]{8}", u["ref"])
 
 
 def test_stop_after_verify_completes_with_a_summary(
@@ -158,7 +179,7 @@ def test_history_lists_every_run_with_its_source(
     assert code == EXIT_OK
     runs = hist["runs"]
     assert [(r["status"], r["failed_stage"], r["extraction_source"]) for r in runs] == [
-        ("failed", "compute", "api"),
+        ("completed", None, "api"),
         ("completed", None, "cache"),
     ]
     assert runs[0]["extraction_id"] == runs[1]["extraction_id"]
@@ -259,6 +280,7 @@ def test_sentinel_never_reaches_logs_or_json(
     for argv in (
         ["check", str(case), "--db", str(db), "--json"],
         ["check", str(case), "--db", str(db), "--json", "--explain"],
+        ["check", str(case), "--db", str(db), "--explain"],
         ["check", str(case), "--db", str(db), "--stop-after", "extract"],
         ["check", str(case), "--db", str(db), "--json", "--explain", "--stop-after", "verify"],
         ["check", str(case), "--db", str(db), "--explain", "--stop-after", "verify"],
@@ -278,7 +300,12 @@ def test_sentinel_never_reaches_logs_or_json(
             d for r in store.history("case-smoke") for d in store.dead_letters_for_run(r["id"])
         ]
         _assert_absent(json.dumps(letters), "dead letters")
+        decisions = [
+            d for r in store.history("case-smoke") for d in store.decisions_for_run(r["id"])
+        ]
+        _assert_absent(json.dumps(decisions), "decisions")
         if scenario == "valid":
+            assert decisions  # the full runs completed and published decisions
             # The quotes really were verified: one located, one not found.
             assert "D2-clinical[-:-]" in joined and "position=not_found" in joined
             assert "unresolved-doc[-:-]" in joined
@@ -345,7 +372,7 @@ def test_sdk_debug_logging_cannot_leak_document_text(tmp_path: Path) -> None:
         timeout=60,
     )
     assert "REQUESTS 1" in result.stderr  # the request really went through the SDK
-    assert result.returncode == EXIT_FAILED  # failed at compute, as every full check for now
+    assert result.returncode == EXIT_OK
     assert json.loads(result.stdout)["extraction"]["source"] == "api"
     _assert_absent(result.stdout, "--json output")
     _assert_absent(result.stderr, "stderr")

@@ -1,0 +1,9 @@
+# Synthetic rules fixture: explicitly mild obstructive sleep apnea: exclusion.osa not_supported.
+# Every name, id, date and sentence is invented.
+variant_id: rules-osa-mild
+assessment_date: 2026-10-15
+target_course: {drug: Wegovy, start: 2025-03-15}
+primary_patient: {patient_id: P-0100, name: "Synthetic Patient", dob: 1960-05-02}
+documents:
+  - {doc_id: D1-referral, role: referral}
+  - {doc_id: D2-clinical, role: clinical}

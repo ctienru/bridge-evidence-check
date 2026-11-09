@@ -56,6 +56,8 @@ from bridge_check.enums import (
 )
 
 if TYPE_CHECKING:
+    from bridge_check.compute import ComputedFacts
+    from bridge_check.rules import Decision
     from bridge_check.verify import VerifyResult
 
 MIN_SQLITE = (3, 37, 0)
@@ -764,6 +766,134 @@ class Store:
             (run_id,),
         ).fetchall()
         return [dict(r) for r in rows]
+
+    # compute and rules
+
+    def save_computed(self, run_id: int, facts: ComputedFacts) -> None:
+        """What compute adds to the run, in one transaction (contract §1): the computed columns
+        of every `evidence` row, the `med_periods` rows and each document's date."""
+        with transaction(self.conn):
+            for u in facts.evidence_updates:
+                self.conn.execute(
+                    "UPDATE evidence SET relative_computed = ?, "
+                    "event_date_source = COALESCE(?, event_date_source), "
+                    "event_date = COALESCE(event_date, ?), "
+                    "date_precision = COALESCE(date_precision, ?), "
+                    "norm_value = ?, norm_unit = ?, flags = ?, exclusion_reasons = ? "
+                    "WHERE id = ? AND case_run_id = ?",
+                    (
+                        u.relative_computed,
+                        u.event_date_source,
+                        u.event_date,
+                        u.date_precision,
+                        u.norm_value,
+                        u.norm_unit,
+                        json.dumps(list(u.flags)),
+                        json.dumps(list(u.exclusion_reasons)),
+                        u.evidence_id,
+                        run_id,
+                    ),
+                )
+            for p in facts.med_periods:
+                self.conn.execute(
+                    "INSERT INTO med_periods (case_run_id, drug_canonical, class, start, "
+                    'start_precision, "end", end_precision, end_kind, evidence_id) '
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        run_id,
+                        p.drug_canonical,
+                        p.class_,
+                        p.start.iso() if p.start else None,
+                        p.start.precision if p.start else None,
+                        p.end.iso() if p.end else None,
+                        p.end.precision if p.end else None,
+                        p.end_kind,
+                        p.src.evidence_id,
+                    ),
+                )
+            for doc_id, df in facts.doc_facts.items():
+                if df.doc_date is not None:
+                    self.conn.execute(
+                        "UPDATE doc_facts SET doc_date = ?, doc_date_evidence_id = ? "
+                        "WHERE case_run_id = ? AND doc_id = ?",
+                        (df.doc_date.iso(), df.doc_date_evidence_id, run_id, doc_id),
+                    )
+
+    def save_decisions_and_complete(
+        self, run_id: int, decisions: Sequence[Decision], *, case_flags: Sequence[str]
+    ) -> None:
+        """Every decision of the run and `status = completed` in one transaction (contract
+        §1): there is no state "decisions written, status not updated"."""
+        with transaction(self.conn):
+            for d in decisions:
+                self.conn.execute(
+                    "INSERT INTO decisions (case_run_id, condition, kind, status, reason, "
+                    "rule_id, rules_version, used_evidence, excluded_evidence, computed, flags) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+                    "ON CONFLICT (case_run_id, condition) DO UPDATE SET kind = excluded.kind, "
+                    "status = excluded.status, reason = excluded.reason, "
+                    "rule_id = excluded.rule_id, rules_version = excluded.rules_version, "
+                    "used_evidence = excluded.used_evidence, "
+                    "excluded_evidence = excluded.excluded_evidence, "
+                    "computed = excluded.computed, flags = excluded.flags",
+                    (
+                        run_id,
+                        d.condition,
+                        d.kind,
+                        d.status,
+                        d.reason,
+                        d.rule_id,
+                        d.rules_version,
+                        json.dumps(list(d.used_evidence)),
+                        json.dumps([e.model_dump() for e in d.excluded_evidence]),
+                        json.dumps(d.computed, sort_keys=True, ensure_ascii=False, default=str),
+                        json.dumps(list(d.flags)),
+                    ),
+                )
+            self.conn.execute(
+                "UPDATE case_runs SET status = 'completed', case_flags = ?, finished_at = ? "
+                "WHERE id = ?",
+                (json.dumps(list(case_flags)), utc_now(), run_id),
+            )
+
+    def decisions_for_run(self, run_id: int) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            "SELECT condition, kind, status, reason, rule_id, rules_version, used_evidence, "
+            "excluded_evidence, computed, flags FROM decisions WHERE case_run_id = ? "
+            "ORDER BY condition",
+            (run_id,),
+        ).fetchall()
+        out = []
+        for r in rows:
+            d = dict(r)
+            for key in ("used_evidence", "excluded_evidence", "computed", "flags"):
+                d[key] = json.loads(d[key])
+            out.append(d)
+        return out
+
+    def med_periods_for_run(self, run_id: int) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            'SELECT drug_canonical, class, start, start_precision, "end", end_precision, '
+            "end_kind, evidence_id FROM med_periods WHERE case_run_id = ? ORDER BY id",
+            (run_id,),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+    def evidence_timing_for_run(self, run_id: int) -> list[dict[str, Any]]:
+        """Timing columns of every evidence row (tests and `--explain`); no quote."""
+        rows = self.conn.execute(
+            "SELECT id, field, relative_llm, relative_computed, event_date, date_precision, "
+            "event_date_source, norm_value, norm_unit, flags, exclusion_reasons FROM evidence "
+            "WHERE case_run_id = ? ORDER BY id",
+            (run_id,),
+        ).fetchall()
+        out = []
+        for r in rows:
+            d = dict(r)
+            d["flags"] = json.loads(d["flags"])
+            d["exclusion_reasons"] = json.loads(d["exclusion_reasons"])
+            out.append(d)
+        return out
 
     # dead letters
 

@@ -61,6 +61,7 @@ from bridge_check.enums import (
     ATTENDANCE,
     AXES,
     AXIS_DEFAULTS,
+    CLAIM_IDS,
     CONCEPTS,
     DOC_ROLES,
     END_KINDS,
@@ -151,6 +152,17 @@ class VerifyTerms(BaseModel):
     a09_fillers: list[str]
     doc_role_terms: dict[str, list[str]]
     lifestyle_cues: dict[str, dict[str, list[str]]]
+    claim_labels: dict[str, list[str]]
+    claim_label_blockers: list[str]
+    answer_tokens: list[str]
+    answer_markers: list[str]
+    empty_markers: list[str]
+    attachment_terms: list[str]
+    attachment_negations: list[str]
+    attachment_finite_forms: list[str]
+    attachment_subjects: list[str]
+    medication_list_status: dict[str, list[str]]
+    section_headings: list[str]
     bound_words: list[str]
     range_words: list[str]
     range_openers: list[str]
@@ -169,6 +181,8 @@ class VerifyTerms(BaseModel):
             raise ValueError("doc_role_terms: one entry per document role")
         if not set(self.purpose_cues) <= set(PURPOSES) - {"unknown"}:
             raise ValueError("purpose_cues: unknown purpose")
+        if not set(self.claim_labels) <= set(CLAIM_IDS):
+            raise ValueError("claim_labels: unknown claim id")
         for axis, values in self.lifestyle_cues.items():
             allowed = {
                 "program_type": PROGRAM_TYPES,
@@ -230,7 +244,8 @@ class CheckedEvidence:
     raw_value: str | None
     raw_unit: str | None
     event_date: str | None
-    """The model's event date. Use it only when `event_date_source == "llm"`."""
+    """The model's event date. Use it only when `event_date_source == "llm"`; compute fills
+    the stored column with the inherited document date when it is NULL (contract §5 item 3)."""
     date_precision: str | None
     certainty_llm: str
     subject_llm: str
@@ -492,6 +507,37 @@ class _Matchers:
             for kind, words in terms.kind_labels.items()
             for p in _patterns(words, kind, case_sensitive=False)
         ] + _patterns(terms.other_value_labels, "other", case_sensitive=False)
+        self.claim_labels = {
+            claim_id: frozenset(normalize(x).text.casefold() for x in words)
+            for claim_id, words in terms.claim_labels.items()
+        }
+        # Answers a PA field may offer: yes/no tokens, GLP-1 product names, BMI brackets.
+        self.answer_patterns = _patterns(
+            [*terms.answer_tokens, *GLP1_NAMES], "answer", case_sensitive=False
+        ) + [
+            (re.compile(rx), "answer", rx)
+            for rx in (r"<\d+", r"\d+-\d+(?:\.\d)?", r"\d+\+", r"≥\d+")
+        ]
+        self.claim_blocker_patterns = _patterns(
+            terms.claim_label_blockers, "blocker", case_sensitive=False
+        )
+        self.answer_markers = tuple(sorted({_box_norm(m) for m in terms.answer_markers}))
+        self.answer_tokens = tuple(t.casefold() for t in terms.answer_tokens)
+        self.empty_markers = tuple(sorted({_box_norm(m) for m in terms.empty_markers}))
+        self.attachment_negations = tuple(n.casefold() for n in terms.attachment_negations)
+        self.attachment_finite = frozenset(f.casefold() for f in terms.attachment_finite_forms)
+        self.attachment_subjects = frozenset(x.casefold() for x in terms.attachment_subjects)
+        self.attachment_patterns = _patterns(
+            terms.attachment_terms, "attachment", case_sensitive=False
+        )
+        self.list_status_patterns = [
+            p
+            for status, words in terms.medication_list_status.items()
+            for p in _patterns(words, status, case_sensitive=False)
+        ]
+        self.section_heading_patterns = _patterns(
+            terms.section_headings, "heading", case_sensitive=False
+        )
         self.dob_patterns = _patterns(terms.dob_labels, "dob", case_sensitive=False)
         self.age_patterns = _patterns(terms.age_labels, "age", case_sensitive=False)
         self.age_suffix_patterns = _patterns(terms.age_suffixes, "age", case_sensitive=False)
@@ -651,9 +697,12 @@ def check_assertion(
     def blocked(a: int, b: int) -> bool:
         return any(a <= ts and te <= b for ts, te in terminators)
 
+    headings = [(h.start, h.end) for h in _scan(text, m.section_heading_patterns)]
     applying: list[Hit] = []
     undecidable: set[str] = set()
     for hit in m.cue_hits(text):
+        if any(hs <= hit.start and hit.end <= he for hs, he in headings):
+            continue  # the heading's own words ("HISTORY OF PRESENT ILLNESS") assert nothing
         inside = ms <= hit.start and hit.end <= me
         if inside and whole_span:
             ok = not blocked(hit.end, me)
@@ -806,6 +855,7 @@ def dates_in(text: str) -> list[tuple[str, int, int]]:
     return found
 
 
+_POSSESSIVE = re.compile(r"\s*(?:'s|’s|s')?\s*(?:own\s+)?")
 _MBI = re.compile(
     r"^[1-9][AC-HJKMNP-RT-Y][AC-HJKMNP-RT-Y0-9]\d[AC-HJKMNP-RT-Y][AC-HJKMNP-RT-Y0-9]\d"
     r"[AC-HJKMNP-RT-Y]{2}\d{2}$"
@@ -1251,6 +1301,8 @@ class _ValueCheck:
     event_date_source: str | None = None
     quote_date: dict[str, str] | None = None
     """The quote's own bound date at the text's precision; None when it names none."""
+    list_status: str | None = None
+    """For a medication list: `current`, `discontinued` or `unknown` from its heading."""
 
     def unrecognized(self) -> None:
         if "unrecognized" not in self.flags:
@@ -1475,11 +1527,33 @@ def check_values(fact_field: str, fact: Fact, w: _Window, docs: Docs | None = No
             ((h.start, h.end), h.label)
             for h in _leftmost_longest(Hit(a, b, lab, "") for (a, b), lab in names)
         ]
+
+        def possessed(n: Span) -> bool:
+            """A target name right after another document's name ("the referral's case
+            summary") describes that document, not the target."""
+            src_text = w.idx.doc.text
+            for o, lab in names:
+                if lab == "other" and o[1] <= n[0] and _POSSESSIVE.fullmatch(src_text, o[1], n[0]):
+                    return True
+            return False
+
+        possessed_target = any(lab == "target" and possessed(n) for n, lab in names)
+        names = [(n, "other" if lab == "target" and possessed(n) else lab) for n, lab in names]
+
         named_by_id = any(ident == canonical_id(target) for ident, _ in tokens)
         same_role = sum(1 for x in (docs or {}).values() if role is not None and x.role == role)
-        if any(ident in others for ident, _ in tokens):
-            vc.need([])  # names another document: that document's date
+        if any(ident in others for ident, _ in tokens) or possessed_target:
+            vc.need([])  # names (or possesses) another document: that document's date
         elif not any(lab == "target" and w.inside(span) for span, lab in names):
+            vc.need(dates_equal(d["date"]), anchor=True)
+            vc.unrecognized()
+        elif (
+            not named_by_id
+            and target != fact.doc_id
+            and not any(lab == "target" for _n, lab in _attached_only(w, names, m))
+        ):
+            # "the case summary dated X" in a referral may describe the referral itself; only
+            # an attached document of that role is the target (contract §5 item 3).
             vc.need(dates_equal(d["date"]), anchor=True)
             vc.unrecognized()
         elif not named_by_id and same_role > 1:
@@ -1487,6 +1561,10 @@ def check_values(fact_field: str, fact: Fact, w: _Window, docs: Docs | None = No
             vc.need(dates_equal(d["date"]), anchor=True)
             vc.unrecognized()
         else:
+            if not named_by_id and target != fact.doc_id:
+                # Only the mention that carries the affirmed attachment can own the date;
+                # another mention of the same role in the quote dates nothing.
+                names = _attached_only(w, names, m)
 
             def owner(x: Span) -> str | None:
                 """Label of the nearest document name to the date in its clause with no other
@@ -1507,8 +1585,76 @@ def check_values(fact_field: str, fact: Fact, w: _Window, docs: Docs | None = No
     elif fact_field == "medication_lists":
         if d["section_title"].strip():
             vc.need(w.find(d["section_title"]), anchor=True)
+        heading = d["section_title"].strip()
+        if not heading:
+            first_line = w.idx.doc.text[w.start : w.end].split("\n", 1)[0]
+            heading = first_line.split(":", 1)[0] if ":" in first_line else ""
+        statuses = {h.label for h in _scan(normalize(heading).text, m.list_status_patterns)}
+        if "discontinued" in statuses:
+            vc.list_status = "discontinued"
+        elif "current" in statuses:
+            vc.list_status = "current"
+        else:
+            vc.list_status = "unknown"
     elif fact_field == "pa_form_claims":
-        vc.need(w.find(d["claimed_value"]), anchor=True)
+        # A field of the draft is `<label>: <options>` on one line. The value counts only on
+        # the PA draft, only when the whole label of its field is a label of the claimed box
+        # (guide K-01, K-02) and the field asks the qualifying question (no blocker word), and,
+        # when the field offers several answers, only when the claimed one is the single
+        # marked one; an unmarked or doubly marked field is kept as `unrecognized` (review).
+        values = w.find(d["claimed_value"])
+        role = docs[fact.doc_id].role if docs and fact.doc_id in docs else None
+        text = w.idx.doc.text
+
+        def field_of(pos: int) -> tuple[int, int, int] | None:
+            """(label start, colon, field end) of the `<label>: <options>` field at `pos`."""
+            ls = text.rfind("\n", 0, pos) + 1
+            le = text.find("\n", pos)
+            le = len(text) if le < 0 else le
+            colon = text.rfind(":", ls, pos)
+            if colon < 0:
+                return None
+            label_start = text.rfind(":", ls, colon)
+            label_start = ls if label_start < 0 else _next_label_start(text, label_start + 1, colon)
+            nxt = text.find(":", pos, le)
+            field_end = le if nxt < 0 else _next_label_start(text, pos, nxt)
+            return label_start, colon, field_end
+
+        own_fields: list[tuple[int, int, int]] = []
+        blocked = False
+        for v in values:
+            fld = field_of(v[0])
+            if fld is None:
+                continue
+            label = normalize(text[fld[0] : fld[1]].strip()).text.casefold()
+            if label not in m.claim_labels.get(d["claim_id"], ()):
+                continue  # another box, or no box at all: not this claim's value
+            if any(p.search(label) for p, _, _ in m.claim_blocker_patterns):
+                blocked = True  # the qualifying words, but about a relative or another stage
+            else:
+                own_fields.append(fld)
+        if role != "pa_draft" or (blocked and not own_fields):
+            vc.unrecognized()
+            vc.need(values, anchor=True)
+        elif not own_fields:
+            vc.need([])  # the value sits in no field of this claim
+        else:
+            fld = own_fields[0]
+            options = text[fld[1] + 1 : fld[2]]
+            offered = sum(1 for p, _, _ in m.answer_patterns for _m in p.finditer(options))
+            boxes_text = _box_norm(options)
+            marks = sum(boxes_text.count(mk) for mk in m.answer_markers)
+            empties = sum(boxes_text.count(mk) for mk in m.empty_markers)
+            bound = [v for v in values if field_of(v[0]) == fld]
+
+            def marked(v: Span) -> bool:
+                lead = _box_norm(text[max(fld[1] + 1, v[0] - 8) : v[0]]).rstrip()
+                return any(lead.endswith(mk) for mk in m.answer_markers)
+
+            choice = offered > 1 or marks > 0 or empties > 0
+            if choice and (marks != 1 or not any(marked(v) for v in bound)):
+                vc.unrecognized()  # the field offers choices and the selection is not clear
+            vc.need(bound, anchor=True)
     elif fact_field == "lifestyle":
         # Each value needs a cue in the quote (contract §3.5); without one it is unrecognized,
         # like a non-default assertion without a cue. `description` is a summary: not checked.
@@ -1599,6 +1745,113 @@ def _event_date(event_date: str, dates: list[str], vc: _ValueCheck) -> str:
 
 def _claimed(fact: Fact) -> dict[str, str]:
     return {"certainty": fact.certainty, "subject": fact.subject, "temporality": fact.temporality}
+
+
+_EMPTY_BOX = re.compile(r"([\[(])\s*([\])])")
+_MARKED_BOX = re.compile(r"([\[(])\s*([xX✓✔])\s*([\])])")
+
+
+def _box_norm(text: str) -> str:
+    """Checkbox syntax in a comparable form: NFKC (full-width brackets), case-folded, one
+    space inside an empty box and none inside a marked one."""
+    out = unicodedata.normalize("NFKC", text).casefold()
+    out = _EMPTY_BOX.sub(r"\1 \2", out)
+    return _MARKED_BOX.sub(r"\1\2\3", out)
+
+
+# Between an attachment cue and the document it governs: "I enclose the hospital summary",
+# "the enclosed bariatric surgery consultation note", "a copy of the consult note": at most
+# three descriptive words, no coordinator, comma or clause break.
+_CUE_THEN_NAME = re.compile(
+    r"^\W*(?:(?!(?:and|or|plus|nor)\b)[\w'’.-]+[ \t]+){0,3}$", re.IGNORECASE
+)
+# Between a document name and a trailing cue ("the consult note dated X is attached"): only a
+# copula, the name's own date phrase and date tokens may stand there.
+_COPULA_WORDS = frozenset(
+    {"is", "are", "was", "were", "has", "have", "been", "now", "also", "dated", "of", "from", "on"}
+)
+
+
+def _name_then_cue(gap: str) -> bool:
+    for tok in gap.split():
+        word = tok.strip(".,;:()").casefold()
+        if word in _COPULA_WORDS or any(ch.isdigit() for ch in word) or word in _MONTHS:
+            continue
+        return False
+    return True
+
+
+def _attached_only(
+    w: _Window, names: list[tuple[Span, str]], m: _Matchers
+) -> list[tuple[Span, str]]:
+    """`names` with every target mention that no cue affirms as attached relabelled
+    `unattached`: it neither dates the target nor counts as naming another document."""
+    cues = w.scan(m.attachment_patterns)
+    text = w.idx.doc.text
+    merged: list[tuple[Span, str]] = []
+    for n, lab in sorted(names):
+        # adjacent target words ("consultation" + "note") are one mention of the document
+        if merged and lab == "target" and merged[-1][1] == "target":
+            prev = merged[-1][0]
+            if not text[prev[1] : n[0]].strip():
+                merged[-1] = ((prev[0], n[1]), lab)
+                continue
+        merged.append((n, lab))
+    out: list[tuple[Span, str]] = []
+    for n, lab in merged:
+        if lab == "target" and not any(_attached(w, a, n, names, m) for a in cues):
+            out.append((n, "unattached"))
+        else:
+            out.append((n, lab))
+    return out
+
+
+def _attached(w: _Window, a: Hit, n: Span, names: list[tuple[Span, str]], m: _Matchers) -> bool:
+    """`a` ("enclosed", "attached") affirms that the document named at `n` is attached: an
+    affirmative construction with no other document name in between, and none of the words
+    that deny, request or promise an attachment in the four words before the cue."""
+    span_a = (a.start, a.end)
+    if not w.same_clause(span_a, n):
+        return False
+    text = w.idx.doc.text
+    lo, hi = w.between(span_a, n)
+    if any(lo <= o[0] and o[1] <= hi for o, _lab in names if o != n):
+        return False
+    gap = text[lo:hi]
+    affirmed = _CUE_THEN_NAME.match(gap) if a.start < n[0] else _name_then_cue(gap)
+    if not affirmed:
+        return False
+    sentence_start = w.idx.sentence_at(a.start)[0]
+    lead = text[max(sentence_start, a.start - 60) : a.start].casefold().split()[-4:]
+    if any(tok.strip(".,;:()") in m.attachment_negations for tok in lead):
+        return False
+    if a.text.casefold() in m.attachment_finite:
+        # a finite verb affirms only with an explicit subject right before it ("I enclose",
+        # "this letter encloses"); an imperative, bare or after an adverb or a clause ("Then
+        # attach", "After review, attach"), is a request, not an attachment
+        raw = lead[-1] if lead else ""
+        if raw.endswith((",", ";", ":")):
+            return False
+        return raw.strip(".()") in m.attachment_subjects
+    return True
+
+
+def _next_label_start(text: str, lo: int, colon: int) -> int:
+    """Start of the label that ends at `colon`: after the options of the previous field, which
+    end at the last run of two or more spaces (or a tab) before the label."""
+    gap = max(text.rfind("  ", lo, colon), text.rfind("\t", lo, colon))
+    return lo if gap < 0 else gap + 1
+
+
+def _claim_assertion(fact: Fact) -> AssertionCheck:
+    """`matched` when the model gave the default axes for a PA-form box, else `mismatch`."""
+    claimed = _claimed(fact)
+    result = "matched" if claimed == dict(AXIS_DEFAULTS) else "mismatch"
+    return AssertionCheck(
+        result,
+        dict(AXIS_DEFAULTS),
+        {axis: "matched" if claimed[axis] == AXIS_DEFAULTS[axis] else "mismatch" for axis in AXES},
+    )
 
 
 def _unrecognized() -> AssertionCheck:
@@ -1746,7 +1999,13 @@ def verify_fact(
     results = []
     for s, e in spans:
         vc = check_values(fact_field, fact, _Window(idx, s, e, matchers), docs)
-        check, detail = _assert_at(idx, s, e, vc, fact, concept, ctx)
+        if fact_field == "pa_form_claims":
+            # A box on the PA draft is a claim, not an assertion about the patient (guide
+            # K-01): its three axes are the defaults and the cue words of the form ("No",
+            # "previous") are the box's wording, not negations or history.
+            check, detail = _claim_assertion(fact), [{"start": s, "end": e, "result": None}]
+        else:
+            check, detail = _assert_at(idx, s, e, vc, fact, concept, ctx)
         results.append((s, e, vc, check, detail))
 
     flags: list[str] = []
@@ -1761,6 +2020,8 @@ def verify_fact(
     attributes["per_axis"] = dict(check.per_axis)
     if vc.quote_date is not None:
         attributes["quote_date"] = vc.quote_date
+    if vc.list_status is not None:
+        attributes["list_status"] = vc.list_status
     if fact_field == "patient_identity":
         # Every located occurrence is screened, not only the first (contract §3.5).
         attributes["identifiers"] = _unique([i for r in results for i in r[2].identifiers])

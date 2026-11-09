@@ -1,12 +1,14 @@
 """Command-line entry point: `bridge`.
 
-`check <case>` runs input → extract → verify → store. compute and rules are not
-implemented yet, so a full `check` ends `failed` with `failed_stage=compute` and a
-`NotImplemented` dead letter: it never reports a run as completed when later stages did
-not run. The hidden `--stop-after extract|verify` (tests only) ends the run `completed` at
-that stage boundary and records `stopped_after` on the run.
+`check <case>` runs input → extract → verify → compute → rules → store. Decisions and
+`case_runs.status = completed` are written in one transaction (contract §1); a failure in
+compute or rules rolls back, records `failed` at that stage and a dead letter, and publishes
+no decision. The hidden `--stop-after extract|verify` (tests only) ends the run `completed`
+at that stage boundary and records `stopped_after` on the run.
 
-Evidence is printed only as `doc_id[start:end] sha8` with its statuses (`--explain`).
+Evidence is printed only as `doc_id[start:end] sha8` with its statuses; `--explain` adds every
+decision with the rule step that fired, the evidence it used or excluded (with reasons) and
+the computed values, as machine codes only.
 
 Exit codes (contract §1): 0 = completed, 3 = failed, 4 = another run holds the lock.
 Output never contains document text, quotes or patient names.
@@ -25,10 +27,13 @@ from typing import Any
 import yaml
 
 from bridge_check import __version__
+from bridge_check.compute import CaseContext, compute
 from bridge_check.extract import PROMPT_VERSION, ExtractionFailed, extract
 from bridge_check.input import InputError, LoadedCase, case_id_of, load_case, resolve_case_dir
 from bridge_check.logs import configure_logging, log_event
 from bridge_check.manifest import CHECKOUT_ROOT
+from bridge_check.rules import Decision, Policy, evaluate_rules
+from bridge_check.rules_schema import load_drugs, load_rules
 from bridge_check.runlock import RunLockHeld, exclusive_run_lock, resolve_db_path
 from bridge_check.schema import SCHEMA_VERSION
 from bridge_check.sentences import SPLITTER_VERSION
@@ -52,12 +57,12 @@ DEFAULT_DB = "bridge.db"
 DB_LABEL = "the database file"
 """Fixed label for the database in messages: its path is user-chosen and never printed."""
 RULES_PATH = CHECKOUT_ROOT / "rules" / "bridge-v1.yaml"
-NOT_IMPLEMENTED = (
-    "compute and rules are not implemented yet; "
-    "the run stops after verification and is recorded as failed at compute"
-)
+DRUGS_PATH = CHECKOUT_ROOT / "rules" / "drugs-v1.yaml"
 VERIFY_FAILED = "unexpected error while verifying"
-STORE_FAILED = "could not store the verified evidence"
+COMPUTE_FAILED = "unexpected error while computing facts"
+RULES_FAILED = "unexpected error while evaluating rules"
+POLICY_FAILED = "the rules table could not be loaded as an implemented policy"
+STORE_FAILED = "could not store the results"
 FAKE_REPLY = "fake-reply.json"
 
 _STUB_COMMANDS = {
@@ -139,9 +144,8 @@ def run_report(
 ) -> dict[str, Any]:
     """The structure printed by `--json` (and later used by the report)."""
     run = store.case_run(run_id)
-    if run["status"] == "failed" and run["failed_stage"] == "compute":
-        message = NOT_IMPLEMENTED
-    elif run["stopped_after"] == "extract":
+    decisions = _decision_rows(store, run_id)
+    if run["stopped_after"] == "extract":
         message = (
             "completed at the extraction boundary (--stop-after extract); "
             "verify, compute and rules did not run"
@@ -153,6 +157,11 @@ def run_report(
         )
     elif run["status"] == "failed":
         message = f"failed at {run['failed_stage']}"
+    elif run["status"] == "completed":
+        message = (
+            f"completed: {len(decisions)} decisions; "
+            f"{_workload(decisions)} top-level rows need a human"
+        )
     else:
         message = run["status"]
     attempts = [
@@ -196,6 +205,9 @@ def run_report(
         },
         "dead_letters": dead_letters,
         "verification": _verification_summary(evidence, store.doc_facts_for_run(run_id)),
+        "decisions": decisions,
+        "case_flags": json.loads(run["case_flags"]),
+        "human_workload": _workload(decisions) if run["status"] == "completed" else None,
         "versions": {
             "prompt": run["prompt_version"],
             "schema": run["schema_version"],
@@ -210,6 +222,46 @@ def run_report(
     if explain:
         report["evidence"] = [{k: e[k] for k in _EXPLAIN_KEYS} for e in evidence]
     return report
+
+
+def _decision_rows(store: Store, run_id: int) -> list[dict[str, Any]]:
+    """Decisions with evidence ids resolved to `doc_id[start:end] sha8` references."""
+    refs = {e["evidence_id"]: e["ref"] for e in store.evidence_for_run(run_id)}
+    rows = []
+    for d in store.decisions_for_run(run_id):
+        rows.append(
+            {
+                "condition": d["condition"],
+                "kind": d["kind"],
+                "status": d["status"],
+                "rule_id": d["rule_id"],
+                "reason": d["reason"],
+                "flags": d["flags"],
+                "used_evidence": [
+                    {"evidence_id": i, "ref": refs.get(i)} for i in d["used_evidence"]
+                ],
+                "excluded_evidence": [
+                    {
+                        "evidence_id": e["evidence_id"],
+                        "ref": refs.get(e["evidence_id"]),
+                        "reason": e["reason"],
+                    }
+                    for e in d["excluded_evidence"]
+                ],
+                "computed": d["computed"],
+            }
+        )
+    return rows
+
+
+def _workload(decisions: list[dict[str, Any]]) -> int:
+    """Top-level rows that are review, conflict or insufficient (contract §3.5)."""
+    return sum(
+        1
+        for d in decisions
+        if d["kind"] in ("condition", "path", "exclusion")
+        and d["status"] in ("review", "conflict", "insufficient")
+    )
 
 
 _EXPLAIN_KEYS = (
@@ -300,6 +352,13 @@ def check_case(
     )
     log_event("run_started", run_id=run_id, case_id=cid, stage="input")
 
+    try:
+        policy = Policy.from_rules(load_rules(RULES_PATH))
+        drugs = load_drugs(DRUGS_PATH)
+    except Exception as exc:  # noqa: BLE001 - a bad rules table fails before any API call
+        _fail(store, run_id, cid, "rules", type(exc).__name__, POLICY_FAILED)
+        return run_id, None
+
     case: LoadedCase
     try:
         case = load_case(resolve_case_dir(case_arg))
@@ -368,7 +427,7 @@ def check_case(
         _fail(store, run_id, cid, "verify", type(exc).__name__, VERIFY_FAILED)
         return run_id, summary
     try:
-        store.save_verification(run_id, verified)
+        evidence_ids = store.save_verification(run_id, verified)
     except Exception as exc:  # noqa: BLE001 - the transaction rolled back; recorded
         _fail(store, run_id, cid, "store", type(exc).__name__, STORE_FAILED)
         return run_id, summary
@@ -379,7 +438,39 @@ def check_case(
         log_event("run_completed", run_id=run_id, case_id=case.case_id, stage="verify")
         return run_id, summary
 
-    _fail(store, run_id, cid, "compute", "NotImplemented", NOT_IMPLEMENTED)
+    ctx = CaseContext(
+        target_drug=case.input.target_course.drug,
+        target_start=case.input.target_course.start,
+        assessment_date=case.input.assessment_date,
+        doc_roles={r.doc_id: r.role for r in case.input.documents},
+        doc_identity={df.doc_id: df.identity_status for df in verified.doc_facts},
+        drugs=drugs,
+        evidence_ids=evidence_ids,
+    )
+    try:
+        facts = compute(verified.evidence, ctx)
+    except Exception as exc:  # noqa: BLE001 - any error fails the whole run (contract §1)
+        _fail(store, run_id, cid, "compute", type(exc).__name__, COMPUTE_FAILED)
+        return run_id, summary
+    try:
+        store.save_computed(run_id, facts)
+    except Exception as exc:  # noqa: BLE001 - the transaction rolled back; recorded
+        _fail(store, run_id, cid, "store", type(exc).__name__, STORE_FAILED)
+        return run_id, summary
+    log_event("facts_stored", run_id=run_id, case_id=case.case_id, stage="compute")
+
+    decisions: list[Decision]
+    try:
+        decisions = evaluate_rules(facts, policy)
+    except Exception as exc:  # noqa: BLE001 - no decision is published
+        _fail(store, run_id, cid, "rules", type(exc).__name__, RULES_FAILED)
+        return run_id, summary
+    try:
+        store.save_decisions_and_complete(run_id, decisions, case_flags=facts.case_flags)
+    except Exception as exc:  # noqa: BLE001 - rolled back: no decisions, status unchanged
+        _fail(store, run_id, cid, "store", type(exc).__name__, STORE_FAILED)
+        return run_id, summary
+    log_event("run_completed", run_id=run_id, case_id=case.case_id, stage="rules")
     return run_id, summary
 
 
@@ -403,6 +494,13 @@ def _print_check(report: dict[str, Any], explain: bool) -> None:
     if ver is not None:
         counts = ", ".join(f"{k}={v}" for k, v in ver["by_position_status"].items())
         print(f"  evidence: {ver['evidence_count']} ({counts or 'none'})")
+    if report["decisions"]:
+        flags = ",".join(report["case_flags"]) or "-"
+        print(f"  decisions: {len(report['decisions'])} case_flags={flags}")
+        for d in report["decisions"]:
+            if d["kind"] in ("condition", "path", "exclusion") or explain:
+                flags = ",".join(d["flags"]) or "-"
+                print(f"  {d['condition']}: {d['status']} [{d['rule_id']}] flags={flags}")
     if explain:
         for e in report.get("evidence", []):
             reasons = ",".join(e["exclusion_reasons"]) or "-"
@@ -411,7 +509,22 @@ def _print_check(report: dict[str, Any], explain: bool) -> None:
                 f"  {e['ref']} {e['field']} position={e['position_status']} "
                 f"assertion={e['assertion_check'] or '-'} excluded={reasons} flags={flags}"
             )
-        print("  --explain: no condition statuses yet; compute and rules are not implemented")
+        for d in report["decisions"]:
+            print(f"  {d['condition']}: {d['status']} [{d['rule_id']}]")
+            print(f"    reason: {d['reason']}")
+            print(f"    flags: {','.join(d['flags']) or '-'}")
+            print("    used: " + (" ".join(u["ref"] or "?" for u in d["used_evidence"]) or "-"))
+            print(
+                "    excluded: "
+                + (
+                    " ".join(f"{x['ref'] or '?'}({x['reason']})" for x in d["excluded_evidence"])
+                    or "-"
+                )
+            )
+            computed = " ".join(
+                f"{k}={json.dumps(v, ensure_ascii=False)}" for k, v in d["computed"].items()
+            )
+            print(f"    computed: {computed or '-'}")
 
 
 def cmd_check(args: argparse.Namespace) -> int:

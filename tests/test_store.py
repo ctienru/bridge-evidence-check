@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
+import json
 import re
 import sqlite3
 from dataclasses import replace
 from pathlib import Path
 
 import pytest
+from conftest import ROOT
 
 from bridge_check import store as store_module
+from bridge_check.compute import ComputedFacts
 from bridge_check.store import (
     ENUM_COLUMNS,
     DatabaseHasLinks,
@@ -373,3 +376,78 @@ def test_version_check_handles_uri_special_characters(tmp_path: Path) -> None:
         p.name for p in tmp_path.iterdir() if not p.name.endswith((".lock", "-wal", "-shm"))
     )
     assert files == ["case#archive?mode=rw.db"]
+
+
+# --- compute and rules persistence (contract §1, §11) ---------------------------------------
+
+
+def _computed(store: Store, run_id: int) -> tuple[ComputedFacts, list[int]]:
+    from datetime import date
+
+    from conftest import INITIATION, checked
+
+    from bridge_check.compute import CaseContext, compute
+    from bridge_check.rules_schema import load_drugs
+
+    result = _verified()
+    ids = store.save_verification(run_id, result)
+    context = CaseContext(
+        target_drug="Wegovy",
+        target_start=date(2025, 3, 15),
+        assessment_date=date(2026, 10, 15),
+        doc_roles={"D1": "clinical"},
+        doc_identity={d.doc_id: d.identity_status for d in result.doc_facts},
+        drugs=load_drugs(ROOT / "rules" / "drugs-v1.yaml"),
+        evidence_ids=ids,
+    )
+    # one more verified row gives a medication period and a document date
+    extra = [
+        checked("doc_dates", target_doc_id="D1", date="2025-03-15", event_date="2025-03-15"),
+        checked("medications", name="amlodipine", end_kind="ongoing"),
+        INITIATION,
+    ]
+    extra_ids = store.save_verification(run_id, VerifyResult(extra, []))
+    facts = compute([*result.evidence, *extra], replace(context, evidence_ids=[*ids, *extra_ids]))
+    return facts, [*ids, *extra_ids]
+
+
+def test_save_computed_writes_timing_med_periods_and_doc_date(store: Store) -> None:
+    run_id = _run(store)
+    facts, ids = _computed(store, run_id)
+    store.save_computed(run_id, facts)
+    timing = {r["id"]: r for r in store.evidence_timing_for_run(run_id)}
+    assert timing[ids[0]]["relative_computed"] == "at"  # inherited the document date
+    assert timing[ids[0]]["event_date_source"] == f"doc_dates:{ids[3]}"
+    assert timing[ids[0]]["event_date"] == "2025-03-15"
+    assert timing[ids[2]]["relative_computed"] is None  # not found: nothing computed
+    periods = store.med_periods_for_run(run_id)
+    assert [(p["drug_canonical"], p["class"], p["evidence_id"]) for p in periods] == [
+        ("amlodipine", "calcium_channel_blocker", ids[4])
+    ]
+    assert store.doc_facts_for_run(run_id)[0]["doc_date"] == "2025-03-15"
+
+
+def test_save_decisions_and_complete_is_one_transaction(store: Store) -> None:
+    from conftest import policy
+
+    from bridge_check.rules import Decision, evaluate_rules
+
+    run_id = _run(store)
+    facts, _ = _computed(store, run_id)
+    store.save_computed(run_id, facts)
+    decisions = evaluate_rules(facts, policy())
+    bad = Decision.model_construct(**{**decisions[0].model_dump(), "status": "bogus"})
+    with pytest.raises(sqlite3.IntegrityError):
+        store.save_decisions_and_complete(run_id, [bad, *decisions[1:]], case_flags=())
+    assert store.count("decisions") == 0
+    assert store.case_run(run_id)["status"] == "running"
+    store.save_decisions_and_complete(run_id, decisions, case_flags=("mace_purpose",))
+    run = store.case_run(run_id)
+    assert run["status"] == "completed" and run["finished_at"] is not None
+    assert json.loads(run["case_flags"]) == ["mace_purpose"]
+    rows = store.decisions_for_run(run_id)
+    assert len(rows) == len(decisions)
+    assert all(isinstance(r["computed"], dict) and isinstance(r["flags"], list) for r in rows)
+    # rerunning rules within the same run upserts instead of failing on the primary key
+    store.save_decisions_and_complete(run_id, decisions, case_flags=())
+    assert store.count("decisions") == len(decisions)
