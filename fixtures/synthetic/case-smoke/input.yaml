@@ -1,0 +1,9 @@
+# Synthetic smoke case for pipeline tests. Every name, id, date and sentence is invented.
+variant_id: case-smoke
+assessment_date: 2026-10-15
+target_course: {drug: Wegovy, start: 2025-03-15}
+primary_patient: {patient_id: P-0000, name: "Synthetic Patient", dob: 1958-06-01}
+documents:
+  - {doc_id: D0-pa-form-draft, role: pa_draft}
+  - {doc_id: D1-referral, role: referral}
+  - {doc_id: D2-clinical, role: clinical}

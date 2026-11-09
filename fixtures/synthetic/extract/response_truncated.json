@@ -1,0 +1,18 @@
+{
+  "id": "msg_synthetic_max_tokens",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-sonnet-5-5",
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"patient_identity\": [{\"doc_id\": \"D1-referral\", \"quote\": \"Patient ID: P-0000. Date of birth 1958-06-01.\", \"certainty\": \"present\", \"subject\": \"patient\", \"temporality\": \"current\", \"event_date\": \"\", \"dat"
+    }
+  ],
+  "stop_reason": "max_tokens",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 5200,
+    "output_tokens": 1400
+  }
+}

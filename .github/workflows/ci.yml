@@ -22,6 +22,14 @@ jobs:
       - run: uv run pip-audit
         continue-on-error: true  # transitive CVEs can turn red at random; reported, not blocking
 
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --locked
+      - run: uv run pytest -q -m "not live"
+
   data-integrity:
     runs-on: ubuntu-latest
     steps:

@@ -1,0 +1,5 @@
+PRIOR AUTHORIZATION REQUEST - DRAFT
+Patient ID: P-0000
+Drug requested: Wegovy
+BMI bracket: 30-34.9
+Type 2 diabetes: unchecked
