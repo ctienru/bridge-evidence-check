@@ -19,7 +19,8 @@ def test_version_prints_and_exits_zero(capsys: pytest.CaptureFixture[str]) -> No
 
 
 def test_stub_subcommand_returns_failed() -> None:
-    assert main(["check"]) == EXIT_FAILED
+    # `check` is implemented from W08 on; `eval` is still a stub.
+    assert main(["eval"]) == EXIT_FAILED
 
 
 def _run_freeze(manifest: Path) -> int:

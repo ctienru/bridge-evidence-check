@@ -15,6 +15,17 @@ In progress. Nothing here is usable yet.
 - Excerpts from published case reports are used under CC BY, with attribution.
 - All other documents (referral letters, PA form drafts, authored cases) are synthetic.
 
+## Running a check
+
+`bridge check <case>` reads `<case>/input.yaml` and `docs/`, runs the extraction (`claude-sonnet-5-5`, prompt `prompts/extract-v1.md`, schema `src/bridge_check/schema.py`) and stores every attempt, raw response and extraction in SQLite (`./bridge.db`, or `--db` / `BRIDGE_DB`). Quote verification, computation and rules are not implemented yet, so a full check ends `failed` at `verify` (exit 3) with a `NotImplemented` dead letter; it never reports conditions it did not compute. `bridge history <case>` lists every run with its extraction and whether it came from the cache, a replay of a saved response, or a fresh API call.
+
+```
+BRIDGE_FAKE_CLIENT=1 uv run bridge check fixtures/synthetic/case-smoke --json   # offline, synthetic reply
+uv run bridge history fixtures/synthetic/case-smoke
+```
+
+`BRIDGE_FAKE_CLIENT` selects a hand-written reply from `fixtures/synthetic/extract/` (`1`/`valid`, `bad_json`, `truncated`, `refusal`, `timeout`, `server_error`, `bad_request`); without it the real API is called and `ANTHROPIC_API_KEY` is needed. Exit codes: 0 completed, 3 failed, 4 another run holds the lock. Logs are JSON lines on stderr and never contain document text.
+
 ## Data-line tools
 
 Scripts the annotator uses to prepare and check gold (contract §7–§8, annotation guide §8–§10). None of them writes gold; `expected.json` is always written by a human.

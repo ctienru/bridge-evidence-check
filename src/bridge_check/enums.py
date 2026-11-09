@@ -269,3 +269,103 @@ ENUM_VALUE_KEYS: dict[str, tuple[str, ...]] = {
 }
 NUMERIC_VALUE_KEYS: tuple[str, ...] = ("norm_value", "sbp", "dbp", "ahi")
 DATE_VALUE_KEYS: tuple[str, ...] = ("event_date", "date", "period_start", "period_end")
+
+# --- Run state and storage (contract §1, §2, §6, §11) ------------------------------------
+
+RunStatus = Literal["running", "completed", "failed"]
+RUN_STATUSES: tuple[str, ...] = ("running", "completed", "failed")
+FailedStage = Literal[
+    "input", "extract", "parse", "verify", "compute", "rules", "store", "interrupted"
+]
+FAILED_STAGES: tuple[str, ...] = (
+    "input",
+    "extract",
+    "parse",
+    "verify",
+    "compute",
+    "rules",
+    "store",
+    "interrupted",
+)
+# A run may be asked to stop at a stage boundary (CLI `--stop-after`, tests only).
+STOP_AFTER_STAGES: tuple[str, ...] = ("extract",)
+AttemptStatus = Literal[
+    "started",
+    "response_saved",
+    "parsed",
+    "parse_failed",
+    "refused",
+    "truncated",
+    "api_error",
+    "unknown_outcome",
+]
+ATTEMPT_STATUSES: tuple[str, ...] = (
+    "started",
+    "response_saved",
+    "parsed",
+    "parse_failed",
+    "refused",
+    "truncated",
+    "api_error",
+    "unknown_outcome",
+)
+PARSE_CLASS_ATTEMPT_STATUSES: tuple[str, ...] = ("parse_failed", "refused", "truncated")
+# Where a run's extraction came from (contract §11 lookup order).
+ExtractionSource = Literal["cache", "replay", "api"]
+EXTRACTION_SOURCES: tuple[str, ...] = ("cache", "replay", "api")
+POSITION_STATUSES: tuple[str, ...] = ("verbatim", "normalized", "candidate", "not_found")
+ASSERTION_CHECKS: tuple[str, ...] = ("matched", "mismatch", "unrecognized")
+DECISION_KINDS: tuple[str, ...] = ("condition", "path", "sub", "exclusion", "lifestyle", "claim")
+EVIDENCE_EXCLUSION_REASONS: tuple[str, ...] = (
+    "quote_not_found",
+    "value_not_in_quote",
+    "assertion_mismatch",
+    "wrong_patient",
+    "unparseable_value",
+    "claim_document",
+)
+CONDITION_EXCLUSION_REASONS: tuple[str, ...] = (
+    "after_initiation",
+    "before_initiation",
+    "timing_unknown",
+    "period_unknown",
+    "candidate_only",
+    "superseded_by_at",
+)
+
+# --- Extraction output (contract §7.2) ------------------------------------------------------
+
+DatePrecision = Literal["day", "month", "year"]
+# §7.2 union-limit fallback, `event_date` only: no date is `""` with precision `none`.
+ExtractionDatePrecision = Literal["day", "month", "year", "none"]
+EXTRACTION_DATE_PRECISIONS: tuple[str, ...] = (*DATE_PRECISIONS, "none")
+AnthropometricKind = Literal["height", "weight", "bmi", "bmi_percentile"]
+LabKind = Literal["a1c", "fpg", "egfr"]
+LifestyleKind = Literal["nutrition", "activity"]
+Concept = Literal[
+    "t2dm",
+    "prediabetes",
+    "osa",
+    "mash",
+    "hfpef",
+    "ckd",
+    "mi",
+    "stroke",
+    "pad",
+    "hypertension",
+    "other",
+]
+Payer = Literal["part_d", "medicaid", "self_pay", "bridge", "commercial", "unknown"]
+Purpose = Literal["weight", "mace", "other", "unknown"]
+EndKind = Literal["ongoing", "ended", "unknown"]
+OsaSeverity = Literal["mild", "moderate", "severe", "unspecified"]
+Symptomatic = Literal["yes", "no", "unknown"]
+ProgramType = Literal[
+    "structured_clinical",
+    "commercial",
+    "advice_only",
+    "referral_pending",
+    "declined",
+    "none_stated",
+]
+Attendance = Literal["regular", "irregular", "unknown"]
