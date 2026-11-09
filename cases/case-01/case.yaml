@@ -1,0 +1,23 @@
+# Hidden case configuration (contract §7.1): the system never reads this file.
+# Public fields only; the full story and trap list live in the planning documents and the
+# private repo. `input.yaml`, `docs/`, `blind_draft.json`, `adjudication.jsonl` and
+# `expected.json` are written by the annotator, not by tools.
+case_id: case-01
+split: dev
+source: mixed   # main document is MTSamples; the referral and PA draft are authored
+documents:
+  - {doc_id: D0-pa-form-draft, doc_origin: authored}   # drafted_by: filled from the drafting record
+  - {doc_id: D1-referral, doc_origin: authored}        # drafted_by: filled from the drafting record
+  - {doc_id: D2-mtsamples-4985, doc_origin: mtsamples}
+mtsamples:
+  dataset: kaggle tboyle10/medicaltranscriptions (GitHub mirror socd06/medical-nlp data/mtsamples.csv)
+  url: https://raw.githubusercontent.com/socd06/medical-nlp/master/data/mtsamples.csv
+  dataset_sha256: a92cb78569f460606661ee7da50c92305b60d0fac2be4b06c8d2de0f234612d4
+  row: 4985   # informational; the row is selected by sample_name + transcription hash
+  sample_name: "Bariatric Consult - Surgical Weight Loss - 4"
+  transcription_sha256_prefix: a3eb773b768b
+  doc_id: D2-mtsamples-4985
+# TODO(terri): story — one paragraph; nothing here produces gold (P-01)
+# TODO(terri): tests — e.g. [bmi_path_a, lifestyle.nutrition, negation, family_history]
+# TODO(terri): traps — IDs from the private trap pool; fill used_in there when gold is written
+# TODO(terri): dirty_data — e.g. [lb/in, trailing commas, paragraph order]

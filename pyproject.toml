@@ -23,6 +23,11 @@ dev = [
     "ruff",
     "types-PyYAML",
 ]
+# Data-line tools only (scripts/draft_authored.py, scripts/propose_candidates.py);
+# never a runtime dependency of the pipeline.
+data = [
+    "openai",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -43,9 +48,15 @@ python_version = "3.12"
 strict = true
 files = ["src", "tests", "scripts"]
 
+[[tool.mypy.overrides]]
+# `openai` is in the optional `data` group and imported lazily; CI type-checks without it.
+module = ["openai", "openai.*"]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [
     "live: calls the real Anthropic API; needs ANTHROPIC_API_KEY",
     "slow: slow tests (property tests); skipped by the Stop hook",
+    "network: downloads the MTSamples mirror",
 ]

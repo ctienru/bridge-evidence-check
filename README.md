@@ -15,6 +15,18 @@ In progress. Nothing here is usable yet.
 - Excerpts from published case reports are used under CC BY, with attribution.
 - All other documents (referral letters, PA form drafts, authored cases) are synthetic.
 
+## Data-line tools
+
+Scripts the annotator uses to prepare and check gold (contract §7–§8, annotation guide §8–§10). None of them writes gold; `expected.json` is always written by a human.
+
+- `scripts/fetch_mtsamples.py` — downloads the MTSamples mirror named in `cases/<id>/case.yaml`, verifies the whole-file sha256, selects the transcription by `sample_name` and per-transcription hash, and writes `cases/<id>/docs/D2-mtsamples-<row>.txt` byte-exact. Network only, no key. The downloaded text is git-ignored and never committed.
+- `scripts/draft_authored.py` — route 1: a drafting spec (kept in the private repo) → the data-line model → authored documents plus a fact → quote map, then four deterministic checks (quote verbatim and unique, value inside the quote, assertion cue in the same sentence, requested wording present). Every raw reply is saved to the required `--raw-out` (a private path) before it is parsed. Needs `OPENAI_API_KEY`.
+- `scripts/propose_candidates.py` — route 2: real documents → candidate facts with located quotes, written in the adjudication `candidate` shape (allow-list keys with controlled values only; the quote text stays in the raw reply, which the required `--raw-out` saves to a private path before parsing). Needs `OPENAI_API_KEY`.
+- `scripts/keyword_scan.py` — deterministic scan of the W-01 terms (`rules/scan-terms-v1.yaml`) and every drug name in `rules/drugs-v1.yaml`; lists sentences not covered by any candidate quote as `doc_id`, offsets, `sha8` and term; a candidate covers a sentence only if it is `located` and its `sha8` still matches the text. With `--doc` every file needs an explicit de-identified `--doc-id` (file names are never used). No key.
+- `scripts/validate_gold.py` — validates `blind_draft.json`, `adjudication.jsonl` and `expected.json` against the contract and guide shapes; prints field paths and error types only. No key.
+
+Holdout variants listed in `splits.yaml` are never read by these tools, private outputs (`--raw-out`, `--out-record`) are refused inside the public checkout, and no tool writes an annotator-owned file (`expected.json`, `blind_draft.json`, `adjudication.jsonl`, `input.yaml`, `case.yaml`). Keys go in `.env` (see `.env.example`), which is git-ignored. Prompts, drafting specs, drafting records and raw model responses live in the private companion repo; the public repo holds only the tools, the frozen cue and scan-term tables, and the sanitized outputs. Install the extra dependency with `uv sync --group dev --group data`.
+
 ## License
 
 This repository is not yet licensed. Third-party materials are used under their own licenses; see NOTICE (to be added).
