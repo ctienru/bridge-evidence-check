@@ -1,0 +1,34 @@
+# Synthetic route 1 spec used by tests/test_drafting.py. Not a real case.
+case_id: case-synthetic
+documents:
+  - doc_id: D1-referral
+    role: referral
+    instructions: A short referral letter from a primary care clinic to a weight clinic.
+facts:
+  - fact_id: F1
+    doc_id: D1-referral
+    field: anthropometrics
+    kind: bmi
+    value: "41.2"
+    unit: kg/m2
+    certainty: present
+    subject: patient
+    temporality: current
+    event_date: 2025-03-15
+    must_use: ["y.o."]
+  - fact_id: F2
+    doc_id: D1-referral
+    field: diagnoses
+    concept: stroke
+    value: stroke
+    certainty: negated
+    subject: patient
+    temporality: current
+  - fact_id: F3
+    doc_id: D1-referral
+    field: diagnoses
+    concept: t2dm
+    value: diabetes
+    certainty: present
+    subject: family
+    temporality: current

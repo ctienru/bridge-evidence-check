@@ -16,38 +16,22 @@ from typing import Any, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-# --- Machine codes (13 §1) -----------------------------------------------------------
+from bridge_check.enums import CONDITION_IDS, EXCLUSION_IDS, STATUS_CODES, Status
 
-Status = Literal["supported", "not_supported", "insufficient", "conflict", "review"]
-STATUS_CODES: tuple[str, ...] = ("supported", "not_supported", "insufficient", "conflict", "review")
+# --- Machine codes and IDs: defined once in `enums.py`, re-exported here -----------------
 
-# --- Condition and sub-result IDs (13 §2) --------------------------------------------
-
-CONDITION_IDS: tuple[str, ...] = (
-    "age_18",
-    "bmi_path_a",
-    "bmi_path_b",
-    "bmi_path_b.bmi",
-    "bmi_path_b.hfpef",
-    "bmi_path_b.htn",
-    "bmi_path_b.ckd",
-    "bmi_path_c",
-    "bmi_path_c.bmi",
-    "bmi_path_c.prediabetes",
-    "bmi_path_c.mi",
-    "bmi_path_c.stroke",
-    "bmi_path_c.pad",
-    "exclusion.t2dm",
-    "exclusion.osa",
-    "exclusion.mash",
-    "exclusion.part_d_glp1",
-    "patient_identity",
-    "lifestyle.nutrition",
-    "lifestyle.activity",
-)
-"""Every fixed condition ID. `claim.<id>` entries are dynamic and are not rules-table rows."""
-
-EXCLUSION_IDS: tuple[str, ...] = tuple(i for i in CONDITION_IDS if i.startswith("exclusion."))
+__all__ = [
+    "ANTIHYPERTENSIVE_CLASSES",
+    "CONDITION_IDS",
+    "COMPUTE_NAMES",
+    "DrugTable",
+    "EXCLUSION_IDS",
+    "RulesTable",
+    "STATUS_CODES",
+    "Status",
+    "load_drugs",
+    "load_rules",
+]
 
 # String values allowed in `project_policies`: a machine status code (13 §1) or one of the
 # non-status enum values used by 06 §3.7.

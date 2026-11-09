@@ -1,0 +1,126 @@
+# Frozen copy of the cue-word table in docs/annotation-guide.md §3.2 (A-06, A-07, A-08).
+# The verifier's check_assertion (plan item 5) and the drafting check (route 1 step 3) both
+# load this file. Any change here is a change to the verifier and therefore a guideline
+# version bump (W-02): edit the guide first, then copy the table here and bump `version`.
+# Default axis values (present / patient / current) have no cues: a mention outside every
+# cue's scope takes the defaults (A-05).
+version: cues-v1
+axes:
+  certainty:
+    negated:
+      - "no"
+      - "not"
+      - denies
+      - denied
+      - denying
+      - negative for
+      - without
+      - free of
+      - absent
+      - none
+      - never had
+      - ruled out
+      - r/o'd
+      - excluded
+    uncertain:
+      - r/o
+      - rule out
+      - possible
+      - possibly
+      - probable
+      - probably
+      - likely
+      - suspected
+      - suspicion of
+      - questionable
+      - "?"
+      - vs
+      - versus
+      - differential includes
+      - consider
+      - cannot exclude
+      - pending
+      - to be evaluated
+      - working diagnosis
+  subject:
+    family:
+      - mother
+      - father
+      - mom
+      - dad
+      - brother
+      - sister
+      - sibling
+      - son
+      - daughter
+      - aunt
+      - uncle
+      - grandmother
+      - grandfather
+      - maternal
+      - paternal
+      - family history
+      - FH
+      - FHx
+      - runs in the family
+    other:
+      - wife
+      - husband
+      - spouse
+      - partner
+      - donor
+      - roommate
+      - patients with
+  temporality:
+    historical:
+      - history of
+      - hx
+      - h/o
+      - hx of
+      - prior
+      - previous
+      - previously
+      - remote
+      - in the past
+      - years ago
+      - s/p
+      - status post
+      - former
+    resolved:
+      - resolved
+      - in remission
+      - remission
+      - cured
+      - no longer has
+      - no longer meets criteria
+      - off all medication with normal values
+    hypothetical:
+      - risk of
+      - at risk for
+      - if
+      - should she develop
+      - may develop
+      - could
+      - counseled regarding
+      - risks include
+      - complications include
+      - in the event of
+      - would
+# Scope terminators (A-06): a cue acts to its right until one of these.
+terminators:
+  - but
+  - however
+  - except
+  - ";"
+sentence_end: true
+list_item_boundary: true
+# Right-hand patterns (A-07, A-08): the only cues that apply when they stand to the right
+# of the mention ("... was ruled out", "HFpEF?").
+right_hand_patterns:
+  - ruled out
+  - r/o'd
+  - excluded
+  - resolved
+  - in remission
+  - pending
+  - "?"

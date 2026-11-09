@@ -20,6 +20,12 @@ Machine-level names and rules (condition IDs, status codes, decision tables, sch
 - Do not call `messages.parse()`. Save the raw response first, then validate.
 - Do not add Streamlit, RAG, an agent framework, or PostgreSQL.
 - Do not add a LICENSE file.
+- Do not import `bridge_check.dataside` from the pipeline (`cli`, `extract`, `verify`, `compute`, `rules`, `store`).
+
+## Models
+- Extractor under test: `claude-sonnet-5-5` (Anthropic). Its output is verified, computed on and scored; it never becomes gold.
+- Data side (`src/bridge_check/dataside/`, `scripts/draft_authored.py`, `scripts/propose_candidates.py`): `gpt-6.1-sol` (OpenAI). It has no dated snapshot ID, so every call records the response `model` field and a UTC timestamp in the raw archive (`--raw-out`, private repo) and in `drafted_by`.
+- Neither model's output enters gold without human verification (annotation guide P-02, P-03).
 
 ## Invariants (tests must hold these)
 - Without a verified GLP-1 start date, BMI sub-results and pathways A/B/C are never `supported`.

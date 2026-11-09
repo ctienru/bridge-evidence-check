@@ -1,0 +1,10 @@
+{
+  "documents": {
+    "D1-referral": "Dear colleague,\n\nI am referring this 54 y.o. patient for weight management. On 2025-03-15 her BMI was 41.2 (kg/m2). She denies any stroke. Her mother has diabetes.\n\nKind regards\n"
+  },
+  "quote_map": {
+    "F1": "her BMI was 41.2",
+    "F2": "She denies any stroke.",
+    "F3": "Her mother has diabetes."
+  }
+}

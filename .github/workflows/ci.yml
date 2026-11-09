@@ -30,5 +30,23 @@ jobs:
           fetch-depth: 0  # freeze_splits.py compares splits.yaml against the PR base
       - uses: astral-sh/setup-uv@v5
       - run: uv sync --locked
+      - name: Fetch MTSamples documents
+        id: fetch
+        continue-on-error: true
+        run: |
+          set +e
+          uv run python scripts/fetch_mtsamples.py
+          code=$?
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          exit $code
+      - name: Report MTSamples availability
+        run: |
+          code="${{ steps.fetch.outputs.code }}"
+          if [ "$code" = "2" ]; then
+            echo "MTSamples unavailable (exit 2)" >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$code" != "0" ]; then
+            echo "fetch_mtsamples failed with exit $code (hash or selection error)" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
       - run: uv run python scripts/freeze_splits.py --check --base "${{ github.event.pull_request.base.sha || github.event.before }}"
       - run: uv run python scripts/check_rules.py

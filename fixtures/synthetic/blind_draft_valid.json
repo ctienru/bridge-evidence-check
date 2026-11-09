@@ -1,0 +1,32 @@
+{
+  "variant_id": "case-synthetic",
+  "drafted_at": "2026-11-08",
+  "conditions": [
+    {"id": "age_18", "status": "supported"},
+    {"id": "bmi_path_a", "status": "supported"},
+    {"id": "bmi_path_b", "status": "insufficient"},
+    {"id": "bmi_path_b.bmi", "status": "supported"},
+    {"id": "bmi_path_b.hfpef", "status": "insufficient"},
+    {"id": "bmi_path_b.htn", "status": "insufficient"},
+    {"id": "bmi_path_b.ckd", "status": "insufficient"},
+    {"id": "bmi_path_c", "status": "insufficient"},
+    {"id": "bmi_path_c.bmi", "status": "supported"},
+    {"id": "bmi_path_c.prediabetes", "status": "insufficient"},
+    {"id": "bmi_path_c.mi", "status": "insufficient"},
+    {"id": "bmi_path_c.stroke", "status": "not_supported"},
+    {"id": "bmi_path_c.pad", "status": "insufficient"},
+    {"id": "exclusion.t2dm", "status": "insufficient"},
+    {"id": "exclusion.osa", "status": "insufficient"},
+    {"id": "exclusion.mash", "status": "insufficient"},
+    {"id": "exclusion.part_d_glp1", "status": "insufficient"},
+    {"id": "patient_identity", "status": "supported"},
+    {"id": "lifestyle.nutrition", "status": "supported"},
+    {"id": "lifestyle.activity", "status": "insufficient"}
+  ],
+  "inventory": [
+    {"field": "anthropometrics", "kind": "bmi", "presence": "present", "location": "D2-synthetic-note / vitals paragraph"},
+    {"field": "diagnoses", "concept": "mash", "presence": "absent", "location": null},
+    {"field": "medications", "kind": "antihypertensive", "presence": "unsure", "location": "D1-referral / medication list"}
+  ],
+  "notes": ["two weights in D2, different paragraphs"]
+}

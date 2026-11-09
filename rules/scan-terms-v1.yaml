@@ -1,0 +1,102 @@
+# Frozen copy of guide W-01 (docs/annotation-guide.md §8): the deterministic keyword scan
+# lists every sentence containing one of these terms that no candidate quote covers.
+# Matching is case-insensitive; word-boundary for alphanumeric terms, plain substring for
+# terms containing other characters ("GLP-1", "A1c", "Part D"). Every `names:` entry of the
+# file named in `include_drug_names_from` is scanned as well. A change here follows a
+# change to W-01 and bumps `version`.
+version: scan-terms-v1
+include_drug_names_from: rules/drugs-v1.yaml
+terms:
+  # from the planning documents
+  - diabetes
+  - A1c
+  - OSA
+  - CPAP
+  - steatosis
+  - MASH
+  - fibrosis
+  - BMI
+  - kg
+  - lb
+  - mmHg
+  - semaglutide
+  - Wegovy
+  - tirzepatide
+  - Part D
+  - Medicaid
+  - dietitian
+  - exercise
+  # proposed additions
+  - DM
+  - T2DM
+  - prediabetes
+  - HbA1c
+  - glucose
+  - metformin
+  - insulin
+  - HFpEF
+  - heart failure
+  - ejection fraction
+  - EF
+  - CKD
+  - eGFR
+  - creatinine
+  - MI
+  - infarction
+  - stroke
+  - CVA
+  - TIA
+  - PAD
+  - claudication
+  - hypertension
+  - HTN
+  - BP
+  - blood pressure
+  - apnea
+  - AHI
+  - sleep study
+  - NASH
+  - steatohepatitis
+  - biopsy
+  - FibroScan
+  - kPa
+  - cirrhosis
+  - height
+  - weight
+  - lbs
+  - cm
+  - inches
+  - Zepbound
+  - Ozempic
+  - Mounjaro
+  - Saxenda
+  - liraglutide
+  - Foundayo
+  - GLP-1
+  - Bridge
+  - copay
+  - nutrition
+  - diet
+  - Noom
+  - Weight Watchers
+  - walking
+  - gym
+  - physical therapy
+  - DOB
+  - MRN
+  - MBI
+  - Medicare
+  - obesity
+  - obese
+  - IDDM
+  - NIDDM
+  - SGLT2
+  - dapagliflozin
+  - Farxiga
+  - empagliflozin
+  - Jardiance
+  - Medifast
+  - NutriSystem
+  - Jenny Craig
+  - snoring
+  - sedentary

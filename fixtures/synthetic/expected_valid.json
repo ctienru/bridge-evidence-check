@@ -1,0 +1,34 @@
+{
+  "variant_id": "case-synthetic",
+  "guideline_version": 1,
+  "facts": [
+    {"field": "anthropometrics", "kind": "bmi", "norm_value": 46.0, "norm_unit": "kg/m2",
+     "doc_id": "D2-mtsamples-0000", "start": 812, "end": 833,
+     "quote_sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+     "certainty": "present", "subject": "patient", "temporality": "current",
+     "event_date": "2025-03-14", "relative_to_glp1_initiation": "at",
+     "origin": "human_inventory", "review": "human_verified", "guideline_clause": null},
+    {"field": "diagnoses", "concept": "hypertension",
+     "doc_id": "D1-referral", "start": 220, "end": 268, "quote": "synthetic referral sentence about blood pressure",
+     "certainty": "present", "subject": "patient", "temporality": "current",
+     "event_date": null, "relative_to_glp1_initiation": "unknown",
+     "origin": "spec", "review": "human_verified", "guideline_clause": null},
+    {"field": "glp1_start", "drug_canonical": "semaglutide",
+     "doc_id": "D1-referral", "start": 300, "end": 352, "quote": "synthetic sentence naming the drug and a start date",
+     "certainty": "present", "subject": "patient", "temporality": "current",
+     "event_date": "2025-03-15", "relative_to_glp1_initiation": "at",
+     "origin": "spec", "review": "human_verified", "guideline_clause": "T-01"}
+  ],
+  "expected_absent": [
+    {"field": "lifestyle", "kind": "activity"},
+    {"field": "diagnoses", "concept": "mash"}
+  ],
+  "conditions": [
+    {"id": "bmi_path_a", "status": "supported", "flags": [], "reason": "BMI at initiation above 35; see D2-mtsamples-0000[812:833] 01234567"},
+    {"id": "exclusion.osa", "status": "review", "flags": ["imprecise_source"], "reason": "osa present / patient / historical; severity to be judged; see D2-mtsamples-0000[1400:1460] 89abcdef"}
+  ],
+  "case_flags": [],
+  "claims": [{"id": "claim.bmi_bracket", "status": "supported"}],
+  "gold_version": 1,
+  "changes": []
+}
