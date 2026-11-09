@@ -1,7 +1,7 @@
 """Real-API extraction on the synthetic smoke case. Skipped without ANTHROPIC_API_KEY.
 
 This is where the API actually compiles the schema (the union limit is enforced server
-side); W11 repeats it on the frozen cases and records tokens, latency and errors.
+side); a later live run repeats it on the frozen cases and records tokens, latency and errors.
 """
 
 from __future__ import annotations

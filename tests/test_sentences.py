@@ -4,7 +4,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from bridge_check.dataside.sentences import SPLITTER_VERSION, sentence_containing, split_sentences
+from bridge_check.sentences import SPLITTER_VERSION, sentence_containing, split_sentences
 
 
 def _texts(doc: str) -> list[str]:

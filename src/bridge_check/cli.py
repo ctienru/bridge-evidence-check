@@ -1,10 +1,12 @@
 """Command-line entry point: `bridge`.
 
-`check <case>` runs input → extract → store. verify, compute and rules are W09 / W10 and
-are not implemented yet, so a full `check` ends `failed` with `failed_stage=verify` and a
+`check <case>` runs input → extract → verify → store. compute and rules are not
+implemented yet, so a full `check` ends `failed` with `failed_stage=compute` and a
 `NotImplemented` dead letter: it never reports a run as completed when later stages did
-not run. The hidden `--stop-after extract` (tests only) ends the run `completed` at the
-extraction boundary and records `stopped_after=extract` on the run.
+not run. The hidden `--stop-after extract|verify` (tests only) ends the run `completed` at
+that stage boundary and records `stopped_after` on the run.
+
+Evidence is printed only as `doc_id[start:end] sha8` with its statuses (`--explain`).
 
 Exit codes (contract §1): 0 = completed, 3 = failed, 4 = another run holds the lock.
 Output never contains document text, quotes or patient names.
@@ -29,14 +31,17 @@ from bridge_check.logs import configure_logging, log_event
 from bridge_check.manifest import CHECKOUT_ROOT
 from bridge_check.runlock import RunLockHeld, exclusive_run_lock, resolve_db_path
 from bridge_check.schema import SCHEMA_VERSION
+from bridge_check.sentences import SPLITTER_VERSION
 from bridge_check.store import (
     DatabaseHasLinks,
+    SchemaVersionMismatch,
     SqliteTooOld,
     Store,
     open_store,
     recover_orphaned_runs,
     require_sqlite_version,
 )
+from bridge_check.verify import Document, VerifyContext, VerifyError, verify_case
 
 EXIT_OK = 0
 EXIT_FAILED = 3
@@ -44,11 +49,16 @@ EXIT_LOCKED = 4
 
 DB_ENV = "BRIDGE_DB"
 DEFAULT_DB = "bridge.db"
+DB_LABEL = "the database file"
+"""Fixed label for the database in messages: its path is user-chosen and never printed."""
 RULES_PATH = CHECKOUT_ROOT / "rules" / "bridge-v1.yaml"
 NOT_IMPLEMENTED = (
-    "verify, compute and rules are not implemented yet (W09/W10); "
-    "the run stops after extraction and is recorded as failed at verify"
+    "compute and rules are not implemented yet; "
+    "the run stops after verification and is recorded as failed at compute"
 )
+VERIFY_FAILED = "unexpected error while verifying"
+STORE_FAILED = "could not store the verified evidence"
+FAKE_REPLY = "fake-reply.json"
 
 _STUB_COMMANDS = {
     "eval": "Evaluate a split against frozen gold.",
@@ -69,7 +79,7 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("--explain", action="store_true", help="explain each status")
     check.add_argument("--json", action="store_true", help="print the run as JSON")
     check.add_argument("--db", help=f"SQLite database (default: ${DB_ENV} or ./{DEFAULT_DB})")
-    check.add_argument("--stop-after", choices=["extract"], help=argparse.SUPPRESS)
+    check.add_argument("--stop-after", choices=["extract", "verify"], help=argparse.SUPPRESS)
 
     history = sub.add_parser("history", help="Show past runs for one case.")
     history.add_argument("case", help="case directory, or a variant id")
@@ -105,13 +115,16 @@ def code_sha(root: Path = CHECKOUT_ROOT) -> str:
     return f"{sha}-dirty" if dirty else sha
 
 
-def make_client() -> Any:
+def make_client(case_dir: Path | None = None) -> Any:
     """The fake client when `BRIDGE_FAKE_CLIENT` is set, else the real SDK client with SDK
-    retries disabled (AGENTS.md)."""
+    retries disabled (AGENTS.md). With the default fake scenario, a case directory that
+    holds its own scripted reply (`fake-reply.json`, synthetic fixtures only) uses it."""
     from bridge_check.fake_client import ENV_VAR, FakeClient, scenario
 
     name = os.environ.get(ENV_VAR, "").strip()
     if name:
+        if name in ("1", "valid") and case_dir is not None and (case_dir / FAKE_REPLY).is_file():
+            return FakeClient([case_dir / FAKE_REPLY])
         return FakeClient([scenario(name)])
     import anthropic
 
@@ -121,15 +134,22 @@ def make_client() -> Any:
 # --- check -------------------------------------------------------------------------------------
 
 
-def run_report(store: Store, run_id: int, extraction: dict[str, Any] | None) -> dict[str, Any]:
+def run_report(
+    store: Store, run_id: int, extraction: dict[str, Any] | None, *, explain: bool = False
+) -> dict[str, Any]:
     """The structure printed by `--json` (and later used by the report)."""
     run = store.case_run(run_id)
-    if run["status"] == "failed" and run["failed_stage"] == "verify":
+    if run["status"] == "failed" and run["failed_stage"] == "compute":
         message = NOT_IMPLEMENTED
     elif run["stopped_after"] == "extract":
         message = (
             "completed at the extraction boundary (--stop-after extract); "
             "verify, compute and rules did not run"
+        )
+    elif run["stopped_after"] == "verify":
+        message = (
+            "completed at the verification boundary (--stop-after verify); "
+            "compute and rules did not run"
         )
     elif run["status"] == "failed":
         message = f"failed at {run['failed_stage']}"
@@ -159,7 +179,8 @@ def run_report(store: Store, run_id: int, extraction: dict[str, Any] | None) -> 
         }
         for d in store.dead_letters_for_run(run_id)
     ]
-    return {
+    evidence = store.evidence_for_run(run_id)
+    report: dict[str, Any] = {
         "run_id": run_id,
         "case_id": run["case_id"],
         "status": run["status"],
@@ -174,6 +195,7 @@ def run_report(store: Store, run_id: int, extraction: dict[str, Any] | None) -> 
             "cost_usd": _sum_cost(attempts),
         },
         "dead_letters": dead_letters,
+        "verification": _verification_summary(evidence, store.doc_facts_for_run(run_id)),
         "versions": {
             "prompt": run["prompt_version"],
             "schema": run["schema_version"],
@@ -185,6 +207,47 @@ def run_report(store: Store, run_id: int, extraction: dict[str, Any] | None) -> 
         "started_at": run["started_at"],
         "finished_at": run["finished_at"],
     }
+    if explain:
+        report["evidence"] = [{k: e[k] for k in _EXPLAIN_KEYS} for e in evidence]
+    return report
+
+
+_EXPLAIN_KEYS = (
+    "evidence_id",
+    "ref",
+    "field",
+    "position_status",
+    "assertion_check",
+    "exclusion_reasons",
+    "flags",
+)
+
+
+def _verification_summary(
+    evidence: list[dict[str, Any]], doc_facts: list[dict[str, Any]]
+) -> dict[str, Any] | None:
+    """Counts only: no quote and no document text."""
+    if not evidence and not doc_facts:
+        return None
+    return {
+        "evidence_count": len(evidence),
+        "by_position_status": _count_by(evidence, "position_status"),
+        # Layer 4 does not run on `not_found` evidence; those rows are not counted here.
+        "by_assertion_check": _count_by(
+            [e for e in evidence if e["assertion_check"] is not None], "assertion_check"
+        ),
+        "by_exclusion_reason": _count_items(evidence, "exclusion_reasons"),
+        "by_flag": _count_items(evidence, "flags"),
+        "doc_identity": {d["doc_id"]: d["identity_status"] for d in doc_facts},
+    }
+
+
+def _count_items(rows: list[dict[str, Any]], key: str) -> dict[str, int]:
+    out: dict[str, int] = {}
+    for r in rows:
+        for item in r[key]:
+            out[item] = out.get(item, 0) + 1
+    return dict(sorted(out.items()))
 
 
 def _count_by(rows: list[dict[str, Any]], key: str) -> dict[str, int]:
@@ -200,10 +263,21 @@ def _sum_cost(rows: list[dict[str, Any]]) -> float | None:
 
 
 def _fail(
-    store: Store, run_id: int, case_id: str, stage: str, error_type: str, message: str
+    store: Store,
+    run_id: int,
+    case_id: str,
+    stage: str,
+    error_type: str,
+    message: str,
+    *,
+    fact_path: str | None = None,
 ) -> None:
     store.insert_dead_letter(
-        case_run_id=run_id, stage=stage, error_type=error_type, message=message
+        case_run_id=run_id,
+        stage=stage,
+        error_type=error_type,
+        message=message,
+        fact_path=fact_path,
     )
     store.finish_case_run(
         run_id, status="failed", failed_stage=stage, error=f"{error_type}: {message}"
@@ -222,6 +296,7 @@ def check_case(
         code_sha=code_sha(),
         prompt_version=PROMPT_VERSION,
         schema_version=SCHEMA_VERSION,
+        splitter_version=SPLITTER_VERSION,
     )
     log_event("run_started", run_id=run_id, case_id=cid, stage="input")
 
@@ -240,7 +315,7 @@ def check_case(
     )
 
     try:
-        client = make_client()
+        client = make_client(case.case_dir)
         result = extract(case, client, store, run_id=run_id)
     except ExtractionFailed as exc:
         store.finish_case_run(
@@ -278,7 +353,33 @@ def check_case(
         log_event("run_completed", run_id=run_id, case_id=case.case_id, stage="extract")
         return run_id, summary
 
-    _fail(store, run_id, cid, "verify", "NotImplemented", NOT_IMPLEMENTED)
+    docs = {
+        r.doc_id: Document(r.doc_id, r.role, case.texts[r.doc_id], case.doc_sha256[r.doc_id])
+        for r in case.input.documents
+    }
+    try:
+        verified = verify_case(
+            result.extraction, docs, VerifyContext.load(case.input.primary_patient)
+        )
+    except VerifyError as exc:
+        _fail(store, run_id, cid, "verify", exc.error_type, VERIFY_FAILED, fact_path=exc.fact_path)
+        return run_id, summary
+    except Exception as exc:  # noqa: BLE001 - any other error fails the run, recorded
+        _fail(store, run_id, cid, "verify", type(exc).__name__, VERIFY_FAILED)
+        return run_id, summary
+    try:
+        store.save_verification(run_id, verified)
+    except Exception as exc:  # noqa: BLE001 - the transaction rolled back; recorded
+        _fail(store, run_id, cid, "store", type(exc).__name__, STORE_FAILED)
+        return run_id, summary
+    log_event("verification_stored", run_id=run_id, case_id=case.case_id, stage="verify")
+
+    if stop_after == "verify":
+        store.finish_case_run(run_id, status="completed", stopped_after="verify")
+        log_event("run_completed", run_id=run_id, case_id=case.case_id, stage="verify")
+        return run_id, summary
+
+    _fail(store, run_id, cid, "compute", "NotImplemented", NOT_IMPLEMENTED)
     return run_id, summary
 
 
@@ -296,9 +397,21 @@ def _print_check(report: dict[str, Any], explain: bool) -> None:
     by_status = ", ".join(f"{k}={v}" for k, v in summary["by_status"].items()) or "none"
     print(f"  attempts this run: {summary['count']} ({by_status})")
     for d in report["dead_letters"]:
-        print(f"  dead letter: {d['stage']} {d['error_type']}: {d['message']}")
+        where = f" at {d['fact_path']}" if d["fact_path"] else ""
+        print(f"  dead letter: {d['stage']} {d['error_type']}{where}: {d['message']}")
+    ver = report["verification"]
+    if ver is not None:
+        counts = ", ".join(f"{k}={v}" for k, v in ver["by_position_status"].items())
+        print(f"  evidence: {ver['evidence_count']} ({counts or 'none'})")
     if explain:
-        print("  --explain: no condition statuses to explain; decisions are produced from W10 on")
+        for e in report.get("evidence", []):
+            reasons = ",".join(e["exclusion_reasons"]) or "-"
+            flags = ",".join(e["flags"]) or "-"
+            print(
+                f"  {e['ref']} {e['field']} position={e['position_status']} "
+                f"assertion={e['assertion_check'] or '-'} excluded={reasons} flags={flags}"
+            )
+        print("  --explain: no condition statuses yet; compute and rules are not implemented")
 
 
 def cmd_check(args: argparse.Namespace) -> int:
@@ -312,7 +425,7 @@ def cmd_check(args: argparse.Namespace) -> int:
                 if recovered:
                     log_event("recovered_orphaned_runs", stage="interrupted")
                 run_id, extraction = check_case(store, args.case, args.stop_after)
-                report = run_report(store, run_id, extraction)
+                report = run_report(store, run_id, extraction, explain=args.explain)
             finally:
                 store.close()
     except RunLockHeld:
@@ -323,6 +436,9 @@ def cmd_check(args: argparse.Namespace) -> int:
         return EXIT_LOCKED
     except (SqliteTooOld, DatabaseHasLinks) as exc:
         print(f"bridge check: {exc}", file=sys.stderr)
+        return EXIT_FAILED
+    except SchemaVersionMismatch as exc:
+        print(f"bridge check: {DB_LABEL} {exc.for_file()}", file=sys.stderr)
         return EXIT_FAILED
     if args.json:
         print(json.dumps(report, indent=2, ensure_ascii=False))
@@ -344,6 +460,9 @@ def cmd_history(args: argparse.Namespace) -> int:
         store = open_store(db)
     except (SqliteTooOld, DatabaseHasLinks) as exc:
         print(f"bridge history: {exc}", file=sys.stderr)
+        return EXIT_FAILED
+    except SchemaVersionMismatch as exc:
+        print(f"bridge history: {DB_LABEL} {exc.for_file()}", file=sys.stderr)
         return EXIT_FAILED
     try:
         rows = store.history(case_id)
@@ -368,7 +487,7 @@ def cmd_history(args: argparse.Namespace) -> int:
     )
     lines = [header]
     for r in rows:
-        status = r["status"] + ("(stop-after extract)" if r["stopped_after"] else "")
+        status = r["status"] + (f"(stop-after {r['stopped_after']})" if r["stopped_after"] else "")
         lines.append(
             (
                 str(r["id"]),

@@ -6,7 +6,7 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from bridge_check.dataside.cues import DEFAULT_CUES_PATH, Cues, cue_in_sentence, load_cues
+from bridge_check.cues import DEFAULT_CUES_PATH, Cues, cue_in_sentence, load_cues
 from bridge_check.enums import AXES, AXIS_DEFAULTS
 
 

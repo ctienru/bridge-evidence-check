@@ -8,13 +8,19 @@
   `INSERT OR REPLACE`, `AUTOINCREMENT` or `rowid`.
 - Connections run in autocommit mode; multi-statement writes use `transaction()`, so no
   write transaction is ever left open while the caller waits on the API.
+- Schema version: `SCHEMA_VERSION` is written to `PRAGMA user_version` when a database is
+  created and compared on every open. A database from another version raises
+  `SchemaVersionMismatch` before any row is written or any API call is made. There are no
+  migrations: delete the file or point `BRIDGE_DB` at a new one. Version 1 was the first
+  store; version 2 added `--stop-after verify` and the evidence columns written by verify.
 
 The table design follows planning 06 §4; where it and `docs/contracts.md` differ, the
-contract wins (see the W08 PR for the list).
+contract wins.
 """
 
 from __future__ import annotations
 
+import json
 import os
 import sqlite3
 from collections.abc import Iterator, Mapping, Sequence
@@ -22,7 +28,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from bridge_check.enums import (
     ASSERTION_CHECKS,
@@ -49,8 +55,31 @@ from bridge_check.enums import (
     TEMPORALITY,
 )
 
+if TYPE_CHECKING:
+    from bridge_check.verify import VerifyResult
+
 MIN_SQLITE = (3, 37, 0)
 """`STRICT` tables need SQLite 3.37 (06 §4)."""
+
+SCHEMA_VERSION = 2
+"""Store schema version, kept in `PRAGMA user_version`. Bump on any change to `schema_sql()`
+or to an enum CHECK list; see the module docstring."""
+
+
+class SchemaVersionMismatch(RuntimeError):
+    """The database was created by another store schema version (no migrations)."""
+
+    def __init__(self, found: int, expected: int) -> None:
+        super().__init__(
+            f"the database was created by an older schema (user_version {found}, expected "
+            f"{expected}). Delete it or point BRIDGE_DB at a new file."
+        )
+        self.found = found
+        self.expected = expected
+
+    def for_file(self) -> str:
+        """The message with the leading "the database", for use after a file name."""
+        return str(self).removeprefix("the database ")
 
 
 class SqliteTooOld(RuntimeError):
@@ -314,10 +343,20 @@ def connect(db_path: Path | str) -> sqlite3.Connection:
     return conn
 
 
+def user_version(conn: sqlite3.Connection) -> int:
+    return int(conn.execute("PRAGMA user_version").fetchone()[0])
+
+
 def create_schema(conn: sqlite3.Connection, *, new_database: bool) -> None:
-    """Create every table that does not exist yet. A new database is switched to WAL once."""
+    """Create every table that does not exist yet. A new database is switched to WAL once and
+    stamped with `SCHEMA_VERSION`; an existing one must carry exactly that version."""
     if new_database:
         conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute(f"PRAGMA user_version = {SCHEMA_VERSION:d}")
+    else:
+        found = user_version(conn)
+        if found != SCHEMA_VERSION:
+            raise SchemaVersionMismatch(found, SCHEMA_VERSION)
     with transaction(conn):
         for stmt in schema_sql():
             conn.execute(stmt)
@@ -326,6 +365,19 @@ def create_schema(conn: sqlite3.Connection, *, new_database: bool) -> None:
 def open_store(db_path: Path | str) -> Store:
     path = Path(db_path)
     new_database = not path.exists() or path.stat().st_size == 0
+    if not new_database:
+        # Read the version through a read-only connection first: a legacy file with WAL pages
+        # is refused without SQLite checkpointing it on close.
+        require_single_link(path)
+        # `as_uri()` percent-encodes `#`, `?` and spaces, so the file name cannot change the
+        # URI's meaning (a literal `#` would open a different file).
+        ro = sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True)
+        try:
+            found = user_version(ro)
+        finally:
+            ro.close()
+        if found != SCHEMA_VERSION:
+            raise SchemaVersionMismatch(found, SCHEMA_VERSION)
     conn = connect(path)
     create_schema(conn, new_database=new_database)
     return Store(conn)
@@ -616,6 +668,102 @@ class Store:
         if row is None:
             raise KeyError(attempt_id)
         return dict(row)
+
+    # evidence and doc_facts
+
+    def save_verification(self, run_id: int, result: VerifyResult) -> list[int]:
+        """Every `evidence` and `doc_facts` row of the run in one transaction (06 §3.6).
+
+        Returns the evidence ids in the order of `result.evidence`. Any error rolls the
+        whole write back: a run never has part of its evidence.
+        """
+        ids: list[int] = []
+        with transaction(self.conn):
+            for ev in result.evidence:
+                attributes = {**ev.attributes, "fact_path": ev.fact_path, "ref": ev.ref}
+                cur = self.conn.execute(
+                    "INSERT INTO evidence (case_run_id, field, kind, concept, doc_id, "
+                    'doc_sha256, start, "end", quote, attributes, raw_value, raw_unit, '
+                    "event_date, date_precision, certainty_llm, subject_llm, temporality_llm, "
+                    "certainty_checked, subject_checked, temporality_checked, relative_llm, "
+                    "event_date_source, position_status, assertion_check, exclusion_reasons, "
+                    "flags) VALUES "
+                    "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
+                    "?, ?) "
+                    "RETURNING id",
+                    (
+                        run_id,
+                        ev.field,
+                        ev.kind,
+                        ev.concept,
+                        ev.doc_id,
+                        ev.doc_sha256,
+                        ev.start,
+                        ev.end,
+                        ev.quote,
+                        json.dumps(attributes, sort_keys=True, ensure_ascii=False),
+                        ev.raw_value,
+                        ev.raw_unit,
+                        ev.event_date,
+                        ev.date_precision,
+                        ev.certainty_llm,
+                        ev.subject_llm,
+                        ev.temporality_llm,
+                        ev.certainty_checked,
+                        ev.subject_checked,
+                        ev.temporality_checked,
+                        ev.relative_llm,
+                        ev.event_date_source,
+                        ev.position_status,
+                        ev.assertion_check,
+                        json.dumps(list(ev.exclusion_reasons)),
+                        json.dumps(list(ev.flags)),
+                    ),
+                )
+                ids.append(int(cur.fetchone()[0]))
+            for df in result.doc_facts:
+                evidence_id = (
+                    ids[df.identity_evidence_index]
+                    if df.identity_evidence_index is not None
+                    else None
+                )
+                self.conn.execute(
+                    "INSERT INTO doc_facts (case_run_id, doc_id, identity_status, "
+                    "identity_evidence_id) VALUES (?, ?, ?, ?)",
+                    (run_id, df.doc_id, df.identity_status, evidence_id),
+                )
+        return ids
+
+    def evidence_for_run(self, run_id: int) -> list[dict[str, Any]]:
+        """Statuses of every evidence row of the run; no quote, no attributes text."""
+        rows = self.conn.execute(
+            "SELECT id, field, doc_id, position_status, assertion_check, exclusion_reasons, "
+            "flags, attributes FROM evidence WHERE case_run_id = ? ORDER BY id",
+            (run_id,),
+        ).fetchall()
+        out = []
+        for r in rows:
+            out.append(
+                {
+                    "evidence_id": r["id"],
+                    "field": r["field"],
+                    "doc_id": r["doc_id"],
+                    "ref": json.loads(r["attributes"])["ref"],
+                    "position_status": r["position_status"],
+                    "assertion_check": r["assertion_check"],
+                    "exclusion_reasons": json.loads(r["exclusion_reasons"]),
+                    "flags": json.loads(r["flags"]),
+                }
+            )
+        return out
+
+    def doc_facts_for_run(self, run_id: int) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            "SELECT doc_id, doc_date, identity_status, identity_evidence_id FROM doc_facts "
+            "WHERE case_run_id = ? ORDER BY doc_id",
+            (run_id,),
+        ).fetchall()
+        return [dict(r) for r in rows]
 
     # dead letters
 

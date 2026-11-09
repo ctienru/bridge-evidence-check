@@ -1,0 +1,2 @@
+Patient ID: P-0001.
+Family history: mother with diabetes, father with stroke; patient denies diabetes or stroke.

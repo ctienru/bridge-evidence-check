@@ -26,8 +26,7 @@ from typing import Any
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from bridge_check.dataside.cues import Cues, cue_in_sentence
-from bridge_check.dataside.sentences import sentence_containing, split_sentences
+from bridge_check.cues import Cues, cue_in_sentence
 from bridge_check.enums import (
     AXIS_DEFAULTS,
     EXTRACTION_FIELDS,
@@ -37,6 +36,7 @@ from bridge_check.enums import (
     Subject,
     Temporality,
 )
+from bridge_check.sentences import sentence_containing, split_sentences
 from bridge_check.text import locate
 
 # JSON mode requires the word JSON in the messages; never rely on the private prompt for it.

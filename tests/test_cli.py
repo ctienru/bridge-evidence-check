@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -13,11 +14,12 @@ from typing import Any
 
 import pytest
 
-from bridge_check import cli
+from bridge_check import cli, verify
 from bridge_check.cli import EXIT_FAILED, EXIT_OK, main
 from bridge_check.fake_client import FakeClient, fixture
 from bridge_check.input import InputError, load_case
 from bridge_check.logs import LOG_KEYS, log_event
+from bridge_check.store import open_store
 
 ROOT = Path(__file__).resolve().parent.parent
 SMOKE = ROOT / "fixtures" / "synthetic" / "case-smoke"
@@ -43,19 +45,91 @@ def _json(capsys: pytest.CaptureFixture[str], *argv: str) -> tuple[int, dict[str
     return code, json.loads(out.out), out.err
 
 
-def test_check_without_stop_after_fails_at_verify(
+def test_check_without_stop_after_fails_at_compute(
     db: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     code, report, _ = _json(capsys, "check", str(SMOKE), "--db", str(db), "--json")
     assert code == EXIT_FAILED == 3
     assert report["status"] == "failed"
-    assert report["failed_stage"] == "verify"
+    assert report["failed_stage"] == "compute"
     assert "not implemented" in report["message"]
     assert report["extraction"]["source"] == "api"
     assert report["attempt_summary"]["by_status"] == {"parsed": 1}
     assert [(d["stage"], d["error_type"]) for d in report["dead_letters"]] == [
-        ("verify", "NotImplemented")
+        ("compute", "NotImplemented")
     ]
+    assert report["verification"]["evidence_count"] == 16
+    assert report["versions"]["splitter"] == "sentences-v1"
+
+
+def test_stop_after_verify_completes_with_a_summary(
+    db: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    code, report, _ = _json(
+        capsys, "check", str(SMOKE), "--db", str(db), "--json", "--stop-after", "verify"
+    )
+    assert code == EXIT_OK
+    assert report["status"] == "completed"
+    assert report["stopped_after"] == "verify"
+    assert report["dead_letters"] == []
+    ver = report["verification"]
+    assert ver["by_position_status"] == {"verbatim": 16}
+    assert ver["by_assertion_check"] == {"matched": 16}
+    assert ver["by_exclusion_reason"] == {"claim_document": 1}
+    assert ver["by_flag"] == {}
+    assert ver["doc_identity"] == {
+        "D0-pa-form-draft": "match",
+        "D1-referral": "match",
+        "D2-clinical": "missing",
+    }
+    assert "evidence" not in report  # only with --explain
+
+
+def test_explain_lists_evidence_refs_only(db: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    code, report, _ = _json(
+        capsys,
+        "check",
+        str(SMOKE),
+        "--db",
+        str(db),
+        "--json",
+        "--explain",
+        "--stop-after",
+        "verify",
+    )
+    assert code == EXIT_OK
+    refs = [e["ref"] for e in report["evidence"]]
+    assert len(refs) == 16
+    assert all(re.fullmatch(r"[A-Za-z0-9_-]+\[\d+:\d+\] [0-9a-f]{8}", r) for r in refs)
+    main(["check", str(SMOKE), "--db", str(db), "--explain", "--stop-after", "verify"])
+    text = capsys.readouterr().out
+    assert "D2-clinical[78:99]" in text and "position=verbatim" in text
+
+
+def test_exception_in_verify_fails_the_run_with_a_fact_path(
+    db: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    real = verify.verify_fact
+
+    def boom(fact_field: str, fact_path: str, *args: Any, **kwargs: Any) -> Any:
+        if fact_path == "diagnoses[1]":
+            raise ValueError(f"cannot handle {SENTINEL}")
+        return real(fact_field, fact_path, *args, **kwargs)
+
+    monkeypatch.setattr(verify, "verify_fact", boom)
+    code, report, err = _json(capsys, "check", str(SMOKE), "--db", str(db), "--json")
+    assert code == EXIT_FAILED
+    assert report["failed_stage"] == "verify"
+    assert [(d["stage"], d["error_type"], d["fact_path"]) for d in report["dead_letters"]] == [
+        ("verify", "ValueError", "diagnoses[1]")
+    ]
+    assert report["verification"] is None  # nothing was written
+    store = open_store(db)
+    try:
+        assert store.count("evidence") == 0 and store.count("doc_facts") == 0
+    finally:
+        store.close()
+    _assert_absent(json.dumps(report) + err, "--json output or logs")
 
 
 def test_stop_after_extract_completes(db: Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -84,7 +158,7 @@ def test_history_lists_every_run_with_its_source(
     assert code == EXIT_OK
     runs = hist["runs"]
     assert [(r["status"], r["failed_stage"], r["extraction_source"]) for r in runs] == [
-        ("failed", "verify", "api"),
+        ("failed", "compute", "api"),
         ("completed", None, "cache"),
     ]
     assert runs[0]["extraction_id"] == runs[1]["extraction_id"]
@@ -155,6 +229,10 @@ def _plant_sentinel(tmp_path: Path) -> tuple[Path, Path, Path]:
     block = next(b for b in resp["content"] if b["type"] == "text")
     ext = json.loads(block["text"])
     ext["diagnoses"].append({**ext["diagnoses"][0], "quote": f"Note: {SENTINEL}."})
+    # A quote the documents do not contain: reported as `doc_id[-:-] sha8` only.
+    ext["diagnoses"].append({**ext["diagnoses"][0], "quote": f"Absent {SENTINEL} quote."})
+    # Chart text copied into `doc_id` (it fits the id pattern): never echoed in a ref.
+    ext["diagnoses"].append({**ext["diagnoses"][0], "doc_id": SENTINEL, "quote": "Anything."})
     ext["patient_identity"][0]["name"] = SENTINEL
     block["text"] = json.dumps(ext)
     valid = tmp_path / "valid.json"
@@ -175,13 +253,15 @@ def test_sentinel_never_reaches_logs_or_json(
 ) -> None:
     case, valid, invalid = _plant_sentinel(tmp_path)
     reply = valid if scenario == "valid" else invalid
-    monkeypatch.setattr(cli, "make_client", lambda: FakeClient([reply]))
+    monkeypatch.setattr(cli, "make_client", lambda case_dir=None: FakeClient([reply]))
     db = tmp_path / "s.db"
     outputs = []
     for argv in (
         ["check", str(case), "--db", str(db), "--json"],
         ["check", str(case), "--db", str(db), "--json", "--explain"],
         ["check", str(case), "--db", str(db), "--stop-after", "extract"],
+        ["check", str(case), "--db", str(db), "--json", "--explain", "--stop-after", "verify"],
+        ["check", str(case), "--db", str(db), "--explain", "--stop-after", "verify"],
         ["history", str(case), "--db", str(db)],
         ["history", str(case), "--db", str(db), "--json"],
     ):
@@ -192,6 +272,18 @@ def test_sentinel_never_reaches_logs_or_json(
     joined = "\n".join(outputs)
     assert joined.strip()
     _assert_absent(joined, "CLI output or logs")
+    store = open_store(db)
+    try:
+        letters = [
+            d for r in store.history("case-smoke") for d in store.dead_letters_for_run(r["id"])
+        ]
+        _assert_absent(json.dumps(letters), "dead letters")
+        if scenario == "valid":
+            # The quotes really were verified: one located, one not found.
+            assert "D2-clinical[-:-]" in joined and "position=not_found" in joined
+            assert "unresolved-doc[-:-]" in joined
+    finally:
+        store.close()
     # The planted text does reach the request the model sees (it is a document).
     assert SENTINEL in (case / "docs" / "D2-clinical.txt").read_text(encoding="utf-8")
 
@@ -230,7 +322,7 @@ seen = []
 def handler(request):
     seen.append(request.url.path)
     return httpx2.Response(200, text=reply, headers={"content-type": "application/json"})
-def make_client():
+def make_client(case_dir=None):
     http = anthropic.DefaultHttpxClient(transport=httpx2.MockTransport(handler))
     return anthropic.Anthropic(api_key="test-key", max_retries=0, http_client=http)
 cli.make_client = make_client
@@ -253,7 +345,7 @@ def test_sdk_debug_logging_cannot_leak_document_text(tmp_path: Path) -> None:
         timeout=60,
     )
     assert "REQUESTS 1" in result.stderr  # the request really went through the SDK
-    assert result.returncode == EXIT_FAILED  # failed at verify, as every W08 full check
+    assert result.returncode == EXIT_FAILED  # failed at compute, as every full check for now
     assert json.loads(result.stdout)["extraction"]["source"] == "api"
     _assert_absent(result.stdout, "--json output")
     _assert_absent(result.stderr, "stderr")
@@ -291,3 +383,32 @@ def test_case_directory_name_is_not_echoed(
     hist = capsys.readouterr()
     _assert_absent(hist.out + hist.err, "history output")
     assert [r["failed_stage"] for r in json.loads(hist.out)["runs"]] == ["input"]
+
+
+def test_old_schema_database_fails_before_any_call(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import sqlite3
+
+    db = tmp_path / "bridge.db"
+    conn = sqlite3.connect(db)
+    conn.execute("PRAGMA user_version = 1")
+    conn.commit()
+    conn.close()
+    before = db.read_bytes()
+
+    def no_client(case_dir: Path | None = None) -> Any:
+        pytest.fail("the client must not be created when the database is refused")
+
+    monkeypatch.setattr(cli, "make_client", no_client)
+    code = main(["check", str(SMOKE), "--db", str(db), "--json"])
+    out = capsys.readouterr()
+    assert code == EXIT_FAILED
+    assert out.out == ""
+    assert (
+        "the database file was created by an older schema (user_version 1, expected 2)" in out.err
+    )
+    assert str(db) not in out.err and db.name not in out.err  # the path is never printed
+    assert "point BRIDGE_DB at a new file" in out.err
+    assert db.read_bytes() == before
+    assert main(["history", str(SMOKE), "--db", str(db)]) == EXIT_FAILED

@@ -59,8 +59,14 @@ document text, quotes or patient names.
 
 ## Import boundary
 
-`src/bridge_check/dataside/` (drafting, candidates, OpenAI wrapper, cue table, sentence
-splitter) is used only by the scripts above. The pipeline (`cli`, `extract`, `verify`,
+`src/bridge_check/dataside/` (drafting, candidates, OpenAI wrapper) is used only by the scripts above. The pipeline (`cli`, `extract`, `verify`,
 `compute`, `rules`, `store`) never imports it; `tests/test_import_boundary.py` fails if it
-does. Shared modules (`enums`, `gold_schema`, `manifest`, `text`, `rules_schema`) may be
-used by both sides.
+does. Shared modules (`enums`, `gold_schema`, `manifest`, `text`, `rules_schema`, `cues`,
+`sentences`) may be used by both sides; the verifier uses the same cue table and splitter as
+the drafting checks.
+
+Two frozen tables feed the verifier: `rules/cues-v1.yaml` (the cue words of guide §3.2) and
+`rules/verify-terms-v1.yaml`, a matching lexicon (concept aliases, value labels, event words,
+identifier labels, lifestyle cues). Both are fixed-pattern lookups, not semantic
+understanding: an unlisted wording is not recognised and the fact goes to review. A change
+to either file is a change to the verifier and bumps its `version`.

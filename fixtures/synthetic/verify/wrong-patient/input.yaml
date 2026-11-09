@@ -1,0 +1,9 @@
+# Synthetic verify fixture: D2 carries another patient's ID: every D2 fact is wrong_patient and its doc_facts row is mismatch.
+# Every name, id, date and sentence is invented.
+variant_id: verify-wrong-patient
+assessment_date: 2026-10-15
+target_course: {drug: Wegovy, start: 2025-03-15}
+primary_patient: {patient_id: P-0001, name: "Synthetic Patient", dob: 1960-01-01}
+documents:
+  - {doc_id: D1-referral, role: referral}
+  - {doc_id: D2-clinical, role: clinical}

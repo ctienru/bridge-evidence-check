@@ -1,0 +1,281 @@
+# Frozen matching lexicon for the verifier (src/bridge_check/verify.py), the counterpart of
+# rules/cues-v1.yaml. These are terms the verifier looks for by fixed pattern: concept aliases,
+# value labels, event words, identifier labels and the other lists below. They are not cue
+# words (every cue word lives only in cues-v1.yaml) and they are not semantic understanding:
+# a term that is not listed is not recognised, and the fact falls back to `unrecognized`
+# (review) or `value_not_in_quote` as the module docstring describes.
+#
+# Any change here is a change to the verifier: edit the list, bump `version`, and add the
+# test that motivated it (tests/test_verify_binding.py). Never generate this file.
+#
+# Matching: case-insensitive, except that a term with two or more uppercase letters
+# (MI, PAD, OSA, HTN, T2DM, HFpEF) is matched case-sensitively so that "pad" or "mi" in prose
+# does not count. Word-bounded at alphanumeric ends; leftmost-longest and non-overlapping
+# across `concept_terms` and `blocking_terms` together, so a longer term wins.
+version: verify-terms-v1
+
+# Concept -> the words that name it in a quote. Used (1) by layer 3: a diagnosis fact's
+# concept must be named in its quote (this is the alias table: T2DM = type 2 diabetes,
+# HTN = hypertension, NASH = MASH, CVA = stroke), and (2) by layer 4 to locate the mention
+# the assertion cues must reach. `other` has no terms (nothing to check).
+concept_terms:
+  t2dm:
+    - type 2 diabetes mellitus
+    - type 2 diabetes
+    - type II diabetes mellitus
+    - type II diabetes
+    - diabetes mellitus type 2
+    - diabetes mellitus type II
+    - diabetes type 2
+    - diabetes mellitus
+    - diabetes
+    - T2DM
+    - T2D
+    - DM2
+    - DM II
+    - DM
+    - NIDDM
+  prediabetes:
+    - prediabetes
+    - pre-diabetes
+    - prediabetic
+    - pre-diabetic
+    - impaired fasting glucose
+    - impaired glucose tolerance
+  osa:
+    - obstructive sleep apnea
+    - obstructive sleep apnoea
+    - sleep apnea
+    - sleep apnoea
+    - OSA
+    - OSAS
+  mash:
+    - metabolic dysfunction-associated steatohepatitis
+    - nonalcoholic steatohepatitis
+    - non-alcoholic steatohepatitis
+    - steatohepatitis
+    - MASH
+    - NASH
+  hfpef:
+    - heart failure with preserved ejection fraction
+    - diastolic heart failure
+    - HFpEF
+    - HFPEF
+  ckd:
+    - chronic kidney disease
+    - chronic renal insufficiency
+    - chronic renal failure
+    - CKD
+  mi:
+    - myocardial infarction
+    - heart attack
+    - NSTEMI
+    - STEMI
+    - MI
+  stroke:
+    - cerebrovascular accident
+    - cerebral infarction
+    - stroke
+    - CVA
+  pad:
+    - peripheral arterial disease
+    - peripheral artery disease
+    - peripheral vascular disease
+    - PAD
+    - PVD
+  hypertension:
+    - hypertension
+    - high blood pressure
+    - HTN
+
+# Terms that are matched together with `concept_terms` but credit no concept, so that the
+# words inside them are never taken as another concept: "type 1 diabetes" is not t2dm,
+# a TIA is not a stroke (guide G-06), demand ischemia is not an MI.
+blocking_terms:
+  - type 1 diabetes mellitus
+  - type 1 diabetes
+  - type I diabetes
+  - T1DM
+  - gestational diabetes
+  - transient ischemic attack
+  - TIA
+  - demand ischemia
+
+# Guide A-09: negation of a treatment is not negation of the condition. A negation cue does
+# not count for a mention when the text between the cue and the mention contains one of
+# these terms and no term of the fact's own concept ("not on insulin for diabetes",
+# "no CPAP for OSA"). The verifier adds every GLP-1 name (bridge_check.enums.GLP1_NAMES)
+# and every `names:` entry of rules/drugs-v1.yaml to this list.
+treatment_terms:
+  - insulin
+  - metformin
+  - CPAP
+  - BiPAP
+  - APAP
+  - oral appliance
+  - dialysis
+  - statin
+  - statins
+  - aspirin
+  - medication
+  - medications
+  - treatment
+
+# Guide A-08: a "?" that ends a question sentence is not a cue. A sentence is a question
+# when it ends with "?" and its first word is one of these.
+question_openers:
+  - does
+  - do
+  - did
+  - is
+  - are
+  - was
+  - were
+  - has
+  - have
+  - any
+  - can
+  - could
+  - should
+  - what
+  - how
+  - why
+  - when
+  - who
+  - which
+
+# --- Layer 3 binding (a value must belong to the fact it describes) ------------------------
+# Labels are matched case-insensitively. A number is bound to the nearest label before it in
+# the same clause when no other number lies between them; that label must name the fact's
+# kind (an `other_value_labels` entry names something else, such as an age).
+kind_labels:
+  bmi: [BMI, body mass index]
+  bmi_percentile: [BMI percentile, BMI-for-age percentile]
+  weight: [weight, wt, weighs, weighed, body weight]
+  height: [height, ht]
+  a1c: [A1c, HbA1c, hemoglobin A1c, haemoglobin A1c, glycated hemoglobin]
+  fpg: [fasting glucose, fasting blood glucose, fasting plasma glucose, FPG, FBG, glucose]
+  egfr: [eGFR, GFR, estimated GFR]
+  ahi: [AHI, apnea-hypopnea index, apnea hypopnea index]
+other_value_labels:
+  [age, aged, BP, blood pressure, pulse, heart rate, HR, temperature, temp, RR, SpO2, LDL,
+   HDL, cholesterol, triglycerides, creatinine, BUN, TSH, waist]
+
+# A stage or severity belongs to the diagnosis it touches: only these words (and
+# punctuation) may stand between the qualifier and the diagnosis mention.
+qualifier_fillers: [stage, stg, grade, to, mild, moderate, severe, of, with]
+
+# Identity: a date of birth is a date after one of these labels; a stated age is a number
+# after an age label or before an age suffix.
+dob_labels: [DOB, D.O.B., date of birth, birth date, birthdate, born]
+age_labels: [age, aged]
+age_suffixes: [year-old, year old, years old, yo, y.o., y/o, yr old]
+
+# Identifier labels decide the identifier type (an explicit label wins over the MBI shape).
+id_labels:
+  mbi: [MBI, Medicare beneficiary identifier, Medicare ID, Medicare number, Medicare]
+  local: [MRN, medical record number, patient ID, chart number, account number, ID]
+
+# PAD `symptomatic` and MASH `cirrhosis` qualifiers need supporting text in the sentence of
+# the diagnosis mention: a symptom (affirmed) for yes, "asymptomatic" or a negated symptom
+# for no; likewise for cirrhosis.
+pad_symptom_terms:
+  [intermittent claudication, claudication, rest pain, ischemic rest pain, tissue loss,
+   ischemic ulcer, leg pain with walking, calf pain with walking, symptomatic]
+pad_asymptomatic_terms: [asymptomatic, symptom-free]
+cirrhosis_terms: [cirrhosis, cirrhotic]
+noncirrhotic_terms: [non-cirrhotic, noncirrhotic]
+
+# Guide A-09: a negated treatment cancels the negation only when nothing is coordinated
+# after it ("No insulin use or history of stroke" is ambiguous -> unrecognized).
+coordinators: [or, and, nor]
+
+# --- Events a date belongs to ------------------------------------------------------------------
+# A medication date is bound to the nearest event word in its clause (no other date between).
+# `glp1_start.date` and `medications.start` need a start word; `medications.end` a stop word.
+# A restart word makes the date a resumption, not an initiation (contract §5); a negated event
+# word ("was not started") does not support the date.
+start_verbs:
+  [started, start, starting, start date, initiated, initiation, began, begun, begin,
+   commenced, first dose, first fill, first prescribed, since]
+restart_verbs: [restarted, restart, resumed, resume, resumption, re-initiated, reinitiated]
+stop_verbs:
+  [stopped, stop, discontinued, discontinue, discontinuation, ended, end date, last dose,
+   held, held since, completed, until, through]
+
+# A number followed by one of these is a percentile, never an absolute value (contract §7.2).
+percentile_terms: [percentile, "%ile", centile]
+
+# Guide A-09 applies only when the treatment is the object of the negation: between the
+# negation cue and the treatment term stand only these words. "No prior treatment-related
+# stroke" keeps its negation.
+a09_fillers: ["on", of, use, use of, taking, the, a, an, any, with, currently, longer, further]
+
+# `doc_dates` (contract §5 item 3): the quote must name the target document, by its doc_id or
+# by a word for its role; a quote naming another document's doc_id dates that document.
+doc_role_terms:
+  clinical:
+    [consult, consultation, consult note, clinic note, clinical note, progress note,
+     visit note, office note, office visit, encounter, note, H&P, history and physical,
+     discharge summary, visit]
+  referral: [referral, referral letter, referral note, letter]
+  pa_draft: [prior authorization, PA request, PA form, draft]
+
+# Lifestyle (contract §3.5): each extracted value needs a cue in the quote; a value without one
+# is `unrecognized` (review), like a non-default assertion without a cue (A-05). `unknown`
+# needs no cue.
+lifestyle_cues:
+  program_type:
+    structured_clinical:
+      [dietitian, dietician, nutritionist, nutrition program, nutrition programme,
+       weight management program, weight management clinic, medical weight, supervised,
+       structured, physical therapy, exercise program, cardiac rehab, rehabilitation,
+       intensive behavioral therapy, behavioral program, lifestyle program]
+    commercial:
+      [Weight Watchers, WW, Noom, Jenny Craig, NutriSystem, Medifast, gym, personal trainer,
+       commercial program, app]
+    advice_only:
+      [counseled, counselled, counseling, advised, advice, recommended, recommendation,
+       encouraged, discussed, education, handout, instructed]
+    referral_pending: [referred, referral, pending, scheduled, will see, to see, awaiting]
+    declined: [declined, refused, not interested, unwilling, does not want]
+    none_stated: [no diet, no exercise, no program, no physical activity, sedentary, none]
+  attendance:
+    regular:
+      [weekly, twice weekly, regularly, regular, attends, attending, consistently,
+       every week, daily, adherent, compliant, times a week, times per week]
+    irregular: [irregular, irregularly, sporadic, intermittent, missed, inconsistent, occasionally]
+  end_kind:
+    ongoing: [ongoing, continues, continuing, currently, current, still, remains, enrolled, participating, active]
+    ended: [completed, stopped, discontinued, ended, finished, quit, dropped out, no longer]
+
+# --- Third review round ---------------------------------------------------------------------------
+# A number after a bound word, or joined to another number by a range word, is not an exact
+# value ("BMI below 36.5", "BMI 28 to 36.5").
+bound_words:
+  [below, under, less than, lower than, above, over, greater than, more than, at least,
+   at most, up to, no more than, no less than, exceeding, exceeds, approximately, about, around]
+range_words: [to, through, and]
+range_openers: [between, from]
+
+# A blood-pressure pair after one of these words is not a measured reading.
+bp_non_measurement_words: [goal, target, threshold, cutoff, cut-off, criteria, criterion, limit]
+
+# `glp1_start.purpose` needs a cue in the drug's clause; a `mace` cue with another claimed
+# purpose excludes the fact (contract §3.4 downgrade must not be bypassed).
+purpose_cues:
+  weight:
+    [weight, weight loss, weight management, weight reduction, obesity, BMI, for weight]
+  mace:
+    [major adverse cardiovascular, MACE, cardiovascular risk, cardiovascular event,
+     cardiovascular events, CV risk, cardiovascular risk reduction, cardioprotection,
+     reduce cardiovascular, heart attack risk, stroke risk]
+  other: [diabetes, glycemic, glucose, A1c, HbA1c, T2DM, type 2 diabetes]
+
+# A treatment term followed by one of these suffixes modifies the diagnosis
+# ("treatment-related stroke"); guide A-09 does not apply to it.
+treatment_modifier_suffixes: [related, induced, associated, emergent, resistant, naive, refractory]
+
+# A drug mention right after an event word, with only these words between, is the event's
+# object ("started taking metformin"); it wins over a closer drug before the verb.
+event_object_fillers: [taking, "on", the, a, an, her, his, their, oral, daily, weekly, low-dose, with, back on]

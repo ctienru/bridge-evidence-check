@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import re
 import sqlite3
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
+from bridge_check import store as store_module
 from bridge_check.store import (
     ENUM_COLUMNS,
     DatabaseHasLinks,
+    SchemaVersionMismatch,
     SqliteTooOld,
     Store,
     connect,
@@ -18,7 +21,9 @@ from bridge_check.store import (
     recover_orphaned_runs,
     require_sqlite_version,
     schema_sql,
+    user_version,
 )
+from bridge_check.verify import VerifyResult
 
 TABLES = (
     "documents",
@@ -281,3 +286,90 @@ def test_db_with_more_than_one_link_is_refused(tmp_path: Path) -> None:
         assert str(tmp_path) not in str(info.value)
     link.unlink()
     connect(db).close()
+
+
+def _verified() -> VerifyResult:
+    from conftest import fact, run_verify
+
+    doc = "Patient ID: P-0001. History of hypertension."
+    result: VerifyResult = run_verify(
+        {"D1": doc},
+        {
+            "patient_identity": [
+                fact("patient_identity", "Patient ID: P-0001", patient_id="P-0001")
+            ],
+            "diagnoses": [
+                fact(
+                    "diagnoses",
+                    "History of hypertension.",
+                    concept="hypertension",
+                    temporality="historical",
+                ),
+                fact("diagnoses", "Absent quote.", concept="stroke"),
+            ],
+        },
+    )
+    return result
+
+
+def test_save_verification_writes_evidence_and_doc_facts(store: Store) -> None:
+    run_id = _run(store)
+    ids = store.save_verification(run_id, _verified())
+    assert len(ids) == 3
+    rows = store.evidence_for_run(run_id)
+    assert [r["position_status"] for r in rows] == ["verbatim", "verbatim", "not_found"]
+    assert rows[2]["exclusion_reasons"] == ["quote_not_found"]
+    assert rows[0]["ref"].startswith("D1[0:18] ")
+    assert store.doc_facts_for_run(run_id) == [
+        {
+            "doc_id": "D1",
+            "doc_date": None,
+            "identity_status": "match",
+            "identity_evidence_id": ids[0],
+        }
+    ]
+
+
+def test_save_verification_is_one_transaction(store: Store) -> None:
+    run_id = _run(store)
+    result = _verified()
+    bad = VerifyResult(
+        [*result.evidence[:2], replace(result.evidence[2], position_status="fuzzy")],
+        result.doc_facts,
+    )
+    with pytest.raises(sqlite3.IntegrityError):
+        store.save_verification(run_id, bad)
+    assert store.count("evidence") == 0
+    assert store.count("doc_facts") == 0
+
+
+def test_fresh_database_carries_the_schema_version(store: Store) -> None:
+    assert user_version(store.conn) == store_module.SCHEMA_VERSION == 2
+
+
+def test_database_from_another_schema_version_is_refused(tmp_path: Path) -> None:
+    path = tmp_path / "old.db"
+    conn = sqlite3.connect(path)
+    conn.execute("PRAGMA user_version = 1")
+    conn.execute("CREATE TABLE case_runs (id INTEGER PRIMARY KEY)")  # the old shape, untouched
+    conn.commit()
+    conn.close()
+    with pytest.raises(SchemaVersionMismatch, match="user_version 1, expected 2"):
+        open_store(path)
+    conn = sqlite3.connect(path)
+    try:
+        assert user_version(conn) == 1
+        tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        assert tables == {"case_runs"}  # nothing was created or written
+    finally:
+        conn.close()
+
+
+def test_version_check_handles_uri_special_characters(tmp_path: Path) -> None:
+    path = tmp_path / "case#archive?mode=rw.db"
+    open_store(path).close()
+    open_store(path).close()  # the second open reads the version of this very file
+    files = sorted(
+        p.name for p in tmp_path.iterdir() if not p.name.endswith((".lock", "-wal", "-shm"))
+    )
+    assert files == ["case#archive?mode=rw.db"]

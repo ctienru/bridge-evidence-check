@@ -1,0 +1,9 @@
+# Synthetic verify fixture: HFpEF appears only on the PA draft: the diagnosis is claim_document; the checkbox claim is kept.
+# Every name, id, date and sentence is invented.
+variant_id: verify-pa-draft-only
+assessment_date: 2026-10-15
+target_course: {drug: Wegovy, start: 2025-03-15}
+primary_patient: {patient_id: P-0001, name: "Synthetic Patient", dob: 1960-01-01}
+documents:
+  - {doc_id: D0-pa-form-draft, role: pa_draft}
+  - {doc_id: D2-clinical, role: clinical}

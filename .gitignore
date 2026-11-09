@@ -232,3 +232,5 @@ public-report/
 cases/*/docs/D2-mtsamples-*.txt
 excerpts/E19*/excerpt.txt
 excerpts/E2[0-3]*/excerpt.txt
+# FUSE filesystem sidecars (never commit)
+.fuse_hidden*

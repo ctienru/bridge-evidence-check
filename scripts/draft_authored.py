@@ -23,7 +23,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from bridge_check.dataside.cues import load_cues
+from bridge_check.cues import load_cues
 from bridge_check.dataside.drafting import (
     RESPONSE_SCHEMA,
     build_messages,

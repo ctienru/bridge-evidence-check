@@ -1,0 +1,8 @@
+# Synthetic verify fixture: The quote paraphrases the document; normalization does not rescue it.
+# Every name, id, date and sentence is invented.
+variant_id: verify-paraphrased-quote
+assessment_date: 2026-10-15
+target_course: {drug: Wegovy, start: 2025-03-15}
+primary_patient: {patient_id: P-0001, name: "Synthetic Patient", dob: 1960-01-01}
+documents:
+  - {doc_id: D2-clinical, role: clinical}

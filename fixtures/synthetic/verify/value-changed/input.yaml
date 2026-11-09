@@ -1,0 +1,8 @@
+# Synthetic verify fixture: (1) the quote's number was changed (candidate + value_not_in_quote); (2) the quote is verbatim but raw_value differs (value_not_in_quote).
+# Every name, id, date and sentence is invented.
+variant_id: verify-value-changed
+assessment_date: 2026-10-15
+target_course: {drug: Wegovy, start: 2025-03-15}
+primary_patient: {patient_id: P-0001, name: "Synthetic Patient", dob: 1960-01-01}
+documents:
+  - {doc_id: D2-clinical, role: clinical}
