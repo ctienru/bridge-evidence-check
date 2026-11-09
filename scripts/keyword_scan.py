@@ -1,6 +1,6 @@
 """Deterministic keyword scan (annotation guide W-01, W-03; planning 05 §5.2 step 3).
 
-Terms: `rules/scan-terms-v1.yaml` plus every `names:` entry of `rules/drugs-v1.yaml`.
+Terms: `rules/scan-terms-v1.yaml` plus every `names:` entry of `rules/drugs-v2.yaml`.
 Matching is case-insensitive; alphanumeric terms match on word boundaries (so `EF` does
 not match `left`), terms with other characters (`GLP-1`, `A1c`, `Part D`) match as plain
 substrings. Every document is split into sentences; a sentence is covered when any
@@ -28,7 +28,7 @@ from bridge_check.text import read_doc, sha8
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_TERMS = ROOT / "rules" / "scan-terms-v1.yaml"
-DEFAULT_DRUGS = ROOT / "rules" / "drugs-v1.yaml"
+DEFAULT_DRUGS = ROOT / "rules" / "drugs-v2.yaml"
 _ALNUM = re.compile(r"^[A-Za-z0-9]+$")
 
 

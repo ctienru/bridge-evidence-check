@@ -288,7 +288,14 @@ def test_htn_combination_pill_alone_is_review() -> None:
                         {"drug_canonical": "valsartan", "class": "arb"},
                         {"drug_canonical": "amlodipine", "class": "calcium_channel_blocker"},
                     ],
-                }
+                },
+                # drugs-v2 schema: every component needs a standalone entry of the same class.
+                {"names": ["valsartan"], "drug_canonical": "valsartan", "class": "arb"},
+                {
+                    "names": ["amlodipine"],
+                    "drug_canonical": "amlodipine",
+                    "class": "calcium_channel_blocker",
+                },
             ],
         }
     )

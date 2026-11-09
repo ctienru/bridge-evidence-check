@@ -105,7 +105,7 @@ blocking_terms:
 # not count for a mention when the text between the cue and the mention contains one of
 # these terms and no term of the fact's own concept ("not on insulin for diabetes",
 # "no CPAP for OSA"). The verifier adds every GLP-1 name (bridge_check.enums.GLP1_NAMES)
-# and every `names:` entry of rules/drugs-v1.yaml to this list.
+# and every `names:` entry of rules/drugs-v2.yaml to this list.
 treatment_terms:
   - insulin
   - metformin

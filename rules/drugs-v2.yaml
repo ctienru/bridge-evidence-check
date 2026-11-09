@@ -1,0 +1,110 @@
+# Antihypertensive drug table (13 §10). Human-maintained — do not generate.
+# Names (generic and brand, case-insensitive) map to one `drug_canonical`; `class` only
+# decides whether the drug counts as an antihypertensive; `class_ambiguous: true` marks
+# drugs whose antihypertensive use is uncertain in context (e.g. diuretics for heart
+# failure) — counting them toward the two-drug minimum yields `review` (13 §3.2).
+# Combination pills list their `components`; a combination alone yields `review`.
+#
+# `class_ambiguous: true` is allowed only on these classes (checked by the schema):
+#   thiazide_diuretic, loop_diuretic, potassium_sparing_diuretic,
+#   mineralocorticoid_receptor_antagonist (diuretic or volume use in heart failure),
+#   alpha_blocker (urinary symptoms / BPH).
+# Every `names` entry is unique across the whole table (case-insensitive). Every
+# combination component also has its own standalone entry with the same class.
+#
+# v2 scope: cases 01 and 15, the P2 dev cases 03 and 04, and the two antihypertensive
+# classes found out-of-table in case 15 (annotation-guide revision 01, N-03). Add entries
+# batch by batch.
+#
+# Shape of a combination-pill entry (`class` is the first component's class):
+#   - names: [Exforge, valsartan/amlodipine, amlodipine-valsartan]
+#     drug_canonical: valsartan/amlodipine
+#     class: arb
+#     components:
+#       - {drug_canonical: valsartan, class: arb}
+#       - {drug_canonical: amlodipine, class: calcium_channel_blocker}
+#
+# Not in this table:
+# - GLP-1 agonists. `glp1_start` / `prior_glp1` names are canonicalised by
+#   `bridge_check.enums.GLP1_CANONICALS` and `GLP1_NAMES`, not here.
+# - Case 17 (Cureus 2025;17(8):e90478, Case 1): the passage names only aspirin and
+#   atorvastatin (not taken). Neither is an antihypertensive (antiplatelet; statin), and
+#   no antihypertensive is named, so nothing is added for case 17.
+#   TODO(terri): confirm against the saved passage that Case 1 names no antihypertensive.
+# - Case 15 (N-03): acetazolamide (carbonic anhydrase inhibitor) and hypertonic saline are
+#   not antihypertensives; not added.
+
+version: 2
+drugs:
+  # --- case 01 ---
+  - names: [Norvasc, amlodipine, amlodipine besylate]
+    drug_canonical: amlodipine
+    class: calcium_channel_blocker
+  - names: [Lopressor, metoprolol, metoprolol tartrate, Toprol-XL, metoprolol succinate]
+    drug_canonical: metoprolol
+    class: beta_blocker
+  # --- case 15 ---
+  - names: [amiloride/HCTZ, amiloride-hydrochlorothiazide, amiloride/hydrochlorothiazide, Moduretic]
+    drug_canonical: amiloride/hydrochlorothiazide
+    class: thiazide_diuretic
+    class_ambiguous: true   # diuretic in a heart-failure patient; antihypertensive intent unclear
+    components:
+      - {drug_canonical: amiloride, class: potassium_sparing_diuretic}
+      - {drug_canonical: hydrochlorothiazide, class: thiazide_diuretic}
+  # case 15: standalone entry for the amiloride component; diuretic in heart failure, same as the pill
+  - names: [amiloride, Midamor]
+    drug_canonical: amiloride
+    class: potassium_sparing_diuretic
+    class_ambiguous: true
+  - names: [furosemide, Lasix]
+    drug_canonical: furosemide
+    class: loop_diuretic
+    class_ambiguous: true   # loop diuretic for volume control in heart failure
+  - names: [dapagliflozin, Farxiga]
+    drug_canonical: dapagliflozin
+    class: sglt2_inhibitor  # not an antihypertensive class; listed so it is recognized and not counted
+  # --- case 15, annotation-guide revision 01 N-03 (rejected as out-of-table) ---
+  # case 15: thiazide-like diuretic in a heart-failure patient; antihypertensive intent unclear
+  - names: [chlorthalidone, Thalitone, Hygroton]
+    drug_canonical: chlorthalidone
+    class: thiazide_diuretic
+    class_ambiguous: true
+  # case 15: mineralocorticoid antagonist, used for heart failure rather than blood pressure
+  - names: [spironolactone, Aldactone]
+    drug_canonical: spironolactone
+    class: mineralocorticoid_receptor_antagonist
+    class_ambiguous: true
+  # --- case 03 ---
+  # case 03: Lotensin on the medication list with BP 156/90; ACE inhibitor, unambiguous
+  - names: [Lotensin, benazepril, benazepril hydrochloride]
+    drug_canonical: benazepril
+    class: ace_inhibitor
+  # case 03: Hytrin is also a BPH drug and the patient is post-TURP; antihypertensive intent unclear
+  - names: [Hytrin, terazosin, terazosin hydrochloride]
+    drug_canonical: terazosin
+    class: alpha_blocker
+    class_ambiguous: true
+  # --- case 04 ---
+  # case 04: standalone entry for the valsartan component of Exforge / Exforge HCT
+  - names: [Diovan, valsartan]
+    drug_canonical: valsartan
+    class: arb
+  # case 04: started first as one combination pill; two drugs only through one pill -> review
+  - names: [Exforge, valsartan/amlodipine, amlodipine/valsartan, amlodipine-valsartan]
+    drug_canonical: valsartan/amlodipine
+    class: arb
+    components:
+      - {drug_canonical: valsartan, class: arb}
+      - {drug_canonical: amlodipine, class: calcium_channel_blocker}
+  # case 04: HCT added after 3 months; three components in one pill at GLP-1 initiation
+  - names: [Exforge HCT, valsartan/amlodipine/hydrochlorothiazide, amlodipine/valsartan/hydrochlorothiazide, amlodipine-valsartan-hydrochlorothiazide]
+    drug_canonical: valsartan/amlodipine/hydrochlorothiazide
+    class: arb
+    components:
+      - {drug_canonical: valsartan, class: arb}
+      - {drug_canonical: amlodipine, class: calcium_channel_blocker}
+      - {drug_canonical: hydrochlorothiazide, class: thiazide_diuretic}
+  # case 04: HCT written alone as the add-on; thiazide for blood pressure, no heart failure, unambiguous
+  - names: [hydrochlorothiazide, HCTZ, Microzide]
+    drug_canonical: hydrochlorothiazide
+    class: thiazide_diuretic

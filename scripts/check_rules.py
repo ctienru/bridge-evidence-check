@@ -1,4 +1,4 @@
-"""Validate the rules tables (`rules/bridge-v1.yaml`, `rules/drugs-v1.yaml`).
+"""Validate the rules tables (`rules/bridge-v1.yaml`, `rules/drugs-v2.yaml`).
 
 Loads both files through the Pydantic models in `bridge_check.rules_schema`, prints a
 short summary and exits 1 on any validation error. With `--require-complete` it also
@@ -27,7 +27,7 @@ from bridge_check.rules_schema import (
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_RULES = ROOT / "rules" / "bridge-v1.yaml"
-DEFAULT_DRUGS = ROOT / "rules" / "drugs-v1.yaml"
+DEFAULT_DRUGS = ROOT / "rules" / "drugs-v2.yaml"
 PENDING_MARKER = re.compile(r"\b(TODO|REVIEW)\(terri\)")
 
 

@@ -1,7 +1,7 @@
 """Pydantic models for the human-maintained rules tables.
 
 `rules/bridge-v1.yaml` holds the policy snapshot, thresholds, one entry per condition
-and the project-specific policies; `rules/drugs-v1.yaml` holds the antihypertensive
+and the project-specific policies; `rules/drugs-v2.yaml` holds the antihypertensive
 drug table. Machine names (condition IDs, status codes) follow `docs/contracts.md`
 (planning doc 13 §1–§2). The `rule` field of a condition is human-readable only; the
 real decision functions live in `rules.py` (later item).
@@ -22,6 +22,7 @@ from bridge_check.enums import CONDITION_IDS, EXCLUSION_IDS, STATUS_CODES, Statu
 
 __all__ = [
     "ANTIHYPERTENSIVE_CLASSES",
+    "CLASS_AMBIGUOUS_CLASSES",
     "CONDITION_IDS",
     "COMPUTE_NAMES",
     "DrugTable",
@@ -62,7 +63,7 @@ COMPUTE_NAMES: tuple[str, ...] = (
     "bmi_bracket",
 )
 
-# Antihypertensive drug classes used in `rules/drugs-v1.yaml`. `class` only decides
+# Antihypertensive drug classes used in `rules/drugs-v2.yaml`. `class` only decides
 # whether a drug is an antihypertensive; de-duplication uses `drug_canonical` (13 §3.2).
 DrugClass = Literal[
     "ace_inhibitor",
@@ -92,6 +93,18 @@ ANTIHYPERTENSIVE_CLASSES: frozenset[str] = frozenset(
         "alpha_blocker",
         "central_alpha_agonist",
         "vasodilator",
+    }
+)
+# Classes on which `class_ambiguous: true` is allowed (listed in the drug table header):
+# diuretics and mineralocorticoid antagonists given for heart failure, alpha-blockers
+# given for urinary symptoms.
+CLASS_AMBIGUOUS_CLASSES: frozenset[str] = frozenset(
+    {
+        "thiazide_diuretic",
+        "loop_diuretic",
+        "potassium_sparing_diuretic",
+        "mineralocorticoid_receptor_antagonist",
+        "alpha_blocker",
     }
 )
 
@@ -215,7 +228,7 @@ class RulesTable(_Strict):
         return self
 
 
-# --- rules/drugs-v1.yaml ------------------------------------------------------------
+# --- rules/drugs-v2.yaml ------------------------------------------------------------
 
 
 class DrugComponent(_Strict):
@@ -236,6 +249,11 @@ class Drug(_Strict):
     def _combination_shape(self) -> Drug:
         if self.components is not None and len(self.components) < 2:
             raise ValueError(f"drug {self.drug_canonical!r}: components needs at least 2 entries")
+        if self.class_ambiguous and self.class_ not in CLASS_AMBIGUOUS_CLASSES:
+            raise ValueError(
+                f"drug {self.drug_canonical!r}: class_ambiguous is only allowed on "
+                f"{sorted(CLASS_AMBIGUOUS_CLASSES)}, not {self.class_!r}"
+            )
         return self
 
 
@@ -252,6 +270,20 @@ class DrugTable(_Strict):
                 if key in seen and seen[key] != drug.drug_canonical:
                     raise ValueError(f"drug name {name!r} maps to two canonical drugs")
                 seen[key] = drug.drug_canonical
+        standalone = {d.drug_canonical: d.class_ for d in self.drugs if d.components is None}
+        for drug in self.drugs:
+            for component in drug.components or []:
+                if component.drug_canonical not in standalone:
+                    raise ValueError(
+                        f"drug {drug.drug_canonical!r}: component "
+                        f"{component.drug_canonical!r} has no standalone entry"
+                    )
+                if standalone[component.drug_canonical] != component.class_:
+                    raise ValueError(
+                        f"drug {drug.drug_canonical!r}: component "
+                        f"{component.drug_canonical!r} has class {component.class_!r}, but its "
+                        f"standalone entry has class {standalone[component.drug_canonical]!r}"
+                    )
         return self
 
 
@@ -269,5 +301,5 @@ def load_rules(path: Path) -> RulesTable:
 
 
 def load_drugs(path: Path) -> DrugTable:
-    """Load and validate `rules/drugs-v1.yaml`. Raises `pydantic.ValidationError`."""
+    """Load and validate `rules/drugs-v2.yaml`. Raises `pydantic.ValidationError`."""
     return DrugTable.model_validate(_read_yaml(path))

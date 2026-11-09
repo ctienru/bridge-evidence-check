@@ -17,9 +17,34 @@ def _span(text: str, start: int, end: int) -> tuple[int, int, str]:
 scan = load_script("keyword_scan")
 
 
+DRUGS_V2 = ROOT / "rules" / "drugs-v2.yaml"
+SCAN_TERMS = ROOT / "rules" / "scan-terms-v1.yaml"
+_DRUG_NAMES: list[str] = [
+    str(n)
+    for d in yaml.safe_load(DRUGS_V2.read_text(encoding="utf-8"))["drugs"]
+    for n in d["names"]
+]
+
+
+@pytest.fixture(scope="module")
+def scan_terms_casefolded() -> set[str]:
+    return {t.casefold() for t in scan.load_terms(SCAN_TERMS, DRUGS_V2)}
+
+
+@pytest.mark.parametrize("name", _DRUG_NAMES)
+def test_scan_terms_include_drug_name(name: str, scan_terms_casefolded: set[str]) -> None:
+    assert name.casefold() in scan_terms_casefolded
+
+
+def test_scan_terms_follow_the_table_named_in_scan_terms_file() -> None:
+    # Without an explicit drugs path the scan reads `include_drug_names_from`.
+    lowered = {t.casefold() for t in scan.load_terms(SCAN_TERMS, None)}
+    assert {n.casefold() for n in _DRUG_NAMES} <= lowered
+
+
 def test_terms_include_every_drug_name() -> None:
-    terms = scan.load_terms(ROOT / "rules" / "scan-terms-v1.yaml", ROOT / "rules" / "drugs-v1.yaml")
-    drugs = yaml.safe_load((ROOT / "rules" / "drugs-v1.yaml").read_text(encoding="utf-8"))
+    terms = scan.load_terms(ROOT / "rules" / "scan-terms-v1.yaml", ROOT / "rules" / "drugs-v2.yaml")
+    drugs = yaml.safe_load((ROOT / "rules" / "drugs-v2.yaml").read_text(encoding="utf-8"))
     names = {n.casefold() for d in drugs["drugs"] for n in d["names"]}
     lowered = {t.casefold() for t in terms}
     assert names <= lowered
@@ -237,6 +262,6 @@ def test_cli_with_doc_and_candidates(tmp_path: Path, capsys: pytest.CaptureFixtu
     printed = capsys.readouterr().out
     assert "D7-note" in printed and "jane" not in printed
     lines = [json.loads(line) for line in out.read_text(encoding="utf-8").splitlines()]
-    assert [line["term"] for line in lines] == ["metoprolol"]  # drug name from drugs-v1.yaml
+    assert [line["term"] for line in lines] == ["metoprolol"]  # drug name from drugs-v2.yaml
     assert lines[0]["doc_id"] == "D7-note"
     assert "jane" not in out.read_text(encoding="utf-8")
