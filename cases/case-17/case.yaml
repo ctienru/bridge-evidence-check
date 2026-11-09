@@ -1,0 +1,35 @@
+case_id: case-17
+split: dev
+source: mixed
+documents:
+  - {doc_id: D0-pa-form-draft, doc_origin: authored, drafted_at: 2026-11-09, reviewed_by: terri}
+  - {doc_id: D1-referral, doc_origin: authored, drafted_at: 2026-11-09, reviewed_by: terri}
+  - {doc_id: D2-case-report-cureus-2025, doc_origin: case_report}
+attribution:
+  authors: "Abhinav Karan, Julien Feghaly, Anamarys Blanco, Calvin Choi"
+  title: "Dual Culprit ST-Elevation Myocardial Infarction: A Rare but Complex Clinical Entity"
+  source: "Cureus 2025;17(8):e90478. https://doi.org/10.7759/cureus.90478"
+  license: "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)"
+  modified: false
+  excerpt: "Case Presentation, Case 1 heading and narrative prose only. Figures, videos, and captions omitted."
+traps:
+  - T-historical-mi-plus-acute-event
+  - T-hfref-finding-not-hfpef
+  - T-acute-bp-no-antihypertensives
+tests:
+  - age_18
+  - bmi_path_a
+  - bmi_path_b
+  - bmi_path_b.bmi
+  - bmi_path_b.hfpef
+  - bmi_path_b.htn
+  - bmi_path_c
+  - bmi_path_c.bmi
+  - bmi_path_c.mi
+  - patient_identity
+  - claim.age_18
+  - claim.drug
+  - claim.bmi_bracket
+  - claim.bmi_path_b.htn
+  - claim.bmi_path_b.hfpef
+  - claim.bmi_path_c.mi

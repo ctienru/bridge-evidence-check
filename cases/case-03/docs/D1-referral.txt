@@ -1,0 +1,13 @@
+Referral Letter
+Date: 2026-10-15
+Patient: Jordan Ellis
+Patient ID: P-3003
+DOB: 1965-02-11
+
+Dear Review Team,
+
+Wegovy was started on 03/12/2026 for weight management.
+The attached pulmonary consultation (D2-mtsamples-4689) is dated 2026-03-12.
+
+Sincerely,
+Referring clinician

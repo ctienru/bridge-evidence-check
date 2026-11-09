@@ -1,0 +1,17 @@
+Clinical Timeline
+Date: 2026-10-15
+Patient: Alex Mercer
+Patient ID: P-4004
+DOB: 1966-11-18
+
+BMI on 2026-01-02 was 33.0 kg/m2. BP on 2026-01-02 was 168/98 mmHg.
+
+BMI on 2026-04-02 was 31.0 kg/m2. BP on 2026-04-02 was 150/90 mmHg.
+
+Height on 2026-05-14 was 165 cm. Weight on 2026-05-14 was 84.4 kg. BP on 2026-05-14 was 146/90 mmHg. The visit on 2026-05-14 documented prediabetes.
+
+BMI on 2026-08-06 was 29.0 kg/m2. BP on 2026-08-06 was 143/90 mmHg. The sleep study on 2026-08-06 ruled out OSA.
+
+BMI on 2026-10-01 was 28.0 kg/m2. BP on 2026-10-01 was 127/78 mmHg.
+
+As of 2026-10-15, knee osteoarthritis still limits physical activity.

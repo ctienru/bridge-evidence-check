@@ -1,0 +1,13 @@
+Referral Letter
+Date: 2026-10-15
+Patient: Case 17
+Patient ID: P-1717
+DOB: 1962-04-20
+
+Dear Review Team,
+
+Wegovy was started on 09/15/2025 for weight management.
+The attached clinical note (D2-case-report-cureus-2025) is from the encounter on 2025-07-15.
+
+Sincerely,
+Referring clinician

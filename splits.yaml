@@ -17,3 +17,72 @@ variants:
       docs/D1-referral.txt: 29bf838174a475554aeb5f813ff463bfb371b449011cd83661f64b5578a17623
       docs/D2-mtsamples-4985.txt: a3eb773b768baaa6d88d31ddc37be19d9917b041725954ee3e96e794db8bdd45
       expected.json: bb5391b3276f2df2a472bc2c0a305b9d7b6fc47abfb0918b2b87dbbb8b9f0c64
+  - case_id: case-07
+    variant_id: case-07
+    split: dev
+    frozen_at: 2026-11-09
+    gold_version: 1
+    files:
+      input.yaml: 2c855c2636d4b8382e5517e7c5140d105fd4fa1186cbb15965b44d41855f0e4c
+      docs/D0-pa-form-draft.txt: 6280f6508259297616721e9f6fba33ec440fd73dfa6037aa6e3dac27fd8abccb
+      docs/D1-referral.txt: dd5d359e781594df53f4272ecb554857210071da7bf3d1d47816a82ee0b411b9
+      docs/D2-nutrition-note.txt: 46474997906d752b80bb573f19d8cf4ce8613d9530fb8da3f67ae9e63a6fa2cb
+      expected.json: edca99045d8d9916b3c452b1705fe7fcbd863f0fbe4959ba3600ce11ed027d32
+  - case_id: case-07
+    variant_id: case-07b
+    split: dev
+    frozen_at: 2026-11-09
+    gold_version: 1
+    files:
+      input.yaml: 29092f8bba342ebdde77227fc1d42a2b8533cc2f3f50d521d6587d527c23db9f
+      docs/D0-pa-form-draft.txt: 6280f6508259297616721e9f6fba33ec440fd73dfa6037aa6e3dac27fd8abccb
+      docs/D1-referral.txt: dd5d359e781594df53f4272ecb554857210071da7bf3d1d47816a82ee0b411b9
+      docs/D2-nutrition-note.txt: 46474997906d752b80bb573f19d8cf4ce8613d9530fb8da3f67ae9e63a6fa2cb
+      docs/D3-initiation-note.txt: db361bc9e941b2e28964da603727ab81a131b746e704d20dbbb4fdde97be4c0b
+      expected.json: 022e80bef19e7075c9e7c8b116919a6a958c75c8699c7be7a712373bf252aba8
+  - case_id: case-02
+    variant_id: case-02
+    split: dev
+    frozen_at: 2026-11-09
+    gold_version: 1
+    files:
+      input.yaml: a7ac7958176e041a3b657cce6c941f08993df6767550eaf0585292f025b159ff
+      docs/D0-pa-form-draft.txt: 96d0d5cabc7c6f078fa43f623e037218f6b55de509c25e3239801803c1a5c1ef
+      docs/D1-referral.txt: 9d104eb92fe3090346c51e968f85226ccfbf019d80233825902e9868238f2548
+      docs/D2-initiation-note.txt: 62af8725d634a1c47f79eb8ef80806154430c0b5edb455105de5bf0acb70ce8c
+      docs/D3-pharmacy-history.txt: 50ec1b9d62f484d5a5c19aed6594f59e7a7acca030a9cc47a74a318bade676c5
+      expected.json: bcae1f0d9cd56f57a3f2b79fd12325a7e4a307dbd3d7edaa9d01f8f9ca306cbb
+  - case_id: case-04
+    variant_id: case-04
+    split: dev
+    frozen_at: 2026-11-09
+    gold_version: 1
+    files:
+      input.yaml: f3b7bbb47deb8eeda47b5d03b1c3576c2f942abe0dc5ac2ce9bb956b9c9ec2ba
+      docs/D0-pa-form-draft.txt: d231c7878b97eb5ac3e293eb7eb5522b9f14c4fc1815ded6c984741851826362
+      docs/D1-referral.txt: b1adb5a53ed8e21cd8d4c58e5d9e0d57b95d7ceef9309d8e1995e84a33f225d9
+      docs/D2-clinical-timeline.txt: d5f0fecef7d8ccb03e4338077aeb6f0e5dc1389c72b4df423a146d157d4a16cb
+      docs/D3-antihypertensive-history.txt: d9d016e2b5aa3263d90c75bae3c2b15b761d96dd1b262af0887e5ef916a0dd0f
+      expected.json: b898654beb0fe7aa77172582b3ae7751b99bfeca4686df929ea007f1e02500f5
+  - case_id: case-03
+    variant_id: case-03
+    split: dev
+    frozen_at: 2026-11-09
+    gold_version: 1
+    files:
+      input.yaml: 24d8bb9b0cb7030fa54ff52ab88d0ca9e2917e6f8ffd752bd87660a1d1ea3f91
+      docs/D0-pa-form-draft.txt: 9118d6a49ac0668d3b05d464c9a0228a927ee9646f1626ccd4bef2cd76cd909a
+      docs/D1-referral.txt: 09e7b1a16e23647877ec8858cfebb0549cf43221b78b0d5baae4c7f64ba39786
+      docs/D2-mtsamples-4689.txt: 388aeee7a34b67a70d5f1df67ba87c374e805c2521c156671256b7c57a8b79b4
+      expected.json: 54d41ffa315901ff508f12ae32d81eee2bef537fbfa77b4b6f0a15c90ad4f78a
+  - case_id: case-17
+    variant_id: case-17
+    split: dev
+    frozen_at: 2026-11-09
+    gold_version: 1
+    files:
+      input.yaml: 01d4f6d707ddb89bbd5e94cc708582dcafaab69ccaeb006b32db5edeec3845ec
+      docs/D0-pa-form-draft.txt: b1629def703d0b584d9ea10a75b717dc5070039689c52728911aadc220b485df
+      docs/D1-referral.txt: 4aef345f1fa5578e03fe917c2091bc171d6b5d307ed43785e17e163d12adcbb2
+      docs/D2-case-report-cureus-2025.txt: 014429c1eb55f7751a1105f83ddfd404127550ede745d3cde151eed60ea5df41
+      expected.json: 01f49ac501728684a6da800882a09a894391f527ccfa177dd6e7fa08cceea297

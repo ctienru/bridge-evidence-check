@@ -1,0 +1,7 @@
+Referral Letter
+Date: 2026-10-15
+Patient: Alex Mercer
+Patient ID: P-4004
+DOB: 1966-11-18
+
+Wegovy was started on 05/14/2026 for weight loss.

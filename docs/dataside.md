@@ -42,11 +42,25 @@ is never involved here.
 7. **`scripts/validate_gold.py`** `--blind` `--adjudication` `--gold` validates the three files;
    then `scripts/freeze_splits.py --check` after the hashes are added to `splits.yaml`.
 
+### Candidate provenance for cases 03, 04, and 17
+
+These three dev cases used local document review for candidate generation in place of the
+P-02 proposing-model API step. The 75 candidate-bearing adjudication lines identify the
+source as `drafted_by: local_document_only`. The corresponding records are in
+`records/<case>/raw/propose_candidates.local.json` in the private repo. The 15 real-text
+facts derived from these candidates in cases 03 and 17 retain the frozen gold category
+`origin: model_candidate`. The adjudication provenance distinguishes them from API
+proposals. Case 04's gold facts all come from its approved drafting spec.
+The authored documents of cases 02, 03, 04, 07, 07b and 17 were likewise not drafted
+through the P-02 API step; their drafting records are kept in the private repo under
+`records/<case>/drafting-record.json`, so `case.yaml` carries no `drafted_by` for them.
+
 ## Where files live
 
 | File | Public repo | Private repo |
 |---|---|---|
 | `case.yaml`, `input.yaml`, authored `docs/*.txt`, `blind_draft.json`, `adjudication.jsonl`, `expected.json` (dev cases) | yes | — |
+| `candidates.jsonl`, `uncovered.jsonl` (sanitized dev outputs) | yes | — |
 | `docs/D2-mtsamples-*.txt` | downloaded at run time, git-ignored | — |
 | Drafting spec, prompts (`--prompt`), drafting record (`--out-record`) | — | yes |
 | Raw model replies (`--raw-out`) | — | yes (never inside the public checkout; the tools refuse such paths) |

@@ -1,0 +1,504 @@
+{
+  "variant_id": "case-17",
+  "guideline_version": 1,
+  "facts": [
+    {
+      "field": "patient_identity",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "doc_id": "D0-pa-form-draft",
+      "start": 67,
+      "end": 85,
+      "event_date": null,
+      "relative_to_glp1_initiation": "unknown",
+      "identity_match": "match",
+      "quote": "Patient ID: P-1717",
+      "origin": "spec",
+      "patient_id": "P-1717",
+      "review": "human_verified",
+      "guideline_clause": "C-17"
+    },
+    {
+      "field": "patient_identity",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "doc_id": "D0-pa-form-draft",
+      "start": 86,
+      "end": 101,
+      "event_date": null,
+      "relative_to_glp1_initiation": "unknown",
+      "identity_match": "match",
+      "quote": "DOB: 1962-04-20",
+      "origin": "spec",
+      "dob": "1962-04-20",
+      "review": "human_verified",
+      "guideline_clause": "C-17"
+    },
+    {
+      "field": "pa_form_claims",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "claim_id": "claim.age_18",
+      "claimed_value": "yes",
+      "doc_id": "D0-pa-form-draft",
+      "start": 103,
+      "end": 130,
+      "event_date": null,
+      "relative_to_glp1_initiation": "unknown",
+      "quote": "Patient is 18 or older: Yes",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "K-02"
+    },
+    {
+      "field": "pa_form_claims",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "claim_id": "claim.drug",
+      "claimed_value": "Wegovy",
+      "doc_id": "D0-pa-form-draft",
+      "start": 131,
+      "end": 153,
+      "event_date": null,
+      "relative_to_glp1_initiation": "unknown",
+      "quote": "Requested drug: Wegovy",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "K-02"
+    },
+    {
+      "field": "pa_form_claims",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "claim_id": "claim.bmi_bracket",
+      "claimed_value": "30-34.9",
+      "doc_id": "D0-pa-form-draft",
+      "start": 154,
+      "end": 175,
+      "event_date": null,
+      "relative_to_glp1_initiation": "unknown",
+      "quote": "BMI category: 30-34.9",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "K-04"
+    },
+    {
+      "field": "pa_form_claims",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "claim_id": "claim.bmi_path_b.htn",
+      "claimed_value": "yes",
+      "doc_id": "D0-pa-form-draft",
+      "start": 176,
+      "end": 239,
+      "event_date": null,
+      "relative_to_glp1_initiation": "unknown",
+      "quote": "Uncontrolled hypertension on two or more antihypertensives: Yes",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "K-02"
+    },
+    {
+      "field": "pa_form_claims",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "claim_id": "claim.bmi_path_b.hfpef",
+      "claimed_value": "yes",
+      "doc_id": "D0-pa-form-draft",
+      "start": 240,
+      "end": 250,
+      "event_date": null,
+      "relative_to_glp1_initiation": "unknown",
+      "quote": "HFpEF: Yes",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "K-02"
+    },
+    {
+      "field": "pa_form_claims",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "claim_id": "claim.bmi_path_c.mi",
+      "claimed_value": "yes",
+      "doc_id": "D0-pa-form-draft",
+      "start": 251,
+      "end": 267,
+      "event_date": null,
+      "relative_to_glp1_initiation": "unknown",
+      "quote": "Previous MI: Yes",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "K-02"
+    },
+    {
+      "field": "patient_identity",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "doc_id": "D1-referral",
+      "start": 50,
+      "end": 68,
+      "event_date": null,
+      "relative_to_glp1_initiation": "unknown",
+      "identity_match": "match",
+      "quote": "Patient ID: P-1717",
+      "origin": "spec",
+      "patient_id": "P-1717",
+      "review": "human_verified",
+      "guideline_clause": "C-17"
+    },
+    {
+      "field": "patient_identity",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "doc_id": "D1-referral",
+      "start": 69,
+      "end": 84,
+      "event_date": null,
+      "relative_to_glp1_initiation": "unknown",
+      "identity_match": "match",
+      "quote": "DOB: 1962-04-20",
+      "origin": "spec",
+      "dob": "1962-04-20",
+      "review": "human_verified",
+      "guideline_clause": "C-17"
+    },
+    {
+      "field": "glp1_start",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "drug_canonical": "semaglutide",
+      "purpose": "weight",
+      "date": "2025-09-15",
+      "event_date": "2025-09-15",
+      "relative_to_glp1_initiation": "at",
+      "doc_id": "D1-referral",
+      "start": 105,
+      "end": 160,
+      "quote": "Wegovy was started on 09/15/2025 for weight management.",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "T-08"
+    },
+    {
+      "field": "doc_dates",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "target_doc_id": "D2-case-report-cureus-2025",
+      "date": "2025-07-15",
+      "event_date": "2025-07-15",
+      "relative_to_glp1_initiation": "before",
+      "doc_id": "D1-referral",
+      "start": 161,
+      "end": 253,
+      "quote": "The attached clinical note (D2-case-report-cureus-2025) is from the encounter on 2025-07-15.",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": "T-05"
+    },
+    {
+      "field": "patient_identity",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "doc_id": "D2-case-report-cureus-2025",
+      "start": 8,
+      "end": 366,
+      "event_date": "2025-07-15",
+      "relative_to_glp1_initiation": "before",
+      "identity_match": "missing",
+      "quote": "A 63-year-old male with a prior history of hypertension, hyperlipidemia, tobacco use disorder, and a prior non-ST-segment elevation myocardial infarction (NSTEMI) with percutaneous coronary intervention (PCI) to the mid-right coronary artery (RCA) presented to the emergency room with the acute onset of chest pain for the past two hours before presentation.",
+      "origin": "model_candidate",
+      "stated_age": 63,
+      "review": "human_verified",
+      "guideline_clause": "C-01"
+    },
+    {
+      "field": "diagnoses",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "historical",
+      "concept": "hypertension",
+      "relative_to_glp1_initiation": "unknown",
+      "doc_id": "D2-case-report-cureus-2025",
+      "start": 8,
+      "end": 366,
+      "event_date": null,
+      "quote": "A 63-year-old male with a prior history of hypertension, hyperlipidemia, tobacco use disorder, and a prior non-ST-segment elevation myocardial infarction (NSTEMI) with percutaneous coronary intervention (PCI) to the mid-right coronary artery (RCA) presented to the emergency room with the acute onset of chest pain for the past two hours before presentation.",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "C-07"
+    },
+    {
+      "field": "diagnoses",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "historical",
+      "concept": "mi",
+      "relative_to_glp1_initiation": "unknown",
+      "doc_id": "D2-case-report-cureus-2025",
+      "start": 8,
+      "end": 366,
+      "event_date": null,
+      "quote": "A 63-year-old male with a prior history of hypertension, hyperlipidemia, tobacco use disorder, and a prior non-ST-segment elevation myocardial infarction (NSTEMI) with percutaneous coronary intervention (PCI) to the mid-right coronary artery (RCA) presented to the emergency room with the acute onset of chest pain for the past two hours before presentation.",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "C-11"
+    },
+    {
+      "field": "bp_readings",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "sbp": 142,
+      "dbp": 99,
+      "relative_to_glp1_initiation": "before",
+      "doc_id": "D2-case-report-cureus-2025",
+      "start": 507,
+      "end": 661,
+      "event_date": "2025-07-15",
+      "quote": "His initial vital signs were significant for a blood pressure of 142/99 mmHg, with a heart rate of 89 bpm and oxygen saturation (SpO2) of 96% on room air.",
+      "origin": "model_candidate",
+      "review": "human_verified",
+      "guideline_clause": "C-07"
+    }
+  ],
+  "expected_absent": [
+    {
+      "field": "anthropometrics",
+      "kind": "bmi"
+    },
+    {
+      "field": "anthropometrics",
+      "kind": "height"
+    },
+    {
+      "field": "anthropometrics",
+      "kind": "weight"
+    },
+    {
+      "field": "prior_glp1",
+      "kind": "payer"
+    },
+    {
+      "field": "medications",
+      "kind": "antihypertensive"
+    },
+    {
+      "field": "labs",
+      "kind": "a1c"
+    },
+    {
+      "field": "labs",
+      "kind": "fpg"
+    },
+    {
+      "field": "labs",
+      "kind": "egfr"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "t2dm"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "osa"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "mash"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "prediabetes"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "hfpef"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "ckd"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "stroke"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "pad"
+    },
+    {
+      "field": "lifestyle",
+      "kind": "nutrition"
+    },
+    {
+      "field": "lifestyle",
+      "kind": "activity"
+    }
+  ],
+  "conditions": [
+    {
+      "id": "age_18",
+      "status": "supported",
+      "flags": [],
+      "reason": "The synthetic date of birth puts the primary patient at 63 on the initiation date."
+    },
+    {
+      "id": "bmi_path_a",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "An initiation BMI and measurements for computing it are undocumented."
+    },
+    {
+      "id": "bmi_path_b",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "Initiation BMI and qualifying comorbidity evidence are insufficient."
+    },
+    {
+      "id": "bmi_path_b.bmi",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "An initiation BMI and measurements for computing it are undocumented."
+    },
+    {
+      "id": "bmi_path_b.hfpef",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "D2 reports an LVEF finding. An explicit HFpEF diagnosis is undocumented."
+    },
+    {
+      "id": "bmi_path_b.htn",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "The acute-encounter blood pressure predates initiation. A reading on the initiation date is undocumented."
+    },
+    {
+      "id": "bmi_path_b.ckd",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "CKD, CKD stage, and eGFR are undocumented."
+    },
+    {
+      "id": "bmi_path_c",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "The prior MI condition is supported. Initiation BMI evidence is insufficient."
+    },
+    {
+      "id": "bmi_path_c.bmi",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "An initiation BMI and measurements for computing it are undocumented."
+    },
+    {
+      "id": "bmi_path_c.prediabetes",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "Prediabetes and related lab values are undocumented."
+    },
+    {
+      "id": "bmi_path_c.mi",
+      "status": "supported",
+      "flags": [],
+      "reason": "D2 explicitly documents prior NSTEMI."
+    },
+    {
+      "id": "bmi_path_c.stroke",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "Stroke is undocumented."
+    },
+    {
+      "id": "bmi_path_c.pad",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "Symptomatic peripheral artery disease is undocumented."
+    },
+    {
+      "id": "exclusion.t2dm",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "Type 2 diabetes and related lab values are undocumented."
+    },
+    {
+      "id": "exclusion.osa",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "OSA is undocumented."
+    },
+    {
+      "id": "exclusion.mash",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "MASH and fibrosis stage are undocumented."
+    },
+    {
+      "id": "exclusion.part_d_glp1",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "Payment coverage is undocumented."
+    },
+    {
+      "id": "patient_identity",
+      "status": "review",
+      "flags": [
+        "id_missing"
+      ],
+      "reason": "D0 and D1 are designed to match. D2 lacks a comparable ID or DOB, yielding `id_missing`."
+    },
+    {
+      "id": "lifestyle.nutrition",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "A structured nutrition program is undocumented."
+    },
+    {
+      "id": "lifestyle.activity",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "An activity program or medical limitation is undocumented."
+    }
+  ],
+  "case_flags": [],
+  "claims": [
+    {
+      "id": "claim.age_18",
+      "status": "supported"
+    },
+    {
+      "id": "claim.drug",
+      "status": "supported"
+    },
+    {
+      "id": "claim.bmi_bracket",
+      "status": "insufficient"
+    },
+    {
+      "id": "claim.bmi_path_b.htn",
+      "status": "insufficient"
+    },
+    {
+      "id": "claim.bmi_path_b.hfpef",
+      "status": "insufficient"
+    },
+    {
+      "id": "claim.bmi_path_c.mi",
+      "status": "supported"
+    }
+  ],
+  "gold_version": 1,
+  "changes": []
+}

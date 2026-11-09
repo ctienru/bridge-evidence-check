@@ -13,6 +13,12 @@ In progress. Nothing here is usable yet.
 - There is no real patient data from any EHR in this repository.
 - MTSamples transcripts are downloaded at runtime by a script and are not committed.
 - Excerpts from published case reports are used under CC BY, with attribution.
+  Case 17 reproduces the Case 1 heading and narrative prose from Abhinav Karan,
+  Julien Feghaly, Anamarys Blanco, and Calvin Choi, *Dual Culprit ST-Elevation
+  Myocardial Infarction: A Rare but Complex Clinical Entity*, Cureus, 2025, 17(8), e90478.
+  The excerpt preserves the wording and omits figures, videos, and captions.
+  [DOI 10.7759/cureus.90478](https://doi.org/10.7759/cureus.90478) ·
+  [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 - All other documents (referral letters, PA form drafts, authored cases) are synthetic.
 
 ## Running a check

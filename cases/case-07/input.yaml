@@ -1,0 +1,8 @@
+variant_id: case-07
+assessment_date: 2026-10-15
+target_course: {drug: Wegovy, start: 2025-03-15}
+primary_patient: {patient_id: P-1042, name: "Jordan Hale", dob: 1961-04-02}
+documents:
+  - {doc_id: D0-pa-form-draft, role: pa_draft}
+  - {doc_id: D1-referral, role: referral}
+  - {doc_id: D2-nutrition-note, role: clinical}

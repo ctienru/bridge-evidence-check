@@ -1,0 +1,25 @@
+case_id: case-02
+split: dev
+source: authored
+documents:
+  - {doc_id: D0-pa-form-draft, doc_origin: authored, drafted_at: 2026-11-09, reviewed_by: terri}
+  - {doc_id: D1-referral, doc_origin: authored, drafted_at: 2026-11-09, reviewed_by: terri}
+  - {doc_id: D2-initiation-note, doc_origin: authored, drafted_at: 2026-11-09, reviewed_by: terri}
+  - {doc_id: D3-pharmacy-history, doc_origin: authored, drafted_at: 2026-11-09, reviewed_by: terri}
+traps:
+  - T-bmi-exact-threshold
+  - T-hfpef-dx-authored
+  - T-part-d-2026
+  - T-pa-claim-contradicts-record
+tests:
+  - bmi_path_a
+  - bmi_path_b
+  - bmi_path_b.bmi
+  - bmi_path_b.hfpef
+  - bmi_path_c
+  - bmi_path_c.bmi
+  - exclusion.part_d_glp1
+  - claim.age_18
+  - claim.drug
+  - claim.bmi_bracket
+  - claim.bmi_path_b.hfpef

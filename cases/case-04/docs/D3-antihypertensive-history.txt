@@ -1,0 +1,8 @@
+Antihypertensive Medication History
+Date: 2026-05-14
+Patient: Alex Mercer
+Patient ID: P-4004
+DOB: 1966-11-18
+
+Exforge was started for blood pressure on 2026-01-02 and was still in use on 2026-05-14.
+A separate HCTZ tablet was added for blood pressure on 2026-04-02 and was still in use on 2026-05-14.

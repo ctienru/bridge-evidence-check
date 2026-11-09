@@ -1,0 +1,31 @@
+case_id: case-04
+split: dev
+source: synthetic
+context_reference: {doi: 10.1136/bcr-2020-235007}
+documents:
+  - {doc_id: D0-pa-form-draft, doc_origin: authored, drafted_at: 2026-11-09, reviewed_by: terri}
+  - {doc_id: D1-referral, doc_origin: authored, drafted_at: 2026-11-09, reviewed_by: terri}
+  - {doc_id: D2-clinical-timeline, doc_origin: authored, drafted_at: 2026-11-09, reviewed_by: terri}
+  - {doc_id: D3-antihypertensive-history, doc_origin: authored, drafted_at: 2026-11-09, reviewed_by: terri}
+traps:
+  - T-combination-pill
+  - T-post-initiation-measurements
+  - T-pathway-overlap-b-and-c
+  - T-osa-sleep-study-negative
+  - T-pa-claim-contradicts-record
+  - T-activity-medical-limitation
+tests:
+  - bmi_path_a
+  - bmi_path_b
+  - bmi_path_b.bmi
+  - bmi_path_b.htn
+  - bmi_path_c
+  - bmi_path_c.bmi
+  - bmi_path_c.prediabetes
+  - exclusion.osa
+  - exclusion.part_d_glp1
+  - lifestyle.activity
+  - claim.age_18
+  - claim.drug
+  - claim.bmi_bracket
+  - claim.exclusion.osa
