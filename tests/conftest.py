@@ -35,6 +35,21 @@ def fixtures_dir() -> Path:
     return FIXTURES
 
 
+def pytest_terminal_summary(terminalreporter: pytest.TerminalReporter) -> None:
+    """Print what the live tests measured (`record_property("live", ...)`), even under -q."""
+    lines = [
+        str(value)
+        for outcome in ("passed", "failed")
+        for report in terminalreporter.stats.get(outcome, [])
+        for name, value in getattr(report, "user_properties", [])
+        if name == "live"
+    ]
+    if lines:
+        terminalreporter.write_sep("-", "live API calls")
+        for line in lines:
+            terminalreporter.write_line(line)
+
+
 # --- Verify helpers: synthetic facts and documents -------------------------------------------
 
 _FACT_DEFAULTS: dict[str, dict[str, object]] = {

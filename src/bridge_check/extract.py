@@ -25,6 +25,21 @@ kept (`response_saved`) and replayed by the next check.
 The SDK's own retries are off (`max_retries=0`); this loop is the only retry layer
 (AGENTS.md).
 
+Cost ceilings (`docs/adr/0001-global-limits.md`): before every send, the cost of this run
+so far plus a reservation for the next call (`reserved_cost`: one input token per UTF-8
+byte of the request plus a fixed allowance for server-side wrapping, and `max_tokens` as
+output, at list prices) is compared with the run ceiling, and the same plus what the
+enclosing eval has already spent (`eval_spent_usd`, passed by the caller; `check` runs one
+case, so it passes 0) with the eval ceiling. An `unknown_outcome` attempt (timeout,
+interrupt, or a transport failure after the request may have left: the SDK's
+`APIConnectionError` does not say whether the server received it) has no recorded cost but
+may have been billed, so it counts at the reservation; so does a server-side processing
+timeout (HTTP 504, or an error body of type `timeout_error`). Only another status error,
+where the server answered without running the request, is a free `api_error`. A call
+that would exceed a ceiling is refused before any attempt row is written; the run fails
+at `extract` and nothing downstream runs. The ceilings are therefore never exceeded by a
+recorded charge.
+
 The raw response is saved and then validated with `Extraction.model_validate_json`;
 `messages.parse()` is never used (AGENTS.md). Nothing here logs or stores document text
 outside `attempts.request_json` / `response_json`: dead letters and log lines carry
@@ -55,14 +70,73 @@ from bridge_check.text import read_doc
 MODEL = "claude-sonnet-5-5"
 PROMPT_VERSION = "extract-v1"
 PROMPT_PATH = CHECKOUT_ROOT / "prompts" / f"{PROMPT_VERSION}.md"
-MAX_TOKENS = 16000
 THINKING: dict[str, str] = {"type": "adaptive"}
 
-REQUEST_TIMEOUT_S = 60.0
+
+CONTRACT_MAX_ATTEMPTS = 4
+CONTRACT_MAX_PARSE_CLASS_ATTEMPTS = 1
+CONTRACT_WALL_CLOCK_S = 300.0
+"""Contract §11 caps: a `Limits` may lower them, never raise them."""
+
+SERVER_INPUT_ALLOWANCE_TOKENS = 2000
+"""Reservation allowance for input the server adds around the request (the structured
+output wrapper). The request itself is bounded at one token per UTF-8 byte: every token of
+the tokenizer spans at least one byte, and the two compiled probes measured 2.1–2.3 bytes
+per billed input token (`docs/live-run-01.md`)."""
+
+
+@dataclass(frozen=True)
+class Limits:
+    """Global limits for one case run (`docs/adr/0001-global-limits.md`).
+
+    `max_tokens` is part of the request and therefore of the cache key; everything else
+    is outside it. The two cost ceilings are in USD at the list prices below. The attempt,
+    parse-class and wall-clock values can only be lowered below the contract caps.
+    """
+
+    max_attempts: int = CONTRACT_MAX_ATTEMPTS
+    max_parse_class_attempts: int = CONTRACT_MAX_PARSE_CLASS_ATTEMPTS
+    wall_clock_s: float = CONTRACT_WALL_CLOCK_S
+    request_timeout_s: float = 180.0
+    max_tokens: int = 16000
+    run_cost_ceiling_usd: float = 1.00
+    eval_cost_ceiling_usd: float = 3.50
+
+    def __post_init__(self) -> None:
+        caps = (
+            ("max_attempts", self.max_attempts, CONTRACT_MAX_ATTEMPTS),
+            (
+                "max_parse_class_attempts",
+                self.max_parse_class_attempts,
+                CONTRACT_MAX_PARSE_CLASS_ATTEMPTS,
+            ),
+            ("wall_clock_s", self.wall_clock_s, CONTRACT_WALL_CLOCK_S),
+        )
+        for name, value, cap in caps:
+            if not 0 < value <= cap:
+                raise ValueError(f"Limits.{name} must be in (0, {cap}] (contract §11), got {value}")
+        for name, value in (
+            ("request_timeout_s", self.request_timeout_s),
+            ("max_tokens", self.max_tokens),
+        ):
+            if value <= 0:
+                raise ValueError(f"Limits.{name} must be positive, got {value}")
+        for name, value in (
+            ("run_cost_ceiling_usd", self.run_cost_ceiling_usd),
+            ("eval_cost_ceiling_usd", self.eval_cost_ceiling_usd),
+        ):
+            if value < 0:
+                raise ValueError(f"Limits.{name} must not be negative, got {value}")
+
+
+LIMITS = Limits()
+
+MAX_TOKENS = LIMITS.max_tokens
+REQUEST_TIMEOUT_S = LIMITS.request_timeout_s
 """Per-request timeout (06 §2.5). Not part of the cache key."""
-MAX_ATTEMPTS = 4
-MAX_PARSE_CLASS_ATTEMPTS = 1
-WALL_CLOCK_S = 300.0
+MAX_ATTEMPTS = LIMITS.max_attempts
+MAX_PARSE_CLASS_ATTEMPTS = LIMITS.max_parse_class_attempts
+WALL_CLOCK_S = LIMITS.wall_clock_s
 BACKOFF_BASE_S = 1.0
 
 # USD per token, claude-sonnet-5-5 (06 §2.3, 2026-11-08).
@@ -70,6 +144,22 @@ PRICE_INPUT = 2.00 / 1_000_000
 PRICE_OUTPUT = 10.00 / 1_000_000
 
 _RETRYABLE_STATUS = frozenset({408, 409, 429})
+_TIMEOUT_STATUS = frozenset({504})
+_TIMEOUT_ERROR_TYPE = "timeout_error"
+
+
+def is_processing_timeout(exc: anthropic.APIStatusError) -> bool:
+    """A status error that means the server may have run the request but did not deliver
+    the reply: HTTP 504, or an error body of type `timeout_error` (the API documents that a
+    processing timeout can come back as 504 or as 500). Such an attempt is billed or not,
+    unknown to us, so it is an `unknown_outcome` and keeps its cost reservation."""
+    if exc.status_code in _TIMEOUT_STATUS:
+        return True
+    body = exc.body if isinstance(exc.body, dict) else {}
+    error = body.get("error") if isinstance(body, dict) else None
+    return isinstance(error, dict) and error.get("type") == _TIMEOUT_ERROR_TYPE
+
+
 _SAFE_TOKEN = re.compile(r"^[a-z][a-z0-9_]{0,39}$")
 
 
@@ -135,7 +225,7 @@ def render_document(doc_id: str, role: str, text: str) -> str:
     return f'<document doc_id="{doc_id}" role="{role}">\n{text}\n</document>'
 
 
-def build_request(case: LoadedCase, system: str) -> dict[str, Any]:
+def build_request(case: LoadedCase, system: str, limits: Limits = LIMITS) -> dict[str, Any]:
     """Exactly the kwargs passed to `messages.create` (and hashed into the cache key).
 
     Only documents with their `doc_id` and `role` are sent; `primary_patient`,
@@ -151,7 +241,7 @@ def build_request(case: LoadedCase, system: str) -> dict[str, Any]:
         "system": system,
         "messages": [{"role": "user", "content": content}],
         "output_config": {"format": {"type": "json_schema", "schema": extraction_json_schema()}},
-        "max_tokens": MAX_TOKENS,
+        "max_tokens": limits.max_tokens,
         "thinking": dict(THINKING),
     }
 
@@ -210,6 +300,14 @@ def _cost(input_tokens: int | None, output_tokens: int | None) -> float | None:
     return round(input_tokens * PRICE_INPUT + output_tokens * PRICE_OUTPUT, 6)
 
 
+def reserved_cost(request_json: str, limits: Limits = LIMITS) -> float:
+    """Upper bound on what one call of this request can cost, at list prices: one input
+    token per byte of the request plus `SERVER_INPUT_ALLOWANCE_TOKENS`, and the whole
+    `max_tokens` as output (the API never returns more)."""
+    input_bound = len(request_json.encode("utf-8")) + SERVER_INPUT_ALLOWANCE_TOKENS
+    return input_bound * PRICE_INPUT + limits.max_tokens * PRICE_OUTPUT
+
+
 def _dump(message: Any) -> dict[str, Any]:
     dump = getattr(message, "model_dump", None)
     if callable(dump):
@@ -234,6 +332,8 @@ class _Run:
         run_id: int,
         sleep: Callable[[float], None],
         clock: Callable[[], float],
+        limits: Limits,
+        eval_spent_usd: float,
     ) -> None:
         self.case = case
         self.client = client
@@ -241,6 +341,8 @@ class _Run:
         self.run_id = run_id
         self.sleep = sleep
         self.clock = clock
+        self.limits = limits
+        self.eval_spent_usd = eval_spent_usd
         self.t0 = clock()
         self.parse_class_failures = 0
         self.api_errors = 0
@@ -318,7 +420,39 @@ class _Run:
         )
 
     def remaining(self) -> float:
-        return WALL_CLOCK_S - (self.clock() - self.t0)
+        return self.limits.wall_clock_s - (self.clock() - self.t0)
+
+    def check_cost_ceilings(self, reserve: float) -> None:
+        """Refuse the next call when its reservation would exceed a ceiling (ADR 0001).
+
+        `reserve` is `reserved_cost(request)`; attempts with an unknown outcome are
+        charged the same amount, since they may have been billed."""
+        spent = self.store.cost_for_run(self.run_id, unknown_outcome_as=reserve)
+        scopes = (
+            ("RunCostCeiling", "run", spent, self.limits.run_cost_ceiling_usd),
+            (
+                "EvalCostCeiling",
+                "eval",
+                self.eval_spent_usd + spent,
+                self.limits.eval_cost_ceiling_usd,
+            ),
+        )
+        for error_type, scope, used, ceiling in scopes:
+            if used + reserve > ceiling:
+                message = (
+                    f"{scope} cost ceiling: ${used:.4f} spent or reserved plus ${reserve:.4f} "
+                    f"for the next call exceeds ${ceiling:.2f}; no request sent"
+                )
+                self.store.insert_dead_letter(
+                    case_run_id=self.run_id, stage="extract", error_type=error_type, message=message
+                )
+                self.log(
+                    "extract_cost_ceiling",
+                    level=logging.WARNING,
+                    stage="extract",
+                    error_type=error_type,
+                )
+                raise ExtractionFailed("extract", error_type, message)
 
 
 def extract(
@@ -330,12 +464,18 @@ def extract(
     system_prompt: str | None = None,
     sleep: Callable[[float], None] = time.sleep,
     clock: Callable[[], float] = time.monotonic,
+    limits: Limits = LIMITS,
+    eval_spent_usd: float = 0.0,
 ) -> ExtractResult:
-    """Return the extraction for `inp`: from the cache, by replay, or from the API."""
+    """Return the extraction for `inp`: from the cache, by replay, or from the API.
+
+    `eval_spent_usd` is what the enclosing eval has already spent on other runs; the
+    per-eval ceiling is checked against that plus this run's cost.
+    """
     silence_sdk_logs()
-    run = _Run(inp, client, store, run_id, sleep, clock)
+    run = _Run(inp, client, store, run_id, sleep, clock, limits, eval_spent_usd)
     request = build_request(
-        inp, system_prompt if system_prompt is not None else load_system_prompt()
+        inp, system_prompt if system_prompt is not None else load_system_prompt(), limits
     )
     key = cache_key(request)
 
@@ -365,24 +505,29 @@ def extract(
 def _call_api(run: _Run, request: dict[str, Any], key: str) -> ExtractResult:
     store = run.store
     request_json = canonical_json(request)
+    limits = run.limits
+    reserve = reserved_cost(request_json, limits)
     attempt_no = 0
     last = ("extract", "NoAttempt")
     while True:
-        if run.parse_class_failures >= MAX_PARSE_CLASS_ATTEMPTS:
+        if run.parse_class_failures >= limits.max_parse_class_attempts:
             raise ExtractionFailed("parse", last[1], "parse-class attempt budget spent")
-        if attempt_no >= MAX_ATTEMPTS:
-            raise ExtractionFailed(last[0], last[1], f"attempt budget spent ({MAX_ATTEMPTS})")
+        if attempt_no >= limits.max_attempts:
+            raise ExtractionFailed(
+                last[0], last[1], f"attempt budget spent ({limits.max_attempts})"
+            )
         if run.remaining() <= 0:
             raise ExtractionFailed(
-                last[0], "WallClockExceeded", f"{WALL_CLOCK_S:.0f}s budget spent"
+                last[0], "WallClockExceeded", f"{limits.wall_clock_s:.0f}s budget spent"
             )
+        run.check_cost_ceilings(reserve)
         attempt_no += 1
         attempt_id = store.insert_attempt(
             case_run_id=run.run_id, cache_key=key, attempt_no=attempt_no, request_json=request_json
         )
         run.log("attempt_started", attempt_no=attempt_no, stage="extract")
         t_req = run.clock()
-        timeout = max(0.001, min(REQUEST_TIMEOUT_S, run.remaining()))
+        timeout = max(0.001, min(limits.request_timeout_s, run.remaining()))
         try:
             message = run.client.with_options(timeout=timeout, max_retries=0).messages.create(
                 **request
@@ -396,12 +541,15 @@ def _call_api(run: _Run, request: dict[str, Any], key: str) -> ExtractResult:
             _backoff(run, attempt_no)
             continue
         except anthropic.APIConnectionError as exc:
-            run.api_failure(attempt_id, attempt_no, "api_error", exc, t_req)
+            # Connect failure or a read failure after the request left: the SDK does not
+            # say which, so the outcome is unknown and the reservation stays charged.
+            run.api_failure(attempt_id, attempt_no, "unknown_outcome", exc, t_req)
             last = ("extract", type(exc).__name__)
             _backoff(run, attempt_no)
             continue
         except anthropic.APIStatusError as exc:
-            run.api_failure(attempt_id, attempt_no, "api_error", exc, t_req)
+            status = "unknown_outcome" if is_processing_timeout(exc) else "api_error"
+            run.api_failure(attempt_id, attempt_no, status, exc, t_req)
             last = ("extract", type(exc).__name__)
             if exc.status_code in _RETRYABLE_STATUS or exc.status_code >= 500:
                 _backoff(run, attempt_no)
@@ -463,7 +611,7 @@ def _backoff(run: _Run, attempt_no: int) -> None:
     """Exponential backoff between retryable API errors, bounded by the wall clock.
     No wait after the last allowed attempt."""
     run.api_errors += 1
-    if attempt_no >= MAX_ATTEMPTS:
+    if attempt_no >= run.limits.max_attempts:
         return
     delay = min(BACKOFF_BASE_S * 2 ** (run.api_errors - 1), max(run.remaining(), 0.0))
     if delay > 0:

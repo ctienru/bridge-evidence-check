@@ -28,7 +28,7 @@ import yaml
 
 from bridge_check import __version__
 from bridge_check.compute import CaseContext, compute
-from bridge_check.extract import PROMPT_VERSION, ExtractionFailed, extract
+from bridge_check.extract import LIMITS, PROMPT_VERSION, ExtractionFailed, extract
 from bridge_check.input import InputError, LoadedCase, case_id_of, load_case, resolve_case_dir
 from bridge_check.logs import configure_logging, log_event
 from bridge_check.manifest import CHECKOUT_ROOT
@@ -64,6 +64,8 @@ RULES_FAILED = "unexpected error while evaluating rules"
 POLICY_FAILED = "the rules table could not be loaded as an implemented policy"
 STORE_FAILED = "could not store the results"
 FAKE_REPLY = "fake-reply.json"
+COST_CEILINGS = ("RunCostCeiling", "EvalCostCeiling")
+"""Dead-letter error types of a refused call (ADR 0001); the message is echoed on stderr."""
 
 _STUB_COMMANDS = {
     "eval": "Evaluate a split against frozen gold.",
@@ -375,7 +377,8 @@ def check_case(
 
     try:
         client = make_client(case.case_dir)
-        result = extract(case, client, store, run_id=run_id)
+        # `check` runs one case: the eval scope is this run alone (ADR 0001).
+        result = extract(case, client, store, run_id=run_id, limits=LIMITS, eval_spent_usd=0.0)
     except ExtractionFailed as exc:
         store.finish_case_run(
             run_id,
@@ -553,6 +556,9 @@ def cmd_check(args: argparse.Namespace) -> int:
     except SchemaVersionMismatch as exc:
         print(f"bridge check: {DB_LABEL} {exc.for_file()}", file=sys.stderr)
         return EXIT_FAILED
+    for d in report["dead_letters"]:
+        if d["error_type"] in COST_CEILINGS:
+            print(f"bridge check: refused: {d['message']}", file=sys.stderr)
     if args.json:
         print(json.dumps(report, indent=2, ensure_ascii=False))
     else:

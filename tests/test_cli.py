@@ -439,3 +439,19 @@ def test_old_schema_database_fails_before_any_call(
     assert "point BRIDGE_DB at a new file" in out.err
     assert db.read_bytes() == before
     assert main(["history", str(SMOKE), "--db", str(db)]) == EXIT_FAILED
+
+
+def test_cost_ceiling_refuses_with_exit_3_and_no_attempt(
+    db: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from bridge_check import cli
+    from bridge_check.extract import Limits
+
+    monkeypatch.setattr(cli, "LIMITS", Limits(run_cost_ceiling_usd=0.0))
+    code, report, err = _json(capsys, "check", str(SMOKE), "--db", str(db), "--json")
+    assert code == EXIT_FAILED
+    assert report["status"] == "failed" and report["failed_stage"] == "extract"
+    assert report["attempt_summary"]["count"] == 0
+    assert report["decisions"] == [] and report["verification"] is None
+    assert [d["error_type"] for d in report["dead_letters"]] == ["RunCostCeiling"]
+    assert "bridge check: refused: run cost ceiling" in err and "no request sent" in err

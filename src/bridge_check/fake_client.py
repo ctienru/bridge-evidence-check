@@ -36,7 +36,14 @@ def timeout_error() -> anthropic.APITimeoutError:
     return anthropic.APITimeoutError(request=_request())
 
 
-def status_error(code: int) -> anthropic.APIStatusError:
+def connection_error() -> anthropic.APIConnectionError:
+    """A transport failure; the SDK raises the same class for a refused connection and for
+    a dropped response, so the caller cannot know whether the request was received."""
+    return anthropic.APIConnectionError(message="synthetic connection error", request=_request())
+
+
+def status_error(code: int, error_type: str | None = None) -> anthropic.APIStatusError:
+    """A synthetic HTTP error; `error_type` fills the API's `{"error": {"type": ...}}` body."""
     response = httpx2.Response(code, request=_request())
     cls: type[anthropic.APIStatusError]
     if code == 400:
@@ -47,7 +54,8 @@ def status_error(code: int) -> anthropic.APIStatusError:
         cls = anthropic.InternalServerError
     else:
         cls = anthropic.APIStatusError
-    return cls(f"synthetic {code}", response=response, body=None)
+    body = {"type": "error", "error": {"type": error_type}} if error_type else None
+    return cls(f"synthetic {code}", response=response, body=body)
 
 
 def fixture(name: str) -> Path:

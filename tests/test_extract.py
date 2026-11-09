@@ -13,16 +13,24 @@ from typing import Any
 import pytest
 
 from bridge_check.extract import (
+    LIMITS,
     MAX_ATTEMPTS,
     MODEL,
     ExtractionFailed,
+    Limits,
     build_request,
     cache_key,
     classify_response,
     extract,
     load_system_prompt,
 )
-from bridge_check.fake_client import FakeClient, fixture, status_error, timeout_error
+from bridge_check.fake_client import (
+    FakeClient,
+    connection_error,
+    fixture,
+    status_error,
+    timeout_error,
+)
 from bridge_check.input import LoadedCase, canonical_json, load_case
 from bridge_check.store import Store, open_store
 
@@ -72,9 +80,17 @@ def _run(store: Store) -> int:
     )
 
 
-def _extract(case: LoadedCase, client: FakeClient, store: Store, clock: Clock | None = None) -> Any:
+def _extract(
+    case: LoadedCase,
+    client: FakeClient,
+    store: Store,
+    clock: Clock | None = None,
+    **kwargs: Any,
+) -> Any:
     clock = clock or Clock()
-    return extract(case, client, store, run_id=_run(store), sleep=clock.sleep, clock=clock)
+    return extract(
+        case, client, store, run_id=_run(store), sleep=clock.sleep, clock=clock, **kwargs
+    )
 
 
 def _statuses(store: Store) -> list[str]:
@@ -394,7 +410,7 @@ def test_wall_clock_budget(case: LoadedCase, store: Store) -> None:
         _extract(case, client, store, clock)
     assert info.value.error_type == "WallClockExceeded"
     assert len(client.calls) == 2
-    assert all(o["timeout"] <= 60 for o in client.options)
+    assert all(o["timeout"] <= LIMITS.request_timeout_s for o in client.options)
 
 
 def test_interrupt_marks_unknown_outcome_and_reraises(case: LoadedCase, store: Store) -> None:
@@ -417,3 +433,225 @@ def test_classification_messages_carry_no_reply_text() -> None:
     assert out.status == "parse_failed"
     assert secret not in (out.message or "") and secret not in (out.fact_path or "")
     assert out.fact_path == "?"
+
+
+# --- cost ceilings (ADR 0001) -------------------------------------------------------------------
+
+FAKE_PRICE = 1.0  # USD per token: the valid fixture (5200 in, 1400 out) then costs $6600
+
+
+@pytest.fixture
+def fake_cost(monkeypatch: pytest.MonkeyPatch) -> None:
+    import bridge_check.extract as extract_module
+
+    monkeypatch.setattr(extract_module, "PRICE_INPUT", FAKE_PRICE)
+    monkeypatch.setattr(extract_module, "PRICE_OUTPUT", FAKE_PRICE)
+
+
+def _reserve(case: LoadedCase, limits: Limits) -> float:
+    from bridge_check.extract import reserved_cost
+
+    return reserved_cost(canonical_json(build_request(case, load_system_prompt(), limits)), limits)
+
+
+def test_reservation_bounds_the_fixture_cost(case: LoadedCase, fake_cost: None) -> None:
+    """The reservation is an upper bound: more than the valid reply's recorded cost."""
+    assert _reserve(case, Limits()) > 6600.0
+
+
+def test_ceilings_far_above_the_cost_do_not_interfere(
+    case: LoadedCase, store: Store, fake_cost: None
+) -> None:
+    limits = Limits(run_cost_ceiling_usd=1e9, eval_cost_ceiling_usd=1e9)
+    result = _extract(case, FakeClient([VALID]), store, limits=limits)
+    assert result.source == "api"
+    assert store.cost_for_run(1) == pytest.approx(6600.0)
+
+
+def test_run_ceiling_refuses_before_the_first_call(
+    case: LoadedCase, store: Store, fake_cost: None
+) -> None:
+    limits = Limits(run_cost_ceiling_usd=_reserve(case, Limits()) - 1.0, eval_cost_ceiling_usd=1e9)
+    client = FakeClient([VALID])
+    with pytest.raises(ExtractionFailed) as info:
+        _extract(case, client, store, limits=limits)
+    assert (info.value.stage, info.value.error_type) == ("extract", "RunCostCeiling")
+    assert client.calls == [] and _statuses(store) == []
+    dead = store.dead_letters_for_run(1)
+    assert [d["error_type"] for d in dead] == ["RunCostCeiling"]
+    assert "no request sent" in dead[0]["message"]
+
+
+def test_recorded_cost_plus_reservation_is_checked_not_recorded_cost_alone(
+    case: LoadedCase, store: Store, fake_cost: None
+) -> None:
+    """A ceiling below one call's cost is never exceeded: the call is refused up front."""
+    limits = Limits(run_cost_ceiling_usd=100.0, eval_cost_ceiling_usd=1e9)
+    client = FakeClient([VALID])
+    with pytest.raises(ExtractionFailed) as info:
+        _extract(case, client, store, limits=limits)
+    assert info.value.error_type == "RunCostCeiling"
+    assert client.calls == [] and store.cost_for_run(1) == 0.0
+
+
+def test_unknown_outcome_is_charged_at_the_reservation(
+    case: LoadedCase, store: Store, fake_cost: None
+) -> None:
+    """A timeout has NULL cost but may have been billed: the retry is refused when two
+    reservations do not fit."""
+    reserve = _reserve(case, Limits())
+    limits = Limits(run_cost_ceiling_usd=1.5 * reserve, eval_cost_ceiling_usd=1e9)
+    client = FakeClient([timeout_error(), VALID])
+    with pytest.raises(ExtractionFailed) as info:
+        _extract(case, client, store, limits=limits)
+    assert info.value.error_type == "RunCostCeiling"
+    assert len(client.calls) == 1 and _statuses(store) == ["unknown_outcome"]
+    assert store.cost_for_run(1, unknown_outcome_as=reserve) == pytest.approx(reserve)
+    assert store.cost_for_run(1) == 0.0
+
+
+def test_status_error_is_free_and_not_charged(
+    case: LoadedCase, store: Store, fake_cost: None
+) -> None:
+    """The server answered 500: nothing was generated, the reservation is released."""
+    reserve = _reserve(case, Limits())
+    limits = Limits(run_cost_ceiling_usd=1.5 * reserve, eval_cost_ceiling_usd=1e9)
+    result = _extract(case, FakeClient([status_error(500), VALID]), store, limits=limits)
+    assert result.source == "api" and _statuses(store) == ["api_error", "parsed"]
+
+
+def test_connection_error_keeps_the_reservation(
+    case: LoadedCase, store: Store, fake_cost: None
+) -> None:
+    """A transport failure may be a dropped response to a request the server ran: it is
+    an unknown outcome (cost NULL) and the retry must still fit under the ceiling."""
+    reserve = _reserve(case, Limits())
+    limits = Limits(run_cost_ceiling_usd=1.5 * reserve, eval_cost_ceiling_usd=1e9)
+    client = FakeClient([connection_error(), VALID])
+    with pytest.raises(ExtractionFailed) as info:
+        _extract(case, client, store, limits=limits)
+    assert info.value.error_type == "RunCostCeiling"
+    assert len(client.calls) == 1 and _statuses(store) == ["unknown_outcome"]
+    assert store.attempt(1)["cost_usd"] is None
+    assert store.attempt(1)["error_type"] == "APIConnectionError"
+
+
+def test_connection_error_is_retried_when_the_budget_allows(case: LoadedCase, store: Store) -> None:
+    result = _extract(case, FakeClient([connection_error(), VALID]), store)
+    assert result.source == "api" and _statuses(store) == ["unknown_outcome", "parsed"]
+
+
+def test_reservation_input_bound_is_one_token_per_byte_plus_allowance(
+    case: LoadedCase, fake_cost: None
+) -> None:
+    from bridge_check.extract import SERVER_INPUT_ALLOWANCE_TOKENS
+
+    limits = Limits()
+    request_json = canonical_json(build_request(case, load_system_prompt(), limits))
+    expected = len(request_json.encode("utf-8")) + SERVER_INPUT_ALLOWANCE_TOKENS + limits.max_tokens
+    assert _reserve(case, limits) == pytest.approx(expected * FAKE_PRICE)
+
+
+def test_eval_ceiling_counts_what_the_eval_already_spent(
+    case: LoadedCase, store: Store, fake_cost: None
+) -> None:
+    reserve = _reserve(case, Limits())
+    limits = Limits(run_cost_ceiling_usd=1e9, eval_cost_ceiling_usd=10.0 + reserve)
+    client = FakeClient([VALID])
+    with pytest.raises(ExtractionFailed) as info:
+        _extract(case, client, store, limits=limits, eval_spent_usd=10.01)
+    assert info.value.error_type == "EvalCostCeiling"
+    assert client.calls == []
+    # Exactly at the ceiling the call still fits.
+    result = _extract(case, client, store, limits=limits, eval_spent_usd=10.0)
+    assert result.source == "api"
+
+
+def test_cache_and_replay_do_not_consult_the_ceilings(
+    case: LoadedCase, store: Store, fake_cost: None
+) -> None:
+    generous = Limits(run_cost_ceiling_usd=1e9, eval_cost_ceiling_usd=1e9)
+    _extract(case, FakeClient([VALID]), store, limits=generous)
+    client = FakeClient([VALID])
+    hit = _extract(case, client, store, limits=Limits(run_cost_ceiling_usd=0.0))
+    assert hit.source == "cache" and client.calls == []
+
+
+def test_ceiling_message_carries_no_document_text(
+    case: LoadedCase, store: Store, fake_cost: None
+) -> None:
+    with pytest.raises(ExtractionFailed) as info:
+        _extract(case, FakeClient([VALID]), store, limits=Limits(eval_cost_ceiling_usd=0.0))
+    for text in case.texts.values():
+        assert text[:20] not in info.value.message
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("max_attempts", 5),
+        ("max_attempts", 0),
+        ("max_parse_class_attempts", 2),
+        ("wall_clock_s", 301.0),
+        ("request_timeout_s", 0.0),
+        ("max_tokens", 0),
+        ("run_cost_ceiling_usd", -0.01),
+    ],
+)
+def test_limits_cannot_exceed_the_contract_caps(field: str, value: float) -> None:
+    with pytest.raises(ValueError, match=field):
+        Limits(**{field: value})  # type: ignore[arg-type]
+
+
+def test_limits_can_be_lowered(case: LoadedCase, store: Store) -> None:
+    limits = Limits(max_attempts=2, wall_clock_s=10.0)
+    client = FakeClient([timeout_error()])
+    with pytest.raises(ExtractionFailed):
+        _extract(case, client, store, limits=limits)
+    assert len(client.calls) == 2
+
+
+def test_four_timeouts_fit_under_the_committed_run_ceiling(case: LoadedCase, store: Store) -> None:
+    """At list prices the contract's four attempts are reserved within `LIMITS`; the
+    ceiling bites only when the reservation grows (a larger `max_tokens` or request)."""
+    assert 4 * _reserve(case, LIMITS) <= LIMITS.run_cost_ceiling_usd
+
+
+@pytest.mark.parametrize(
+    "error",
+    [status_error(504), status_error(500, "timeout_error"), status_error(504, "timeout_error")],
+    ids=["504", "500-timeout_error", "504-timeout_error"],
+)
+def test_processing_timeout_status_keeps_the_reservation(
+    case: LoadedCase, store: Store, fake_cost: None, error: BaseException
+) -> None:
+    """The server may have run the request: unknown outcome, reservation kept, retry
+    refused when two reservations do not fit."""
+    reserve = _reserve(case, Limits())
+    limits = Limits(run_cost_ceiling_usd=1.5 * reserve, eval_cost_ceiling_usd=1e9)
+    client = FakeClient([error, VALID])
+    with pytest.raises(ExtractionFailed) as info:
+        _extract(case, client, store, limits=limits)
+    assert info.value.error_type == "RunCostCeiling"
+    assert len(client.calls) == 1 and _statuses(store) == ["unknown_outcome"]
+    assert store.attempt(1)["cost_usd"] is None
+
+
+def test_processing_timeout_status_is_retried_when_the_budget_allows(
+    case: LoadedCase, store: Store
+) -> None:
+    result = _extract(case, FakeClient([status_error(504), VALID]), store)
+    assert result.source == "api" and _statuses(store) == ["unknown_outcome", "parsed"]
+
+
+@pytest.mark.parametrize(
+    "error",
+    [status_error(500), status_error(500, "api_error"), status_error(529, "overloaded_error")],
+)
+def test_other_server_errors_stay_free_api_errors(
+    case: LoadedCase, store: Store, fake_cost: None, error: BaseException
+) -> None:
+    reserve = _reserve(case, Limits())
+    limits = Limits(run_cost_ceiling_usd=1.5 * reserve, eval_cost_ceiling_usd=1e9)
+    result = _extract(case, FakeClient([error, VALID]), store, limits=limits)
+    assert result.source == "api" and _statuses(store) == ["api_error", "parsed"]
