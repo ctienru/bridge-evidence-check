@@ -6,7 +6,7 @@ Each call to `messages.create` takes the next item of the script: a path to a ra
 options are recorded. Fixtures live in `fixtures/synthetic/extract/` and are hand-written;
 they are not recorded model responses.
 
-CLI: `BRIDGE_FAKE_CLIENT=1` (or `valid`) uses the valid reply; `bad_json`, `truncated`,
+CLI: `BRIDGE_FAKE_CLIENT=1` (or `valid`) uses the valid reply; `no_tool_call`, `truncated`,
 `refusal`, `timeout`, `server_error` and `bad_request` select a failure.
 """
 
@@ -66,7 +66,7 @@ def scenario(name: str) -> Path | BaseException:
     """A named script item for the CLI."""
     if name in ("1", "valid"):
         return fixture("valid")
-    if name in ("bad_json", "truncated", "refusal"):
+    if name in ("no_tool_call", "truncated", "refusal"):
         return fixture(name)
     if name == "timeout":
         return timeout_error()

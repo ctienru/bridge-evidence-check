@@ -278,7 +278,8 @@ Not found means an empty array. Every fact shares: `doc_id`, `quote`, `certainty
 
 - `concept` ∈ `t2dm`, `prediabetes`, `osa`, `mash`, `hfpef`, `ckd`, `mi`, `stroke`, `pad`, `hypertension`, `other`. `bmi_percentile` is never treated as kg/m². NASH (the older name) maps to `mash`; the original spelling stays in the quote.
 - The `MEDICATIONS:` section of an MTSamples document does not count as explicitly complete. `complete=true` with no antihypertensive in the list → can express "complete, but no antihypertensives".
-- Convert with the SDK's `transform_schema()` before sending to the API; the local Pydantic model keeps the full constraints.
+- Output mode (`docs/adr/0002-extraction-output-mode.md`): the schema is sent as the `input_schema` of a single tool, `record_extraction`, that is **not** `strict`, with `tool_choice: {type: auto, disable_parallel_tool_use: true}`; the system prompt requires exactly one call. The reply's `tool_use.input` is the extraction. The local Pydantic model keeps the full constraints and is the only validation: a reply without the call, with a non-object input, or with a validation error is `parse_failed` (§11). `transform_schema()` is not in the request path; it remains a local test that the schema compiles.
+  Why: the compiled grammar of this schema (22.5 KB) exceeds the API's limit (about 5 KB), so neither `output_config.format` nor a strict tool is accepted; a non-strict tool compiles no grammar and has no size limit, and the model rejects forced `tool_choice`. The server-side guarantee that the output matches the schema is given up; the attempt budget and the dead letters cover a schema-violating reply, and nothing downstream reads an unvalidated extraction.
 - **Fallback for the union limit** (used only if the schema smoke test exceeds the limit): make `event_date` a non-null string, add `none` to `date_precision`, and have a `model_validator` require `precision=none ⇔ event_date==""` — this is the only exception to "reject empty strings".
 
 ### 7.3 Data flow
@@ -418,7 +419,7 @@ CREATE INDEX idx_attempts_cache_key ON attempts(cache_key);
 
 Terminal states such as `parse_failed` are not replayed. **The retry budget is per case run**: total attempts ≤ 4 (including the first), of which parse-type ≤ 1, total time 5 minutes.
 
-**Extraction cache key** = `sha256(canonical_json(request_kwargs))`: `request_kwargs` is what is actually passed to `messages.create` — `model`, `system`, `messages` (including the documents and the `doc_id` / `role` wrapping), `output_config`, `max_tokens`, `thinking`; `canonical_json = json.dumps(obj, sort_keys=True, ensure_ascii=False, separators=(",", ":"))`. Excludes timeout, retry settings and metadata. Tests: changing a role or the prompt content changes the key; dict order does not.
+**Extraction cache key** = `sha256(canonical_json(request_kwargs))`: `request_kwargs` is what is actually passed to `messages.create` — `model`, `system`, `messages` (including the documents and the `doc_id` / `role` wrapping), `tools`, `tool_choice`, `max_tokens`, `thinking`; `canonical_json = json.dumps(obj, sort_keys=True, ensure_ascii=False, separators=(",", ":"))`. Excludes timeout, retry settings and metadata. Tests: changing a role or the prompt content changes the key; dict order does not.
 
 **Cache scope**: only the extraction cache; verify, compute and rules are recomputed every time.
 

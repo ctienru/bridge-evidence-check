@@ -1,5 +1,15 @@
 """Extraction call, attempt state machine and extraction cache (contract §7.2, §11).
 
+Output mode (`docs/adr/0002-extraction-output-mode.md`): the extraction schema is sent as
+the `input_schema` of a single, non-strict tool, `record_extraction`, with
+`tool_choice = {"type": "auto", "disable_parallel_tool_use": true}`; the prompt requires the
+call. The server compiles no grammar for a non-strict tool, so the schema size is not
+limited; the reply's `tool_use.input` is always a JSON object but is not guaranteed to
+match the schema, and the local Pydantic validation is the only check (contract §7.2). A
+reply without the tool call, or whose input is not an object, is `parse_failed`
+(`NoToolUse`, `BadToolInput`), as is a validation error, and the parse-class budget below
+ends the run. Forced tool use (`tool_choice` `tool`/`any`) is rejected by the model.
+
 Lookup order for every check:
 
 1. `extractions` by cache key → `cache` (no API call);
@@ -40,10 +50,11 @@ that would exceed a ceiling is refused before any attempt row is written; the ru
 at `extract` and nothing downstream runs. The ceilings are therefore never exceeded by a
 recorded charge.
 
-The raw response is saved and then validated with `Extraction.model_validate_json`;
-`messages.parse()` is never used (AGENTS.md). Nothing here logs or stores document text
-outside `attempts.request_json` / `response_json`: dead letters and log lines carry
-exception class names, validation error types and field paths only.
+The raw response is saved and then the tool input is validated with
+`Extraction.model_validate`; `messages.parse()` is never used (AGENTS.md). Nothing here
+logs or stores document text outside `attempts.request_json` / `response_json`: dead
+letters and log lines carry exception class names, validation error types and field paths
+only.
 """
 
 from __future__ import annotations
@@ -63,14 +74,32 @@ from pydantic import BaseModel, ValidationError
 from bridge_check.input import LoadedCase, canonical_json, sha256_canonical
 from bridge_check.logs import log_event, silence_sdk_logs
 from bridge_check.manifest import CHECKOUT_ROOT
-from bridge_check.schema import SCHEMA_VERSION, Extraction, extraction_json_schema
+from bridge_check.schema import SCHEMA_VERSION, Extraction, pydantic_json_schema
 from bridge_check.store import Store
 from bridge_check.text import read_doc
 
 MODEL = "claude-sonnet-5-5"
-PROMPT_VERSION = "extract-v1"
+PROMPT_VERSION = "extract-v2"
 PROMPT_PATH = CHECKOUT_ROOT / "prompts" / f"{PROMPT_VERSION}.md"
 THINKING: dict[str, str] = {"type": "adaptive"}
+
+TOOL_NAME = "record_extraction"
+TOOL_DESCRIPTION = (
+    "Record every fact extracted from the documents, each with its verbatim quote. "
+    "Call this tool exactly once with the complete extraction; an array with no fact is empty."
+)
+TOOL_CHOICE: dict[str, Any] = {"type": "auto", "disable_parallel_tool_use": True}
+"""`auto` plus the prompt's instruction: the model rejects forced tool use (ADR 0002)."""
+
+
+def extraction_tool() -> dict[str, Any]:
+    """The single tool of every request: the full Pydantic JSON schema, not strict (a strict
+    tool is compiled into a grammar, which this schema is too large for)."""
+    return {
+        "name": TOOL_NAME,
+        "description": TOOL_DESCRIPTION,
+        "input_schema": pydantic_json_schema(),
+    }
 
 
 CONTRACT_MAX_ATTEMPTS = 4
@@ -79,10 +108,10 @@ CONTRACT_WALL_CLOCK_S = 300.0
 """Contract §11 caps: a `Limits` may lower them, never raise them."""
 
 SERVER_INPUT_ALLOWANCE_TOKENS = 2000
-"""Reservation allowance for input the server adds around the request (the structured
-output wrapper). The request itself is bounded at one token per UTF-8 byte: every token of
-the tokenizer spans at least one byte, and the two compiled probes measured 2.1–2.3 bytes
-per billed input token (`docs/live-run-01.md`)."""
+"""Reservation allowance for input the server adds around the request (the tool-use system
+prompt it wraps around `tools`). The request itself is bounded at one token per UTF-8 byte:
+every token of the tokenizer spans at least one byte, and the accepted live calls measured
+about 2.4 bytes per billed input token (`docs/live-run-01.md`)."""
 
 
 @dataclass(frozen=True)
@@ -97,10 +126,10 @@ class Limits:
     max_attempts: int = CONTRACT_MAX_ATTEMPTS
     max_parse_class_attempts: int = CONTRACT_MAX_PARSE_CLASS_ATTEMPTS
     wall_clock_s: float = CONTRACT_WALL_CLOCK_S
-    request_timeout_s: float = 180.0
+    request_timeout_s: float = 120.0
     max_tokens: int = 16000
     run_cost_ceiling_usd: float = 1.00
-    eval_cost_ceiling_usd: float = 3.50
+    eval_cost_ceiling_usd: float = 5.00
 
     def __post_init__(self) -> None:
         caps = (
@@ -240,7 +269,8 @@ def build_request(case: LoadedCase, system: str, limits: Limits = LIMITS) -> dic
         "model": MODEL,
         "system": system,
         "messages": [{"role": "user", "content": content}],
-        "output_config": {"format": {"type": "json_schema", "schema": extraction_json_schema()}},
+        "tools": [extraction_tool()],
+        "tool_choice": dict(TOOL_CHOICE),
         "max_tokens": limits.max_tokens,
         "thinking": dict(THINKING),
     }
@@ -274,20 +304,30 @@ def classify_response(resp: dict[str, Any]) -> Outcome:
     if stop in ("max_tokens", "model_context_window_exceeded"):
         return Outcome("truncated", error_type="Truncated", message=f"stop_reason={stop}")
     blocks = resp.get("content") or []
-    texts = [
-        str(b.get("text", "")) for b in blocks if isinstance(b, dict) and b.get("type") == "text"
+    calls = [
+        b
+        for b in blocks
+        if isinstance(b, dict) and b.get("type") == "tool_use" and b.get("name") == TOOL_NAME
     ]
-    if not texts:
-        return Outcome("parse_failed", error_type="NoTextBlock", message="reply has no text block")
+    if not calls:
+        return Outcome(
+            "parse_failed",
+            error_type="NoToolUse",
+            message=f"reply has no {TOOL_NAME} tool call (stop_reason={stop})",
+        )
+    tool_input = calls[0].get("input")
+    if not isinstance(tool_input, dict):
+        return Outcome(
+            "parse_failed", error_type="BadToolInput", message="tool input is not a JSON object"
+        )
     try:
-        extraction = Extraction.model_validate_json("".join(texts))
+        extraction = Extraction.model_validate(tool_input)
     except ValidationError as exc:
         errors = exc.errors(include_url=False, include_context=False, include_input=False)
         types = sorted({str(e["type"]) for e in errors})
-        error_type = "JSONDecodeError" if "json_invalid" in types else "ValidationError"
         return Outcome(
             "parse_failed",
-            error_type=error_type,
+            error_type="ValidationError",
             fact_path=_safe_path(tuple(errors[0]["loc"])) if errors else None,
             message=f"{len(errors)} validation error(s): {', '.join(types)}",
         )

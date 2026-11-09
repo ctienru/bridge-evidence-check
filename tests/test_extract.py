@@ -16,6 +16,9 @@ from bridge_check.extract import (
     LIMITS,
     MAX_ATTEMPTS,
     MODEL,
+    PROMPT_VERSION,
+    TOOL_CHOICE,
+    TOOL_NAME,
     ExtractionFailed,
     Limits,
     build_request,
@@ -32,12 +35,13 @@ from bridge_check.fake_client import (
     timeout_error,
 )
 from bridge_check.input import LoadedCase, canonical_json, load_case
+from bridge_check.schema import SCHEMA_VERSION, pydantic_json_schema
 from bridge_check.store import Store, open_store
 
 ROOT = Path(__file__).resolve().parent.parent
 SMOKE = ROOT / "fixtures" / "synthetic" / "case-smoke"
 VALID = fixture("valid")
-BAD_JSON = fixture("bad_json")
+NO_TOOL_CALL = fixture("no_tool_call")
 SCHEMA_VIOLATION = fixture("schema_violation")
 TRUNCATED = fixture("truncated")
 REFUSAL = fixture("refusal")
@@ -75,8 +79,8 @@ def _run(store: Store) -> int:
         case_id="case-smoke",
         rules_version="bridge-v1",
         code_sha="test",
-        prompt_version="extract-v1",
-        schema_version="v1",
+        prompt_version=PROMPT_VERSION,
+        schema_version=SCHEMA_VERSION,
     )
 
 
@@ -103,11 +107,35 @@ def _statuses(store: Store) -> list[str]:
 
 def test_request_kwargs_are_exactly_the_contract_set(case: LoadedCase) -> None:
     req = build_request(case, load_system_prompt())
-    assert set(req) == {"model", "system", "messages", "output_config", "max_tokens", "thinking"}
+    assert set(req) == {
+        "model",
+        "system",
+        "messages",
+        "tools",
+        "tool_choice",
+        "max_tokens",
+        "thinking",
+    }
     assert req["model"] == MODEL == "claude-sonnet-5-5"
     assert req["thinking"] == {"type": "adaptive"}
-    assert req["output_config"]["format"]["type"] == "json_schema"
-    assert "temperature" not in req
+    assert "output_config" not in req and "temperature" not in req
+
+
+def test_request_carries_exactly_one_non_strict_tool_and_single_call_choice(
+    case: LoadedCase,
+) -> None:
+    """ADR 0002: the full schema rides as the one tool's `input_schema`, not strict (no
+    grammar), and `tool_choice` is `auto` with parallel calls off (the model rejects
+    forced tool use); the prompt requires the call."""
+    req = build_request(case, load_system_prompt())
+    assert len(req["tools"]) == 1
+    tool = req["tools"][0]
+    assert tool["name"] == TOOL_NAME == "record_extraction"
+    assert tool["input_schema"] == pydantic_json_schema()
+    assert "strict" not in tool
+    assert req["tool_choice"] == TOOL_CHOICE == {"type": "auto", "disable_parallel_tool_use": True}
+    assert f"`{TOOL_NAME}`" in load_system_prompt()
+    assert PROMPT_VERSION == "extract-v2" and SCHEMA_VERSION == "v2"
 
 
 def test_request_sends_documents_with_doc_id_and_role_only(case: LoadedCase) -> None:
@@ -134,9 +162,8 @@ def test_prompt_never_mentions_hidden_input_fields() -> None:
 def test_cache_key_is_stable_under_dict_order(case: LoadedCase) -> None:
     req = build_request(case, "prompt")
     reordered = dict(reversed(list(req.items())))
-    reordered["output_config"] = {
-        "format": dict(reversed(list(req["output_config"]["format"].items())))
-    }
+    reordered["tools"] = [dict(reversed(list(req["tools"][0].items())))]
+    reordered["tool_choice"] = dict(reversed(list(req["tool_choice"].items())))
     assert cache_key(req) == cache_key(reordered)
     assert cache_key(req) == cache_key(build_request(case, "prompt"))
 
@@ -218,7 +245,7 @@ def test_saved_response_is_replayed_without_api_call(case: LoadedCase, store: St
 
 def test_terminal_parse_failed_is_not_replayed(case: LoadedCase, store: Store) -> None:
     with pytest.raises(ExtractionFailed):
-        _extract(case, FakeClient([BAD_JSON]), store)
+        _extract(case, FakeClient([NO_TOOL_CALL]), store)
     client = FakeClient([VALID])
     result = _extract(case, client, store)
     assert result.source == "api"
@@ -231,7 +258,7 @@ def test_failed_replay_falls_through_to_the_api(case: LoadedCase, store: Store) 
     aid = store.insert_attempt(case_run_id=run_id, cache_key=key, attempt_no=1, request_json="{}")
     store.save_response(
         aid,
-        response_json=BAD_JSON.read_text(encoding="utf-8"),
+        response_json=NO_TOOL_CALL.read_text(encoding="utf-8"),
         model_returned="m",
         latency_ms=1,
         input_tokens=1,
@@ -248,18 +275,36 @@ def test_failed_replay_falls_through_to_the_api(case: LoadedCase, store: Store) 
 # --- state machine and budget
 
 
-def test_bad_json_ends_the_run_without_retry(case: LoadedCase, store: Store) -> None:
-    # Contract §11 / AGENTS.md: at most one parse-class attempt per case run.
-    client = FakeClient([BAD_JSON, VALID])
+def test_no_tool_call_ends_the_run_without_retry(case: LoadedCase, store: Store) -> None:
+    # Contract §11 / AGENTS.md: at most one parse-class attempt per case run. Under
+    # `tool_choice: auto` a reply in prose is the missing-call case (ADR 0002).
+    client = FakeClient([NO_TOOL_CALL, VALID])
     with pytest.raises(ExtractionFailed) as info:
         _extract(case, client, store)
     assert info.value.stage == "parse"
-    assert info.value.error_type == "JSONDecodeError"
+    assert info.value.error_type == "NoToolUse"
     assert len(client.calls) == 1
     assert _statuses(store) == ["parse_failed"]
     letters = store.conn.execute("SELECT stage, error_type FROM dead_letters").fetchall()
-    assert [tuple(r) for r in letters] == [("parse", "JSONDecodeError")]
+    assert [tuple(r) for r in letters] == [("parse", "NoToolUse")]
     assert store.count("extractions") == 0
+
+
+def test_tool_input_that_is_not_an_object_is_parse_failed() -> None:
+    resp = {
+        "stop_reason": "tool_use",
+        "content": [{"type": "tool_use", "id": "t", "name": TOOL_NAME, "input": "[]"}],
+    }
+    out = classify_response(resp)
+    assert (out.status, out.error_type) == ("parse_failed", "BadToolInput")
+
+
+def test_other_tool_name_counts_as_no_call() -> None:
+    resp = {
+        "stop_reason": "tool_use",
+        "content": [{"type": "tool_use", "id": "t", "name": "something_else", "input": {}}],
+    }
+    assert classify_response(resp).error_type == "NoToolUse"
 
 
 def test_schema_violation_records_field_path(case: LoadedCase, store: Store) -> None:
@@ -320,7 +365,7 @@ def test_bad_request_is_not_retried(case: LoadedCase, store: Store) -> None:
 
 
 def test_parse_class_limit_inside_attempt_budget(case: LoadedCase, store: Store) -> None:
-    client = FakeClient([status_error(500), BAD_JSON, VALID])
+    client = FakeClient([status_error(500), NO_TOOL_CALL, VALID])
     with pytest.raises(ExtractionFailed) as info:
         _extract(case, client, store)
     assert info.value.stage == "parse"
@@ -334,14 +379,14 @@ def test_failed_replay_then_failed_api_attempt_stops(case: LoadedCase, store: St
     aid = store.insert_attempt(case_run_id=run_id, cache_key=key, attempt_no=1, request_json="{}")
     store.save_response(
         aid,
-        response_json=BAD_JSON.read_text(encoding="utf-8"),
+        response_json=NO_TOOL_CALL.read_text(encoding="utf-8"),
         model_returned="m",
         latency_ms=1,
         input_tokens=1,
         output_tokens=1,
         cost_usd=0.0,
     )
-    client = FakeClient([BAD_JSON, VALID])
+    client = FakeClient([NO_TOOL_CALL, VALID])
     with pytest.raises(ExtractionFailed) as info:
         _extract(case, client, store)
     assert info.value.stage == "parse"
@@ -426,8 +471,8 @@ def test_interrupt_marks_unknown_outcome_and_reraises(case: LoadedCase, store: S
 def test_classification_messages_carry_no_reply_text() -> None:
     secret = "SENTINEL-classify-91c2"
     resp = {
-        "stop_reason": "end_turn",
-        "content": [{"type": "text", "text": '{"' + secret + '": 1}'}],
+        "stop_reason": "tool_use",
+        "content": [{"type": "tool_use", "id": "t", "name": TOOL_NAME, "input": {secret: 1}}],
     }
     out = classify_response(resp)
     assert out.status == "parse_failed"

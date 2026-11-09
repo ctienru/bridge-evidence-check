@@ -1,9 +1,9 @@
 # ADR 0001: global limits for a case run
 
-Status: proposed, numbers provisional (2026-11-09). The live run that was to measure
-them was rejected by the API (`docs/live-run-01.md`); every value below comes from the
-contract, the planning estimate, or the two compiled diagnostic calls, and is to be
-re-derived from the first accepted live call before `eval` runs the 18 cases.
+Status: accepted, numbers measured (2026-11-09). First proposed the same day with
+provisional numbers, when the live run was rejected by the API; revised from the first
+accepted live calls (`docs/live-run-01.md`: 7 billed calls on the two frozen smoke cases
+and the synthetic smoke case). To be re-derived again after `eval` runs the 18 cases.
 
 ## Context
 
@@ -20,56 +20,65 @@ place: `Limits` in `src/bridge_check/extract.py` (`LIMITS` is the committed inst
 | API attempts per run | ≤ 4, including the first | `extract._call_api` | contract §11, AGENTS.md |
 | Parse-class attempts (`parse_failed`, `refused`, `truncated`) | ≤ 1 | same | contract §11 |
 | Wall clock per run | 300 s | checked before each send, bounds each timeout, checked again before `parsed` | contract §11 |
-| Request timeout | 180 s | `client.with_options(timeout=min(180, remaining))`; not in the cache key | see below |
-| `max_tokens` | 16 000 | request kwarg; **in the cache key** | see below |
-| Per-run cost ceiling | $1.00 | before each send, against spent plus a reservation for the next call | see below |
-| Per-eval cost ceiling | $3.50 | same, plus what the eval already spent | see below |
+| Request timeout | 120 s | `client.with_options(timeout=min(120, remaining))`; not in the cache key | measured, below |
+| `max_tokens` | 16 000 | request kwarg; **in the cache key** | kept, below |
+| Per-run cost ceiling | $1.00 | before each send, against spent plus a reservation for the next call | measured, below |
+| Per-eval cost ceiling | $5.00 | same, plus what the eval already spent | measured, below |
 
-**Request timeout, 180 s.** No latency was measured. A reply that uses the whole
-`max_tokens` at about 100 output tokens per second (thinking included) takes about 160 s;
-the planning value of 60 s would turn every long reply into `unknown_outcome`, which is
-paid for and repeated. 180 s leaves room for one full-length attempt plus a shorter retry
-inside the 300 s wall clock. To be replaced by three times the measured maximum latency,
-rounded up to a minute, once a reply exists.
+**Measurements (2026-11-09, `claude-sonnet-5-5`, prompt `extract-v2`).** Four calls on
+the two real smoke cases and three on the synthetic smoke case, every one a single attempt:
 
-**`max_tokens`, 16 000.** Kept from planning 06 §2.1: the reply is twelve arrays of facts
-with verbatim quotes plus adaptive thinking, and the estimate of about 1 500 content tokens
-has not been measured. Lowering it changes the cache key, so it moves only with a
-measurement.
+| | Real cases (4 calls) | Synthetic smoke (3 calls) |
+|---|---|---|
+| Request bytes (canonical JSON) | 31 985 – 32 840 | about 28 100 |
+| Billed input tokens | 13 942 – 14 345 | 11 736 – 12 339 |
+| Bytes per input token | 2.29 – 2.30 | 2.3 – 2.4 |
+| Output tokens (thinking included) | 4 173 – 7 731 (mean 5 542) | 2 292 – 2 535 |
+| Latency | 19.9 – 39.0 s | 11.1 – 12.0 s |
+| Cost at list prices | $0.070 – $0.106 (mean $0.084) | $0.046 – $0.050 |
 
-**Cost model.** List prices of 06 §2.3 (2026-11-08): $2.00 per million input tokens,
-$10.00 per million output tokens; cache reads are not used and not modelled. The only
-measured input size is from the two compiled diagnostic calls: about 565 tokens per KB of
-schema, so the committed request is about 14 600 input tokens for the smoke documents and
-somewhat more for a real case (the documents add about 1 500 tokens). Expected output
-including thinking: about 3 000 tokens.
+**Request timeout, 120 s.** The rule set when nothing was measured: three times the
+measured maximum latency, rounded up to a minute. 3 × 39.0 s = 117 s → 120 s. A reply
+that used the whole `max_tokens` at the observed rate (7 731 output tokens in 39 s, about
+200 per second) would take about 80 s, inside the timeout. 120 s leaves room for two
+full-length attempts inside the 300 s wall clock. The earlier provisional value was 180 s.
 
-- Expected cost of one call: 15 000 × $2.00 / 10⁶ + 3 000 × $10.00 / 10⁶ = $0.03 + $0.03 = $0.06.
-- Worst case of one call: 15 000 × $2.00 / 10⁶ + 16 000 × $10.00 / 10⁶ = $0.03 + $0.16 = $0.19.
+**`max_tokens`, 16 000.** Kept. The largest reply used 7 731 tokens, under half; the
+smallest 2 292. Lowering it changes the cache key, so it moves only when the evaluation
+shows the margin is never needed.
+
+**Cost model.** List prices (2026-11-08): $2.00 per million input tokens, $10.00 per
+million output tokens; cache reads are not used and not modelled. A real case bills about
+14 300 input tokens (the schema inside the tool definition is most of it; the documents
+add a few hundred) and 4 000 – 8 000 output tokens, 6 000 for the estimate.
+
+- Expected cost of one call: 14 300 × $2.00 / 10⁶ + 6 000 × $10.00 / 10⁶ = $0.029 + $0.060 = **$0.089** (measured mean $0.084).
+- Worst case of one call: 14 300 × $2.00 / 10⁶ + 16 000 × $10.00 / 10⁶ = $0.029 + $0.160 = **$0.189**.
 
 **Reservation.** Before every send the program reserves `reserved_cost(request)`, an
 upper bound rather than an estimate: one input token per UTF-8 byte of the canonical
-request JSON (every token of the tokenizer spans at least one byte; the two compiled
-probes billed 2.1–2.3 bytes per input token), plus 2 000 tokens for whatever the server
-wraps around a structured-output request (the API documents that this overhead is billed
-but not its maximum, so the allowance is an assumption; the live test asserts
-`input_tokens ≤ bytes + 2 000` on every accepted call, which is where it gets checked),
-plus the whole `max_tokens` as output (the API never returns more), at list prices. For the smoke request (26 157 bytes) that is
-28 157 × $2.00 / 10⁶ + 16 000 × $10.00 / 10⁶ = $0.056 + $0.160 = **$0.216 per call**; a
-real case adds a few hundred bytes of documents.
+request JSON (every token of the tokenizer spans at least one byte; the live calls billed
+2.3 bytes per input token), plus 2 000 tokens for whatever the server wraps around the
+tool definition (the API bills a tool-use system prompt; its size is not documented, so the
+allowance is an assumption; the live test asserts `input_tokens ≤ bytes + 2 000` on every
+accepted call, and the measured input was less than half the bound), plus the whole
+`max_tokens` as output (the API never returns more), at list prices. For the largest real
+request (32 840 bytes) that is
+34 840 × $2.00 / 10⁶ + 16 000 × $10.00 / 10⁶ = $0.070 + $0.160 = **$0.230 per call**.
 
-**Per-run ceiling, $1.00.** The contract allows 4 attempts; 4 × $0.216 = $0.87 must fit,
-otherwise the ceiling would silently cut the attempt budget; rounded up to $1.00. The
-ceiling therefore does not bite at today's request size; it bites as soon as the
-reservation grows (a larger `max_tokens`, a larger schema or document packet, a price
-change): at `max_tokens` 64 000 the reservation is $0.70 and a second attempt is refused.
-The expected cost of a run is still about $0.06 (one call) to $0.24 (four).
+**Per-run ceiling, $1.00.** The contract allows 4 attempts; 4 × $0.230 = $0.92 must fit,
+otherwise the ceiling would silently cut the attempt budget; rounded up to $1.00
+(unchanged from the provisional value, which used $0.216 for the smoke request). The
+ceiling does not bite at today's request size; it bites as soon as the reservation grows
+(a larger `max_tokens`, a larger schema or document packet, a price change): at
+`max_tokens` 64 000 the reservation is $0.71 and a second attempt is refused. The expected
+cost of a run is about $0.09 (one call) to $0.36 (four).
 
-**Per-eval ceiling, $3.50.** 18 cases × $0.06 = $1.08 for one call each; × 3 safety
-(one retry for every case plus the error of the estimate) = $3.24, rounded to $3.50. For
-comparison the planning estimate was $0.49 for 18 cases; the difference is the schema's
-input tokens, which the estimate did not count. The last case of an eval needs
-$3.50 − spent ≥ $0.216 to be sent at all.
+**Per-eval ceiling, $5.00.** 18 cases × $0.089 = $1.60 for one call each; × 3 safety (one
+retry for every case plus the error of the estimate) = $4.81, rounded to $5.00. The
+provisional value was $3.50, from an estimated $0.06 per call that did not count the
+output tokens the real cases produce. The last case of an eval needs $5.00 − spent ≥ $0.230
+to be sent at all.
 
 **Semantics of the ceilings.** Before every send, `spent` = the cost recorded on this
 run's attempts (`attempts.cost_usd`), with every `unknown_outcome` attempt counted at the
@@ -99,10 +108,13 @@ never raised; a larger value raises `ValueError` before any call.
 
 - A reply that is cut by `max_tokens` is `truncated` (parse-class) and ends the run; the
   ceilings never cut a reply themselves.
+- A parse-class outcome also ends the run (one allowed), and under the tool-use output mode
+  (ADR 0002) it is a measured quantity rather than a rarity: 3 of 4 accepted first-draft calls on
+  2026-11-09 (2 of 3 without the probe), 0 of 3 after the prompt was tightened. The cost of such a run is one call.
 - The ceilings live in code, not in `rules/bridge-v1.yaml`: they are operational limits,
   not policy, and the rules table's `IMPLEMENTED` allow-list stays about CMS policy.
 - Tests use the fake client with monkeypatched prices (`tests/test_extract.py`,
   `tests/test_cli.py`); `uv run pytest -q -m live` is the one opt-in call that checks the
-  schema against the API.
-- Until the schema compiles, every number here is an estimate; this ADR is revised, not
-  superseded, when the measurement exists.
+  request shape against the API.
+- The numbers come from 7 calls on 3 cases; this ADR is revised, not superseded, when the
+  18-case evaluation exists.

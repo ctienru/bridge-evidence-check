@@ -4,14 +4,16 @@ Opt-in only: the test runs only when `-m live` selects it explicitly (not under 
 `pytest`, which excludes nothing by marker) and a key exists (`ANTHROPIC_API_KEY` in the
 environment, else `.env` in the checkout; read inside the test, never at import, never
 printed). The `live` marker is excluded from CI.
-This is where the API compiles the schema (the union limit is enforced server side), so
-every schema change is checked here with one call on the cheapest case. The measured
-tokens, latency and cost are printed in the terminal summary (`conftest.py`).
-`docs/live-run-01.md` records the same measurement on the frozen cases.
+This is the one place the request shape meets the real API: the schema travels as the
+`input_schema` of the `record_extraction` tool with `tool_choice: auto` (ADR 0002), so
+every change to the schema, the tool or the prompt is checked here with one call on the
+cheapest case. The measured tokens, latency and cost are printed in the terminal summary
+(`conftest.py`). `docs/live-run-01.md` records the same measurement on the frozen cases.
 """
 
 from __future__ import annotations
 
+import json
 import os
 from collections.abc import Callable
 from pathlib import Path
@@ -19,8 +21,9 @@ from typing import Any
 
 import pytest
 
-from bridge_check.extract import SERVER_INPUT_ALLOWANCE_TOKENS, extract
+from bridge_check.extract import PROMPT_VERSION, SERVER_INPUT_ALLOWANCE_TOKENS, TOOL_NAME, extract
 from bridge_check.input import load_case
+from bridge_check.schema import SCHEMA_VERSION
 from bridge_check.store import open_store
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -110,7 +113,7 @@ def test_client_setup_failure_is_reported_without_the_key(
     assert "ValueError" in message and SYNTHETIC_KEY not in message and "k7q2" not in message
 
 
-def test_live_schema_accepted_and_parse_succeeds_on_smoke_case(
+def test_live_tool_use_request_accepted_and_parse_succeeds_on_smoke_case(
     tmp_path: Path, live_client: Any, record_property: Callable[[str, object], None]
 ) -> None:
     store = open_store(tmp_path / "live.db")
@@ -118,8 +121,8 @@ def test_live_schema_accepted_and_parse_succeeds_on_smoke_case(
         case_id="case-smoke",
         rules_version="bridge-v1",
         code_sha="live",
-        prompt_version="extract-v1",
-        schema_version="v1",
+        prompt_version=PROMPT_VERSION,
+        schema_version=SCHEMA_VERSION,
     )
     result = extract(load_case(SMOKE), live_client, store, run_id=run_id)
     attempt = store.attempt(result.source_attempt_id)
@@ -129,10 +132,14 @@ def test_live_schema_accepted_and_parse_succeeds_on_smoke_case(
         f"output_tokens={attempt['output_tokens']} latency_ms={attempt['latency_ms']} "
         f"cost_usd={attempt['cost_usd']}",
     )
-    # The API accepted the compiled schema (a rejection raises before any attempt is saved
-    # as `response_saved`) and the reply parsed into `Extraction`.
+    # The API accepted the tool-use request (a rejection raises before any attempt is saved
+    # as `response_saved`), the model called the tool, and its input parsed into
+    # `Extraction`.
     assert result.source == "api"
     assert attempt["status"] == "parsed"
+    saved = json.loads(attempt["response_json"])
+    assert saved["stop_reason"] == "tool_use"
+    assert [b["name"] for b in saved["content"] if b["type"] == "tool_use"] == [TOOL_NAME]
     assert result.extraction.bp_readings, "expected the synthetic BP reading"
     # The reservation's input bound (ADR 0001) holds for what the server actually billed:
     # the 2 000-token allowance for server-side wrapping is checked on every accepted call.
