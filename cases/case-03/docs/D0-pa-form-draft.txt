@@ -1,0 +1,12 @@
+Prior Authorization Draft
+Date: 2026-10-15
+Patient: Jordan Ellis
+Patient ID: P-3003
+DOB: 1965-02-11
+
+Patient is 18 or older: Yes
+Requested drug: Wegovy
+BMI category: 30-34.9
+Uncontrolled hypertension on two or more antihypertensives: Yes
+Moderate to severe OSA: No
+Enrolled in a structured nutrition program: Yes

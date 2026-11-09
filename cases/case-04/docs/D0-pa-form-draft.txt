@@ -1,0 +1,10 @@
+Prior Authorization Draft
+Date: 2026-10-15
+Patient: Alex Mercer
+Patient ID: P-4004
+DOB: 1966-11-18
+
+Patient is 18 or older: Yes
+Requested drug: Wegovy
+BMI category: 30-34.9
+Moderate to severe OSA: Yes

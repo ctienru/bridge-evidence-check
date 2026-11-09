@@ -1,0 +1,9 @@
+variant_id: case-04
+assessment_date: 2026-10-15
+target_course: {drug: Wegovy, start: 2026-05-14}
+primary_patient: {patient_id: P-4004, name: "Alex Mercer", dob: 1966-11-18}
+documents:
+  - {doc_id: D0-pa-form-draft, role: pa_draft}
+  - {doc_id: D1-referral, role: referral}
+  - {doc_id: D2-clinical-timeline, role: clinical}
+  - {doc_id: D3-antihypertensive-history, role: clinical}

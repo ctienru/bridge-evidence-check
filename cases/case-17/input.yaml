@@ -1,0 +1,8 @@
+variant_id: case-17
+assessment_date: 2026-10-15
+target_course: {drug: Wegovy, start: 2025-09-15}
+primary_patient: {patient_id: P-1717, name: "Case 17", dob: 1962-04-20}
+documents:
+  - {doc_id: D0-pa-form-draft, role: pa_draft}
+  - {doc_id: D1-referral, role: referral}
+  - {doc_id: D2-case-report-cureus-2025, role: clinical}

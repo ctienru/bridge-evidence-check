@@ -1,0 +1,9 @@
+variant_id: case-02
+assessment_date: 2026-10-15
+target_course: {drug: Wegovy, start: 2026-02-02}
+primary_patient: {patient_id: P-2002, name: "Morgan Reed", dob: 1958-06-11}
+documents:
+  - {doc_id: D0-pa-form-draft, role: pa_draft}
+  - {doc_id: D1-referral, role: referral}
+  - {doc_id: D2-initiation-note, role: clinical}
+  - {doc_id: D3-pharmacy-history, role: clinical}

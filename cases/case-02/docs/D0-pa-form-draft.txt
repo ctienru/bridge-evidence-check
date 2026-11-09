@@ -1,0 +1,12 @@
+Medicare GLP-1 Bridge
+Prior authorization draft
+
+Form date: 2026-10-15
+Patient: Morgan Reed
+Patient ID: P-2002
+Date of birth: 1958-06-11
+
+Patient is 18 or older: Yes
+Requested drug: Wegovy
+BMI category: 30-34.9
+HFpEF: No

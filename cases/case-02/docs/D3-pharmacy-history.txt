@@ -1,0 +1,10 @@
+Pharmacy history
+
+Record date: 2026-04-30
+Patient: Morgan Reed
+Patient ID: P-2002
+Date of birth: 1958-06-11
+
+Medicare Part D paid for the Wegovy fill on 2026-02-02.
+Medicare Part D paid for the Wegovy fill on 2026-03-02.
+Medicare Part D paid for the Wegovy fill on 2026-04-02.

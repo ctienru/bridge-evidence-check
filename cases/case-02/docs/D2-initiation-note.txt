@@ -1,0 +1,10 @@
+Visit note
+
+Visit date: 2026-02-02
+Patient: Morgan Reed
+Patient ID: P-2002
+Date of birth: 1958-06-11
+
+Height on 2026-02-02 was 180 cm.
+Weight on 2026-02-02 was 97.2 kg.
+The clinician documented HFpEF at the visit on 2026-02-02.

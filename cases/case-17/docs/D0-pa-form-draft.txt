@@ -1,0 +1,12 @@
+Prior Authorization Form (Draft)
+Date: 2026-10-15
+Patient: Case 17
+Patient ID: P-1717
+DOB: 1962-04-20
+
+Patient is 18 or older: Yes
+Requested drug: Wegovy
+BMI category: 30-34.9
+Uncontrolled hypertension on two or more antihypertensives: Yes
+HFpEF: Yes
+Previous MI: Yes

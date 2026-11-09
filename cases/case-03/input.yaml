@@ -1,0 +1,8 @@
+variant_id: case-03
+assessment_date: 2026-10-15
+target_course: {drug: Wegovy, start: 2026-03-12}
+primary_patient: {patient_id: P-3003, name: "Jordan Ellis", dob: 1965-02-11}
+documents:
+  - {doc_id: D0-pa-form-draft, role: pa_draft}
+  - {doc_id: D1-referral, role: referral}
+  - {doc_id: D2-mtsamples-4689, role: clinical}

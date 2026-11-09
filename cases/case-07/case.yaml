@@ -1,0 +1,25 @@
+case_id: case-07
+split: dev
+source: authored
+documents:
+  - {doc_id: D0-pa-form-draft, doc_origin: authored, drafted_at: 2026-11-09, reviewed_by: terri}
+  - {doc_id: D1-referral, doc_origin: authored, drafted_at: 2026-11-09, reviewed_by: terri}
+  - {doc_id: D2-nutrition-note, doc_origin: authored, drafted_at: 2026-11-09, reviewed_by: terri}
+traps:
+  - T-wrong-patient-same-dob
+  - T-bmi-current-only-no-baseline
+  - T-pa-claim-contradicts-record
+  - T-activity-not-documented
+tests:
+  - patient_identity
+  - lifestyle.nutrition
+  - lifestyle.activity
+  - bmi_path_a
+  - bmi_path_b.bmi
+  - bmi_path_c.bmi
+  - bmi_path_b.htn
+  - claim.age_18
+  - claim.drug
+  - claim.bmi_bracket
+  - claim.bmi_path_b.htn
+  - claim.lifestyle.nutrition
