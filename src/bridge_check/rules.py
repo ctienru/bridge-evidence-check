@@ -1394,12 +1394,28 @@ def rule_age(ri: RuleInput) -> Decision:
             excluded=excluded,
         )
     used = [a.src for a in intervals]
-    flags = {"inconsistent_values"} if age_inconsistent(intervals) else set()
     computed = {
         "intervals": [[a.lo_years, a.hi_years, a.origin, a.reference] for a in intervals],
         "initiation_date": ri.facts.initiation_date.iso() if ri.facts.initiation_date else None,
     }
-    at_initiation = ri.facts.initiation is not None
+    initiation = ri.facts.initiation
+    below = next((a for a in intervals if a.whole_below(years)), None)
+    at_least = next((a for a in intervals if a.whole_at_least(years)), None)
+    if initiation is not None and below is not None and at_least is not None:
+        opposing = (below.src, at_least.src)
+        return _decision(
+            ri,
+            condition,
+            "conflict",
+            "conflict",
+            f"age intervals [{below.lo_years}, {below.hi_years}] and "
+            f"[{at_least.lo_years}, {at_least.hi_years}] fall on opposite sides of {years} "
+            f"at initiation ({_refs(opposing)})",
+            used=(*opposing, initiation.src),
+            excluded=excluded,
+            computed=computed,
+        )
+    flags = {"inconsistent_values"} if age_inconsistent(intervals) else set()
     if all(a.whole_at_least(years) for a in intervals):
         return _decision(
             ri,
@@ -1424,7 +1440,7 @@ def rule_age(ri: RuleInput) -> Decision:
             computed=computed,
             flags=flags,
         )
-    if not at_initiation:
+    if initiation is None:
         return _decision(
             ri,
             condition,
