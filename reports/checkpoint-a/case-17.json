@@ -642,13 +642,11 @@
       "field": "patient_identity",
       "gold_index": 12,
       "gold_ref": "D2-case-report-cureus-2025[8:366] 0ab016c2",
-      "mismatched_keys": [
-        "event_date"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": null,
-      "timing_only": true
+      "timing_only": false
     },
     {
       "assertion_check": "matched",
@@ -719,10 +717,10 @@
       "selector": null
     }
   ],
-  "gold_sha256": "01f49ac501728684a6da800882a09a894391f527ccfa177dd6e7fa08cceea297",
-  "gold_version": 1,
+  "gold_sha256": "770b1f281bd0d91fe6c0aea1643a36461393dbee6ddd12e8506dad5dc21b90bd",
+  "gold_version": 2,
   "run": {
-    "code_sha": "bbdc5348e02d79c236a01d1cc5ca1f5b3874e823-dirty",
+    "code_sha": "0ee89908a292bfd950efabafd98f7c8428a85516-dirty",
     "extraction_source": "cache",
     "input_hash": "24dd49910d64ebe88129867a6810796768b882d7eee52f985abced6b5c6f0cd6",
     "prompt_version": "extract-v4",
@@ -751,11 +749,11 @@
       "verify_excluded": 0
     },
     "gold_facts": 16,
-    "matched": 11,
+    "matched": 12,
     "matched_but_excluded": 2,
     "missed": 0,
     "missed_exclusion": 0,
-    "wrong_value": 3
+    "wrong_value": 2
   },
   "variant_id": "case-17"
 }

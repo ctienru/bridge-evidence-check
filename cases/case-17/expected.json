@@ -215,8 +215,8 @@
       "doc_id": "D2-case-report-cureus-2025",
       "start": 8,
       "end": 366,
-      "event_date": "2025-07-15",
-      "relative_to_glp1_initiation": "before",
+      "event_date": null,
+      "relative_to_glp1_initiation": "unknown",
       "identity_match": "missing",
       "quote": "A 63-year-old male with a prior history of hypertension, hyperlipidemia, tobacco use disorder, and a prior non-ST-segment elevation myocardial infarction (NSTEMI) with percutaneous coronary intervention (PCI) to the mid-right coronary artery (RCA) presented to the emergency room with the acute onset of chest pain for the past two hours before presentation.",
       "origin": "model_candidate",
@@ -499,6 +499,8 @@
       "status": "supported"
     }
   ],
-  "gold_version": 1,
-  "changes": []
+  "gold_version": 2,
+  "changes": [
+    "2026-11-09 (guide v2, R02-03, T-04, C-17). Set event_date to null and relative_to_glp1_initiation to unknown on the patient_identity fact at facts[12]. Identity facts are undated under the guide."
+  ]
 }

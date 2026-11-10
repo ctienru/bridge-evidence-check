@@ -479,3 +479,64 @@ under the new compute; one in this run, a nutrition record whose flag decides no
   with no new false support. The prompt change removes the 4 identity rows and brings 2 new
   rows of its own sample. One run per prompt cannot separate prompt effect from sampling
   variation.
+
+## After gold version 2 (guide revision 02)
+
+Date 2026-11-10. No new extraction: the committed `extract-v4` replays were restored and
+re-run offline (no API call) through verify, compute and rules at code `0ee8990` plus the
+working tree of this change. Prompt `extract-v4`, schema `v2`, rules `bridge-v1`, splitter
+`sentences-v1`. Same seven dev variants. Gold version 2 for case-01, case-03 and case-17
+(guide revision 02, R02-02 and R02-03); the other four golds are unchanged.
+
+**Still one run of one model on seven dev cases; not a holdout result; not an evaluation.**
+
+What changed in gold:
+
+- R02-02 (T-08, C-16): case-01's `glp1_start` fact no longer carries `payer`.
+- R02-03 (T-04, C-17, K-02): `patient_identity` and `pa_form_claims` facts are undated
+  (`event_date: null`, `relative_to_glp1_initiation: unknown`). That is five identity and nine
+  claim facts in case-01 and one identity fact each in case-03 and case-17. A null gold
+  event date is not matched.
+
+The per-case files under `reports/checkpoint-a/`, `compare.md` and `reports/baseline-dev.json`
+now hold this offline run against gold version 2. Run ids 8 to 14 are the second pass of each
+case (cache hit), as before. The second pass gives the same status, flags, rule and reason as
+the first for all 179 decisions. Scored against gold version 1, the same offline run
+reproduces the committed `0ee8990` reports exactly, so only the gold moved.
+
+### Totals
+
+| Measure | Gold version 1 (v4, live) | Gold version 2 (v4 replays, offline) |
+|---|---:|---:|
+| Conditions matching gold | 133 / 140 | 133 / 140 |
+| Claims matching gold | 36 / 39 | 36 / 39 |
+| False supports, conditions and claims | 0 | 0 |
+| Missed exclusions | 0 | 0 |
+| Mismatching rows | 10 | 10 |
+
+### Facts
+
+| Case | Gold facts | Matched | Matched, excluded by verify | Wrong value | Missed | False positives | Expected-absent correct |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| case-01 | 31 | 9 → 20 | 0 → 2 | 18 → 5 | 4 | 1 | 11 / 11 |
+| case-03 | 23 | 12 | 2 → 3 | 9 → 8 | 0 | 4 | 14 / 14 |
+| case-17 | 16 | 11 → 12 | 2 | 3 → 2 | 0 | 3 | 18 / 18 |
+| Other four cases | 88 | 72 | 14 | 2 | 0 | 18 | 56 / 56 |
+| **Total** | **158** | **104 → 116** | **18 → 21** | **32 → 17** | **4** | **26** | **99 / 99** |
+
+- case-01: the nine claim rows and two referral identity rows that differed only in
+  `event_date` now match. The two PA-form identity rows now match gold but stay excluded
+  by verify (`claim_document`), as intended.
+- case-03 and case-17: the one identity row each no longer differs in timing. In case-03 that
+  row is excluded by verify (`assertion_mismatch`), so it moves to matched but excluded.
+- Removing `payer` from case-01's `glp1_start` moves no count: `payer: unknown` was already
+  read as "not stated" on both sides.
+
+### What this changes
+
+- Gold version 2 changes fact counts only. No condition or claim status depends on the date
+  of an identity or claim fact, so the ten remaining mismatching rows (B, C, D, E, G above)
+  are unchanged.
+- 15 of the 32 wrong-value facts were date labels on undated facts, not extraction errors.
+  The 17 that remain are other differences: medication periods, subjects, document dates,
+  unparseable values and measurement timing.

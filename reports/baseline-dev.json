@@ -226,7 +226,7 @@
       },
       "conditions_correct": 19,
       "false_support_count": 0,
-      "gold_sha256": "bb5391b3276f2df2a472bc2c0a305b9d7b6fc47abfb0918b2b87dbbb8b9f0c64",
+      "gold_sha256": "b1bece92204f7e5b378cb698306458658508e49fe99139f4c9989c3d5faccae6",
       "input_hash": "43931e3233b805cc291e8d542a56e56e9693ea3e8e9d977012a635d664bbebe5",
       "missed_exclusion_count": 0,
       "replay": {
@@ -624,7 +624,7 @@
       },
       "conditions_correct": 17,
       "false_support_count": 0,
-      "gold_sha256": "54d41ffa315901ff508f12ae32d81eee2bef537fbfa77b4b6f0a15c90ad4f78a",
+      "gold_sha256": "ba1b352639818f1fa2e6198a531ddedfe62e0d9efe319431d56f1112d6fda642",
       "input_hash": "7d40a9949aedf10dd061c1127cb4cd809d551398b6c666e6607cb91e0bfbc140",
       "missed_exclusion_count": 0,
       "replay": {
@@ -1424,7 +1424,7 @@
       },
       "conditions_correct": 20,
       "false_support_count": 0,
-      "gold_sha256": "01f49ac501728684a6da800882a09a894391f527ccfa177dd6e7fa08cceea297",
+      "gold_sha256": "770b1f281bd0d91fe6c0aea1643a36461393dbee6ddd12e8506dad5dc21b90bd",
       "input_hash": "24dd49910d64ebe88129867a6810796768b882d7eee52f985abced6b5c6f0cd6",
       "missed_exclusion_count": 0,
       "replay": {
@@ -1434,13 +1434,13 @@
     }
   },
   "generated_from": {
-    "code_sha": "bbdc5348e02d79c236a01d1cc5ca1f5b3874e823-dirty",
+    "code_sha": "0ee89908a292bfd950efabafd98f7c8428a85516-dirty",
     "model_returned": "claude-sonnet-5-5",
     "prompt_version": "extract-v4",
     "rules_version": "bridge-v1",
     "schema_version": "v2"
   },
-  "manifest_sha256": "0ae795e580c6444ba5743bebf0de4ce1e44dc36875b7db7755d527b822fc5d09",
+  "manifest_sha256": "09743208f74b7bf26335b9dce5af471f6f1a9ee083e22135e148c41d86da174f",
   "split": "dev",
   "totals": {
     "cases": 7,

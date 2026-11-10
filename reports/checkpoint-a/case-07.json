@@ -756,7 +756,7 @@
   "gold_sha256": "edca99045d8d9916b3c452b1705fe7fcbd863f0fbe4959ba3600ce11ed027d32",
   "gold_version": 1,
   "run": {
-    "code_sha": "bbdc5348e02d79c236a01d1cc5ca1f5b3874e823-dirty",
+    "code_sha": "0ee89908a292bfd950efabafd98f7c8428a85516-dirty",
     "extraction_source": "cache",
     "input_hash": "8a5bd980fcd13ad45fa88b64089896d45c037cc1593f592178d339a0ed6fa96f",
     "prompt_version": "extract-v4",
