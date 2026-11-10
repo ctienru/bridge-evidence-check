@@ -20,12 +20,17 @@
     "claim.bmi_bracket": {
       "correct": false,
       "excluded": [],
-      "first_error": "extraction_wrong_value",
-      "flags": [],
+      "first_error": "rules",
+      "flags": [
+        "timing_disagreement"
+      ],
       "gold_flags": [],
       "gold_status": "supported",
-      "status": "insufficient",
+      "status": "review",
       "used": [
+        "D1-referral[118:167] 309626bd",
+        "D2-initiation-note[102:134] 5abae078",
+        "D2-initiation-note[135:168] f504831a",
         "D0-pa-form-draft[189:210] 056fe379"
       ]
     },
@@ -42,14 +47,15 @@
       ]
     },
     "claim.drug": {
-      "correct": false,
+      "correct": true,
       "excluded": [],
-      "first_error": "extraction_wrong_value",
+      "first_error": null,
       "flags": [],
       "gold_flags": [],
       "gold_status": "supported",
-      "status": "insufficient",
+      "status": "supported",
       "used": [
+        "D1-referral[118:167] 309626bd",
         "D0-pa-form-draft[166:188] 144dde34"
       ]
     }
@@ -72,23 +78,18 @@
       ]
     },
     "bmi_path_a": {
-      "correct": false,
-      "excluded": [
-        {
-          "reason": "timing_unknown",
-          "ref": "D2-initiation-note[102:134] 5abae078"
-        },
-        {
-          "reason": "timing_unknown",
-          "ref": "D2-initiation-note[135:168] f504831a"
-        }
-      ],
-      "first_error": "extraction_wrong_value",
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
       "flags": [],
       "gold_flags": [],
       "gold_status": "not_supported",
-      "status": "insufficient",
-      "used": []
+      "status": "not_supported",
+      "used": [
+        "D1-referral[118:167] 309626bd",
+        "D2-initiation-note[102:134] 5abae078",
+        "D2-initiation-note[135:168] f504831a"
+      ]
     },
     "bmi_path_b": {
       "correct": false,
@@ -97,29 +98,29 @@
       "flags": [],
       "gold_flags": [],
       "gold_status": "supported",
-      "status": "insufficient",
+      "status": "review",
       "used": [
+        "D1-referral[118:167] 309626bd",
+        "D2-initiation-note[102:134] 5abae078",
+        "D2-initiation-note[135:168] f504831a",
         "D2-initiation-note[169:227] cc9a4ea5"
       ]
     },
     "bmi_path_b.bmi": {
       "correct": false,
-      "excluded": [
-        {
-          "reason": "timing_unknown",
-          "ref": "D2-initiation-note[102:134] 5abae078"
-        },
-        {
-          "reason": "timing_unknown",
-          "ref": "D2-initiation-note[135:168] f504831a"
-        }
-      ],
+      "excluded": [],
       "first_error": "extraction_wrong_value",
-      "flags": [],
+      "flags": [
+        "timing_disagreement"
+      ],
       "gold_flags": [],
       "gold_status": "supported",
-      "status": "insufficient",
-      "used": []
+      "status": "review",
+      "used": [
+        "D1-referral[118:167] 309626bd",
+        "D2-initiation-note[102:134] 5abae078",
+        "D2-initiation-note[135:168] f504831a"
+      ]
     },
     "bmi_path_b.ckd": {
       "correct": true,
@@ -140,6 +141,7 @@
       "gold_status": "supported",
       "status": "supported",
       "used": [
+        "D1-referral[118:167] 309626bd",
         "D2-initiation-note[169:227] cc9a4ea5"
       ]
     },
@@ -154,33 +156,34 @@
       "used": []
     },
     "bmi_path_c": {
-      "correct": true,
-      "excluded": [],
-      "first_error": null,
-      "flags": [],
-      "gold_flags": [],
-      "gold_status": "insufficient",
-      "status": "insufficient",
-      "used": []
-    },
-    "bmi_path_c.bmi": {
       "correct": false,
-      "excluded": [
-        {
-          "reason": "timing_unknown",
-          "ref": "D2-initiation-note[102:134] 5abae078"
-        },
-        {
-          "reason": "timing_unknown",
-          "ref": "D2-initiation-note[135:168] f504831a"
-        }
-      ],
+      "excluded": [],
       "first_error": "extraction_wrong_value",
       "flags": [],
       "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "review",
+      "used": [
+        "D1-referral[118:167] 309626bd",
+        "D2-initiation-note[102:134] 5abae078",
+        "D2-initiation-note[135:168] f504831a"
+      ]
+    },
+    "bmi_path_c.bmi": {
+      "correct": false,
+      "excluded": [],
+      "first_error": "extraction_wrong_value",
+      "flags": [
+        "timing_disagreement"
+      ],
+      "gold_flags": [],
       "gold_status": "supported",
-      "status": "insufficient",
-      "used": []
+      "status": "review",
+      "used": [
+        "D1-referral[118:167] 309626bd",
+        "D2-initiation-note[102:134] 5abae078",
+        "D2-initiation-note[135:168] f504831a"
+      ]
     },
     "bmi_path_c.mi": {
       "correct": true,
@@ -251,6 +254,7 @@
       "gold_status": "review",
       "status": "review",
       "used": [
+        "D1-referral[118:167] 309626bd",
         "D3-pharmacy-history[109:164] b1de0426",
         "D3-pharmacy-history[165:220] 944f09af",
         "D3-pharmacy-history[221:276] 1eb49fd6"
@@ -569,17 +573,15 @@
       "timing_only": false
     },
     {
-      "assertion_check": "unrecognized",
+      "assertion_check": "matched",
       "doc_id": "D1-referral",
       "evidence_ref": "D1-referral[118:167] 309626bd",
       "exclusion_reasons": [],
       "field": "glp1_start",
       "gold_index": 8,
       "gold_ref": "D1-referral[118:167] 309626bd",
-      "mismatched_keys": [
-        "temporality"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": null,
       "timing_only": false
@@ -620,13 +622,11 @@
       "field": "anthropometrics",
       "gold_index": 11,
       "gold_ref": "D2-initiation-note[102:134] 5abae078",
-      "mismatched_keys": [
-        "relative_to_glp1_initiation"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": "height",
-      "timing_only": true
+      "timing_only": false
     },
     {
       "assertion_check": "matched",
@@ -636,13 +636,11 @@
       "field": "anthropometrics",
       "gold_index": 12,
       "gold_ref": "D2-initiation-note[135:168] f504831a",
-      "mismatched_keys": [
-        "relative_to_glp1_initiation"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": "weight",
-      "timing_only": true
+      "timing_only": false
     },
     {
       "assertion_check": "matched",
@@ -687,49 +685,43 @@
       "timing_only": false
     },
     {
-      "assertion_check": "unrecognized",
+      "assertion_check": "matched",
       "doc_id": "D3-pharmacy-history",
       "evidence_ref": "D3-pharmacy-history[109:164] b1de0426",
       "exclusion_reasons": [],
       "field": "prior_glp1",
       "gold_index": 16,
       "gold_ref": "D3-pharmacy-history[109:164] b1de0426",
-      "mismatched_keys": [
-        "temporality"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": null,
       "timing_only": false
     },
     {
-      "assertion_check": "unrecognized",
+      "assertion_check": "matched",
       "doc_id": "D3-pharmacy-history",
       "evidence_ref": "D3-pharmacy-history[165:220] 944f09af",
       "exclusion_reasons": [],
       "field": "prior_glp1",
       "gold_index": 17,
       "gold_ref": "D3-pharmacy-history[165:220] 944f09af",
-      "mismatched_keys": [
-        "temporality"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": null,
       "timing_only": false
     },
     {
-      "assertion_check": "unrecognized",
+      "assertion_check": "matched",
       "doc_id": "D3-pharmacy-history",
       "evidence_ref": "D3-pharmacy-history[221:276] 1eb49fd6",
       "exclusion_reasons": [],
       "field": "prior_glp1",
       "gold_index": 18,
       "gold_ref": "D3-pharmacy-history[221:276] 1eb49fd6",
-      "mismatched_keys": [
-        "temporality"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": null,
       "timing_only": false
@@ -782,19 +774,19 @@
   "gold_sha256": "bcae1f0d9cd56f57a3f2b79fd12325a7e4a307dbd3d7edaa9d01f8f9ca306cbb",
   "gold_version": 1,
   "run": {
-    "code_sha": "f0bb792476a711f1f9c81971c59ea678ce4b6a7a",
+    "code_sha": "68b1c8698631ca45565b78be7314dae9f9eb4f72-dirty",
     "extraction_source": "cache",
     "input_hash": "3934e23a9ca78bee80aaf57224ad3fa22b09c0507b27dfeeccc095954015d97f",
-    "prompt_version": "extract-v2",
+    "prompt_version": "extract-v3",
     "rules_version": "bridge-v1",
-    "run_id": 11,
+    "run_id": 23,
     "schema_version": "v2",
     "status": "completed"
   },
   "totals": {
     "absent_correct": 16,
     "absent_false_positive": 0,
-    "claims_correct": 2,
+    "claims_correct": 3,
     "claims_false_support": 0,
     "claims_total": 4,
     "conditions_correct": 16,
@@ -805,17 +797,17 @@
     "first_error": {
       "compute_timepoint": 0,
       "extraction_missed": 0,
-      "extraction_wrong_value": 6,
+      "extraction_wrong_value": 4,
       "gold_question": 0,
-      "rules": 0,
+      "rules": 1,
       "verify_excluded": 0
     },
     "gold_facts": 19,
-    "matched": 11,
+    "matched": 17,
     "matched_but_excluded": 2,
     "missed": 0,
     "missed_exclusion": 0,
-    "wrong_value": 6
+    "wrong_value": 0
   },
   "variant_id": "case-02"
 }

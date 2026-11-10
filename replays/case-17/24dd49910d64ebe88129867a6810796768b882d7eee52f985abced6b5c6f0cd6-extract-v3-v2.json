@@ -1,0 +1,493 @@
+{
+  "attempt": {
+    "attempt_no": 1,
+    "cost_usd": 0.058042,
+    "created_at": "2026-11-10T00:54:36.768+00:00",
+    "input_tokens": 13381,
+    "latency_ms": 14550,
+    "output_tokens": 3128,
+    "status": "parsed"
+  },
+  "cache_key_sha8": "401bc0a9",
+  "doc_sha256": {
+    "D0-pa-form-draft": "b1629def703d0b584d9ea10a75b717dc5070039689c52728911aadc220b485df",
+    "D1-referral": "4aef345f1fa5578e03fe917c2091bc171d6b5d307ed43785e17e163d12adcbb2",
+    "D2-case-report-cureus-2025": "014429c1eb55f7751a1105f83ddfd404127550ede745d3cde151eed60ea5df41"
+  },
+  "extraction": {
+    "anthropometrics": [],
+    "bp_readings": [
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dbp": 99,
+        "doc_id": "D2-case-report-cureus-2025",
+        "event_date": "",
+        "quote": {
+          "end": 583,
+          "replay_fidelity": "exact",
+          "sha256": "0e8dedf51febe3a7e5f6fe6f39a52724b76bfb21d875a26e36effab14b51153e",
+          "start": 554,
+          "text": "blood pressure of 142/99 mmHg"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "sbp": 142,
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "diagnoses": [
+      {
+        "ahi": null,
+        "certainty": "present",
+        "cirrhosis": null,
+        "ckd_stage": "",
+        "concept": "hypertension",
+        "date_precision": "none",
+        "doc_id": "D2-case-report-cureus-2025",
+        "event_date": "",
+        "fibrosis_stage": "",
+        "osa_severity": "unspecified",
+        "quote": {
+          "end": 63,
+          "replay_fidelity": "exact",
+          "sha256": "34151413af7f6bfb5884d6f2dc991cb1b9d051d65212adf09e67cb44fa395fb5",
+          "start": 34,
+          "text": "prior history of hypertension"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "symptomatic": "unknown",
+        "temporality": "historical"
+      },
+      {
+        "ahi": null,
+        "certainty": "present",
+        "cirrhosis": null,
+        "ckd_stage": "",
+        "concept": "mi",
+        "date_precision": "none",
+        "doc_id": "D2-case-report-cureus-2025",
+        "event_date": "",
+        "fibrosis_stage": "",
+        "osa_severity": "unspecified",
+        "quote": {
+          "end": 170,
+          "replay_fidelity": "exact",
+          "sha256": "0b4a34757432de1e40c74d84cf8f7bbb4be0c3c9d40566b9db8ff6e871c84ac7",
+          "start": 107,
+          "text": "a prior non-ST-segment elevation myocardial infarction (NSTEMI)"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "symptomatic": "unknown",
+        "temporality": "historical"
+      }
+    ],
+    "doc_dates": [
+      {
+        "certainty": "present",
+        "date": "2026-10-15",
+        "date_precision": "day",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "2026-10-15",
+        "quote": {
+          "end": 49,
+          "replay_fidelity": "exact",
+          "sha256": "6f09346fca4b7ebec676c43bce9a678b9c1218e183505911987f4d01717dc849",
+          "start": 33,
+          "text": "Date: 2026-10-15"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "other",
+        "target_doc_id": "D0-pa-form-draft",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date": "2026-10-15",
+        "date_precision": "day",
+        "doc_id": "D1-referral",
+        "event_date": "2026-10-15",
+        "quote": {
+          "end": 32,
+          "replay_fidelity": "exact",
+          "sha256": "6f09346fca4b7ebec676c43bce9a678b9c1218e183505911987f4d01717dc849",
+          "start": 16,
+          "text": "Date: 2026-10-15"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "other",
+        "target_doc_id": "D1-referral",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date": "2025-07-15",
+        "date_precision": "day",
+        "doc_id": "D1-referral",
+        "event_date": "2025-07-15",
+        "quote": {
+          "end": 253,
+          "replay_fidelity": "exact",
+          "sha256": "41bc5300c91d6aef11996b6745e182ee2f8df4ff1ec8f50f080ed61ae97828b8",
+          "start": 161,
+          "text": "The attached clinical note (D2-case-report-cureus-2025) is from the encounter on 2025-07-15."
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "other",
+        "target_doc_id": "D2-case-report-cureus-2025",
+        "temporality": "current"
+      }
+    ],
+    "glp1_start": [
+      {
+        "certainty": "present",
+        "date": "2025-09-15",
+        "date_precision": "day",
+        "doc_id": "D1-referral",
+        "drug": "Wegovy",
+        "event_date": "2025-09-15",
+        "purpose": "weight",
+        "quote": {
+          "end": 160,
+          "replay_fidelity": "exact",
+          "sha256": "6059e87a06e42dcce82c05ec121da8555cb2796e816971884b0071543b1c34c9",
+          "start": 105,
+          "text": "Wegovy was started on 09/15/2025 for weight management."
+        },
+        "relative_to_glp1_initiation": "at",
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "labs": [],
+    "lifestyle": [],
+    "medication_lists": [],
+    "medications": [
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "doc_id": "D2-case-report-cureus-2025",
+        "dose": "10 mg daily",
+        "end": null,
+        "end_kind": "unknown",
+        "end_precision": null,
+        "event_date": "",
+        "indication": "",
+        "list_id": "",
+        "name": "prasugrel",
+        "quote": {
+          "end": 2164,
+          "replay_fidelity": "exact",
+          "sha256": "ac0b0d531fe63560ef6488f61a341fa1abc4af45154dcc739cbff3a9d1d24623",
+          "start": 2143,
+          "text": "prasugrel 10 mg daily"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "start": null,
+        "start_precision": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "doc_id": "D2-case-report-cureus-2025",
+        "dose": "81 mg daily",
+        "end": null,
+        "end_kind": "unknown",
+        "end_precision": null,
+        "event_date": "",
+        "indication": "",
+        "list_id": "",
+        "name": "acetylsalicylic acid (ASA)",
+        "quote": {
+          "end": 2207,
+          "replay_fidelity": "exact",
+          "sha256": "7763a3e073593e42e425f4954a24c0326387e30e38b5f35b8db9c66324bde1bf",
+          "start": 2169,
+          "text": "acetylsalicylic acid (ASA) 81 mg daily"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "start": null,
+        "start_precision": null,
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "pa_form_claims": [
+      {
+        "certainty": "present",
+        "claim_id": "claim.age_18",
+        "claimed_value": "yes",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 130,
+          "replay_fidelity": "exact",
+          "sha256": "5e283b8a4edf155eadef3f641a8ad67c61c6f4c264ceb23985228c19c7353c36",
+          "start": 103,
+          "text": "Patient is 18 or older: Yes"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.drug",
+        "claimed_value": "Wegovy",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 153,
+          "replay_fidelity": "exact",
+          "sha256": "144dde34ba4a7bdbcd745b23b0aa04b9e3fad86a1c6bca7b294fdd737eb49944",
+          "start": 131,
+          "text": "Requested drug: Wegovy"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.bmi_bracket",
+        "claimed_value": "30-34.9",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 175,
+          "replay_fidelity": "exact",
+          "sha256": "056fe379f2dd171878629ca8d88e3ba10ea5320f76b551258150135a5a2d75b0",
+          "start": 154,
+          "text": "BMI category: 30-34.9"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.bmi_path_b.htn",
+        "claimed_value": "yes",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 239,
+          "replay_fidelity": "exact",
+          "sha256": "eb8134f1599b9fbd9d3ebaadd32386936263746f0c60b914d33a924c403e7bd7",
+          "start": 176,
+          "text": "Uncontrolled hypertension on two or more antihypertensives: Yes"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.bmi_path_b.hfpef",
+        "claimed_value": "yes",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 250,
+          "replay_fidelity": "exact",
+          "sha256": "61c875a2c6dcf9c322c31214d532b97cd721a46ee99dee14b6e4064d44e5ed1d",
+          "start": 240,
+          "text": "HFpEF: Yes"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.bmi_path_c.mi",
+        "claimed_value": "yes",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 267,
+          "replay_fidelity": "exact",
+          "sha256": "ebbbf44bb060201bb3548247b02b7a13bbc57516cc9e88f225f4f11fc1d37078",
+          "start": 251,
+          "text": "Previous MI: Yes"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "patient_identity": [
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "name": "",
+        "patient_id": "P-1717",
+        "quote": {
+          "end": 85,
+          "replay_fidelity": "exact",
+          "sha256": "0bcd888e44262243b92f9778e39bef2980ebd1ec5d3bafa620a63b69c3aa5d88",
+          "start": 67,
+          "text": "Patient ID: P-1717"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": "1962-04-20",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "name": "",
+        "patient_id": "",
+        "quote": {
+          "end": 101,
+          "replay_fidelity": "exact",
+          "sha256": "e9a030abb4dbb12b3e970440ddbe9915e96303013e871664dfb4a02971545fbf",
+          "start": 86,
+          "text": "DOB: 1962-04-20"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "name": "Case 17",
+        "patient_id": "",
+        "quote": {
+          "end": 66,
+          "replay_fidelity": "exact",
+          "sha256": "25ef92a1f17a4bd92a6cc1b72e97907e77abe80ad101b68edddf6a52ca222296",
+          "start": 50,
+          "text": "Patient: Case 17"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D1-referral",
+        "event_date": "",
+        "name": "",
+        "patient_id": "P-1717",
+        "quote": {
+          "end": 68,
+          "replay_fidelity": "exact",
+          "sha256": "0bcd888e44262243b92f9778e39bef2980ebd1ec5d3bafa620a63b69c3aa5d88",
+          "start": 50,
+          "text": "Patient ID: P-1717"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": "1962-04-20",
+        "doc_id": "D1-referral",
+        "event_date": "",
+        "name": "",
+        "patient_id": "",
+        "quote": {
+          "end": 84,
+          "replay_fidelity": "exact",
+          "sha256": "e9a030abb4dbb12b3e970440ddbe9915e96303013e871664dfb4a02971545fbf",
+          "start": 69,
+          "text": "DOB: 1962-04-20"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D1-referral",
+        "event_date": "",
+        "name": "Case 17",
+        "patient_id": "",
+        "quote": {
+          "end": 49,
+          "replay_fidelity": "exact",
+          "sha256": "25ef92a1f17a4bd92a6cc1b72e97907e77abe80ad101b68edddf6a52ca222296",
+          "start": 33,
+          "text": "Patient: Case 17"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D2-case-report-cureus-2025",
+        "event_date": "",
+        "name": "",
+        "patient_id": "",
+        "quote": {
+          "end": 26,
+          "replay_fidelity": "exact",
+          "sha256": "3f432e74a84e08d9950999990265d8987b4b4b104fca3841ee8b023fe99b80bf",
+          "start": 8,
+          "text": "A 63-year-old male"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": 63,
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "prior_glp1": []
+  },
+  "input_hash": "24dd49910d64ebe88129867a6810796768b882d7eee52f985abced6b5c6f0cd6",
+  "lossy_quote_count": 0,
+  "model_returned": "claude-sonnet-5-5",
+  "mtsamples_doc_ids": [],
+  "prompt_version": "extract-v3",
+  "quote_count": 22,
+  "replay_version": 1,
+  "response": {
+    "model": "claude-sonnet-5-5",
+    "role": "assistant",
+    "stop_reason": "tool_use",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "input_tokens": 13381,
+      "output_tokens": 3128
+    }
+  },
+  "schema_version": "v2",
+  "variant_id": "case-17"
+}

@@ -66,14 +66,15 @@
       ]
     },
     "claim.drug": {
-      "correct": false,
+      "correct": true,
       "excluded": [],
-      "first_error": "extraction_wrong_value",
+      "first_error": null,
       "flags": [],
       "gold_flags": [],
       "gold_status": "supported",
-      "status": "insufficient",
+      "status": "supported",
       "used": [
+        "D1-referral[105:160] 6059e87a",
         "D0-pa-form-draft[131:153] 144dde34"
       ]
     }
@@ -611,23 +612,21 @@
       "timing_only": false
     },
     {
-      "assertion_check": "unrecognized",
+      "assertion_check": "matched",
       "doc_id": "D1-referral",
       "evidence_ref": "D1-referral[105:160] 6059e87a",
       "exclusion_reasons": [],
       "field": "glp1_start",
       "gold_index": 10,
       "gold_ref": "D1-referral[105:160] 6059e87a",
-      "mismatched_keys": [
-        "temporality"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": null,
       "timing_only": false
     },
     {
-      "assertion_check": "matched",
+      "assertion_check": "unrecognized",
       "doc_id": "D1-referral",
       "evidence_ref": "D1-referral[161:253] 41bc5300",
       "exclusion_reasons": [
@@ -636,8 +635,10 @@
       "field": "doc_dates",
       "gold_index": 11,
       "gold_ref": "D1-referral[161:253] 41bc5300",
-      "mismatched_keys": [],
-      "outcome": "matched_but_excluded",
+      "mismatched_keys": [
+        "subject"
+      ],
+      "outcome": "wrong_value",
       "position_status": "verbatim",
       "selector": null,
       "timing_only": false
@@ -737,19 +738,19 @@
   "gold_sha256": "01f49ac501728684a6da800882a09a894391f527ccfa177dd6e7fa08cceea297",
   "gold_version": 1,
   "run": {
-    "code_sha": "f0bb792476a711f1f9c81971c59ea678ce4b6a7a",
+    "code_sha": "68b1c8698631ca45565b78be7314dae9f9eb4f72-dirty",
     "extraction_source": "cache",
     "input_hash": "24dd49910d64ebe88129867a6810796768b882d7eee52f985abced6b5c6f0cd6",
-    "prompt_version": "extract-v2",
+    "prompt_version": "extract-v3",
     "rules_version": "bridge-v1",
-    "run_id": 14,
+    "run_id": 28,
     "schema_version": "v2",
     "status": "completed"
   },
   "totals": {
     "absent_correct": 18,
     "absent_false_positive": 0,
-    "claims_correct": 5,
+    "claims_correct": 6,
     "claims_false_support": 0,
     "claims_total": 6,
     "conditions_correct": 20,
@@ -760,14 +761,14 @@
     "first_error": {
       "compute_timepoint": 0,
       "extraction_missed": 0,
-      "extraction_wrong_value": 1,
+      "extraction_wrong_value": 0,
       "gold_question": 0,
       "rules": 0,
       "verify_excluded": 0
     },
     "gold_facts": 16,
-    "matched": 10,
-    "matched_but_excluded": 3,
+    "matched": 11,
+    "matched_but_excluded": 2,
     "missed": 0,
     "missed_exclusion": 0,
     "wrong_value": 3

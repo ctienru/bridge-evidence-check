@@ -453,3 +453,80 @@ def test_cost_ceiling_refuses_with_exit_3_and_no_attempt(
     assert report["decisions"] == [] and report["verification"] is None
     assert [d["error_type"] for d in report["dead_letters"]] == ["RunCostCeiling"]
     assert "bridge check: refused: run cost ceiling" in err and "no request sent" in err
+
+
+# --- Initiation anchoring regression (checkpoint A): the start sentence's temporality ------
+
+
+def _scripted_decisions(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+    name: str,
+    **start: str,
+) -> dict[str, dict[str, Any]]:
+    """`bridge check` on the smoke case with the valid reply, its start sentence edited."""
+    resp = json.loads(fixture("valid").read_text(encoding="utf-8"))
+    ext = next(b for b in resp["content"] if b["type"] == "tool_use")["input"]
+    ext["glp1_start"][0].update(start)
+    reply = tmp_path / f"{name}.json"
+    reply.write_text(json.dumps(resp), encoding="utf-8")
+    monkeypatch.setattr(cli, "make_client", lambda case_dir=None: FakeClient([reply]))
+    code, report, _ = _json(
+        capsys, "check", str(SMOKE), "--db", str(tmp_path / f"{name}.db"), "--json"
+    )
+    assert code == EXIT_OK and report["status"] == "completed"
+    return {d["condition"]: d for d in report["decisions"]}
+
+
+def _anchored(decisions: dict[str, dict[str, Any]]) -> bool:
+    # The referral's measurements are dated after the start: that reason exists only when an
+    # initiation date is anchored; without one their timepoint is unknown.
+    reasons = {x["reason"] for x in decisions["bmi_path_a"]["excluded_evidence"]}
+    return reasons == {"after_initiation"}
+
+
+def test_historical_start_sentence_anchors_like_a_current_one(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    current = _scripted_decisions(tmp_path, capsys, monkeypatch, "current")
+    historical = _scripted_decisions(
+        tmp_path, capsys, monkeypatch, "historical", temporality="historical"
+    )
+    assert _anchored(current)
+    assert historical == current
+
+
+@pytest.mark.parametrize(
+    "start",
+    [{"certainty": "negated"}, {"subject": "family"}],
+    ids=["negated", "family"],
+)
+def test_negated_or_family_start_sentence_anchors_nothing(
+    start: dict[str, str],
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    decisions = _scripted_decisions(
+        tmp_path, capsys, monkeypatch, "edited", temporality="historical", **start
+    )
+    assert not _anchored(decisions)
+    for cid in ("bmi_path_a", "bmi_path_b.bmi", "bmi_path_c.bmi", "bmi_path_b", "bmi_path_c"):
+        assert decisions[cid]["status"] != "supported", cid
+
+
+def test_historical_start_without_its_date_in_the_quote_anchors_nothing(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Contract §3.1: the date must still be inside the verified quote.
+    resp = json.loads(fixture("valid").read_text(encoding="utf-8"))
+    ext = next(b for b in resp["content"] if b["type"] == "tool_use")["input"]
+    quote = str(ext["glp1_start"][0]["quote"])
+    cut = quote[: quote.index(str(ext["glp1_start"][0]["date"]))].rstrip()
+    decisions = _scripted_decisions(
+        tmp_path, capsys, monkeypatch, "undated", temporality="historical", quote=cut
+    )
+    assert not _anchored(decisions)
+    for cid in ("bmi_path_a", "bmi_path_b.bmi", "bmi_path_c.bmi", "bmi_path_b", "bmi_path_c"):
+        assert decisions[cid]["status"] != "supported", cid

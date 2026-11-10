@@ -80,6 +80,7 @@ Flag = Literal[
     "same_note_list",
     "height_from_other_date",
     "uncovered_keyword",
+    "temporality_unverified",
 ]
 FLAGS: tuple[str, ...] = get_args(Flag)
 
@@ -107,6 +108,10 @@ EXTRACTION_FIELDS: tuple[str, ...] = (
     "lifestyle",
     "pa_form_claims",
 )
+
+EVENT_FIELDS: frozenset[str] = frozenset({"glp1_start", "prior_glp1", "doc_dates"})
+"""Dated event facts (contract §5): their temporality label is recorded on the evidence
+(`temporality_unverified`) but never decides anchoring, date use or exclusion."""
 
 # --- Gold (contract §8) ----------------------------------------------------------------
 

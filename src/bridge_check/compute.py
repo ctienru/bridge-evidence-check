@@ -22,7 +22,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 from typing import Any, Literal
 
-from bridge_check.enums import GLP1_CANONICALS, RelativeToInitiation
+from bridge_check.enums import EVENT_FIELDS, GLP1_CANONICALS, RelativeToInitiation
 from bridge_check.rules_schema import ANTIHYPERTENSIVE_CLASSES, Drug, DrugTable
 from bridge_check.verify import LOCATED, CheckedEvidence, parse_raw_number
 
@@ -702,7 +702,10 @@ class _Row:
     @property
     def anchored(self) -> bool:
         """A patient fact whose assertion and value the verifier fully recognized: the only
-        rows allowed to establish the initiation date or a document date."""
+        rows allowed to establish the initiation date or a document date. For the event
+        fields (`EVENT_FIELDS`) whose cues read an actual event, verify derives
+        `assertion_check` from certainty and subject alone and records a temporality
+        disagreement as `temporality_unverified`, which is not checked here (contract §5)."""
         return (
             self.patient_fact
             and self.ev.assertion_check == "matched"
@@ -792,8 +795,10 @@ def compute(evidence: Sequence[CheckedEvidence], ctx: CaseContext) -> ComputedFa
                 r.attr("compounded"),
                 r.source(),
             )
+            # The same gate as the initiation and document dates (contract §5): a fill the
+            # verifier did not fully recognize stays evidence but never reaches the rules.
             for r in clinical
-            if r.ev.field == "prior_glp1"
+            if r.ev.field == "prior_glp1" and r.anchored
         ),
         lifestyle_applicable=tuple(
             _lifestyle(r, ctx.assessment_date) for r in clinical if r.ev.field == "lifestyle"
@@ -855,7 +860,18 @@ def _doc_facts(rows: list[_Row], ctx: CaseContext) -> dict[str, DocFactComputed]
 def _initiation(rows: list[_Row], ctx: CaseContext) -> Initiation | None:
     """The verified start of the target course: every anchored `glp1_start` row naming the
     course and containing its start day. The lowest evidence id is the record; the purpose is
-    `mace` when any matching row says so (guide C-20), whatever the evidence order."""
+    `mace` when any matching row says so (guide C-20), whatever the evidence order.
+
+    Anchoring needs a located quote (`verbatim` or `normalized`) with no exclusion reason,
+    `certainty: present` and `subject: patient` both claimed and confirmed by the cues, no
+    `unrecognized` flag, the course's drug, and the start day bound inside the quote (verify
+    excludes a start whose date is not there with `value_not_in_quote`). The temporality
+    axis is ignored while the cues read an actual event (contract §5): a start labelled
+    `historical` because it carries a past date anchors like a `current` one, and a
+    disagreement with the cues is only recorded as `temporality_unverified`. An explicit
+    hypothetical cue still excludes the row in verify (`assertion_mismatch`), an undecidable
+    scope flags it `unrecognized`, and a start the model itself labels `hypothetical` is not
+    a patient fact: none of them anchors."""
     target = glp1_canonical(ctx.target_drug)
     matches: list[tuple[int, DateInterval, _Row]] = []
     for r in rows:
@@ -896,15 +912,12 @@ def _own_date(r: _Row) -> tuple[DateInterval, TimepointSource] | None:
         iv = DateInterval.parse(iso)
         if iv is not None:
             return iv, "quote"
-    if r.ev.field in _DATED_FIELDS:
+    if r.ev.field in EVENT_FIELDS:
         # The fact's own verified date value (a start, a fill, a document date) is its date.
         iv = DateInterval.parse(r.attr("date"))
         if iv is not None:
             return iv, "quote"
     return None
-
-
-_DATED_FIELDS = frozenset({"glp1_start", "prior_glp1", "doc_dates"})
 
 
 def _is_dob(r: _Row, iso: str) -> bool:

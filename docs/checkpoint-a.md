@@ -211,3 +211,146 @@ git switch main && git pull
 git tag -a v0.1.0 -m "v0.1.0: checkpoint A - first real-extractor run over the 7 dev variants (122/140 conditions, 28/39 claims, 0 false supports; one run, not an evaluation)"
 git push origin v0.1.0
 ```
+
+## After the anchoring fix
+
+Date 2026-11-09. Same extractor (returned `claude-sonnet-5-5` on every call), prompt
+`extract-v3`, schema `v2`, rules `bridge-v1`, splitter `sentences-v1`, code `68b1c86` plus the
+working tree of this change. Same seven dev variants; gold unchanged.
+
+**Still one run of one model on seven dev cases; not a holdout result; not an evaluation.**
+
+What changed (contract §5, "Dated event facts and the temporality axis"):
+
+- Prompt `extract-v3` adds two sentences to `extract-v2`. A date inside a sentence is never a
+  temporality cue. `glp1_start`, `prior_glp1` and `doc_dates` are dated events and are
+  `current` unless an explicit cue precedes the mention. New prompt text means new cache keys.
+- For those three fields, verify takes `assertion_check` from certainty and subject only. A
+  temporality outcome other than `matched` adds the evidence flag `temporality_unverified`. It
+  is no longer `unrecognized` or `assertion_mismatch`. The flag does not block anchoring and
+  does not cap a decision. This holds only while the cues read an actual event: an explicit
+  hypothetical cue still excludes the row, and an undecidable temporality scope still flags it
+  `unrecognized`, so a conditional document date or fill neither anchors nor triggers an
+  exclusion. A prior fill reaches the Part D rule only through the same gate as the start and
+  the document dates; a fill that fails it stays stored as evidence for review. Anchoring still needs a located quote, present, patient, no
+  `unrecognized` flag and the start day inside the quote.
+
+The per-case files under `reports/checkpoint-a/`, `compare.md` and `reports/baseline-dev.json`
+now hold this run. The checkpoint-A versions are at tag `v0.1.0`. The `extract-v2` replays stay
+next to the new `extract-v3` replays.
+
+### Calls
+
+One fresh database outside the checkout; each case checked twice.
+
+| Case | Input tokens | Output tokens | Latency | Cost | Attempts (pass 1) | Pass 2 | Evidence rows |
+|---|---:|---:|---:|---:|---|---|---:|
+| case-01 | 14 489 | 5 353 | 23.7 s | $0.0825 | 1 `parsed` | cache hit, no attempt | 36 |
+| case-02 | 12 742 | 3 646 | 16.9 s | $0.0619 | 1 `parsed` | cache hit, no attempt | 27 |
+| case-03 | 13 568 | 3 891 | 18.0 s | $0.0660 | 1 `parsed` | cache hit, no attempt | 28 |
+| case-04 | 12 963 | 4 213 | 19.3 s | $0.0681 | 1 `parsed` | cache hit, no attempt | 29 |
+| case-07 | 12 747 | 3 501 | 16.2 s | $0.0605 | 1 `parsed` | cache hit, no attempt | 25 |
+| case-07b | 12 866 | 3 213 | 15.0 s | $0.0579 | 1 `parsed` | cache hit, no attempt | 22 |
+| case-17 | 13 381 | 3 128 | 14.6 s | $0.0580 | 1 `parsed` | cache hit, no attempt | 22 |
+| **Total** | **92 756** | **26 945** | **123.6 s** | **$0.4550** | 7 calls, 0 retries | 7 of 7 | 189 |
+
+Plus `pytest -m live` on the synthetic smoke case: 12 483 input and 2 369 output tokens,
+11.5 s, $0.0487. **Spend for this change: $0.5037.** No run came near a ceiling.
+
+The decisions reported below come from re-running the stored extractions with the final code (cache
+hits, no attempt); status, rule, reason and flags equal those of the first live runs for all
+179 decisions. Every quote was found verbatim in its document (189 of 189). Each `extract-v3` replay, restored
+and re-run offline, gives the same status, flags, rule and reason for every decision of its
+live run (179 of 179); only evidence ids inside `computed` differ.
+
+### Totals
+
+| Measure | Checkpoint A | Contract fix only (v2 replays) | This run (v3, live) |
+|---|---:|---:|---:|
+| Conditions matching gold | 122 / 140 | 125 / 140 | 123 / 140 |
+| Claims matching gold | 28 / 39 | 34 / 39 | 33 / 39 |
+| False supports, conditions and claims | 0 | 0 | 0 |
+| Missed exclusions | 0 | 0 | 0 |
+| Mismatching rows | 29 | 20 | 23 |
+
+The middle column re-runs the committed `extract-v2` replays offline through the new verify and
+compute. It needs no API call and isolates the contract fix from the prompt change.
+
+| Case | Conditions, A → now | Claims, A → now |
+|---|---|---|
+| case-01 | 16 → 15 | 6 → 8 |
+| case-02 | 16 → 16 | 2 → 3 |
+| case-03 | 17 → 17 | 3 → 4 |
+| case-04 | 13 → 16 | 2 → 3 |
+| case-07 | 20 → 20 | 5 → 5 |
+| case-07b | 20 → 19 | 5 → 4 |
+| case-17 | 20 → 20 | 5 → 6 |
+
+Facts: 94 of 158 gold facts matched (80 before), 12 matched but excluded by verify (19), 48
+wrong value (55), 4 missed (4), 22 false positives (27), expected-absent 99 / 99 (98 / 99).
+
+Labels: the `extract-v2` replays carry 28 non-`current` temporality labels across seven fields,
+including 5 of 7 GLP-1 starts. The `extract-v3` replays carry 2, both on diagnoses; all 7 starts
+are `current`. No evidence row of this run carries `temporality_unverified`.
+
+### What the fix changed
+
+- An initiation date is now anchored in all seven cases (two before: case-07 and case-07b).
+- `claim.drug` matches gold in all seven cases (two before).
+- case-04: `bmi_path_a`, both BMI sub-results, `bmi_path_c` and `claim.bmi_bracket` now match
+  gold. The anthropometric and blood-pressure labels that blocked them are now `current`.
+- case-02: `bmi_path_a` now matches gold (`not_supported`).
+- case-01: `lifestyle.nutrition` and its claim now match gold. The nutrition records no longer
+  carry a `historical` label.
+
+### Remaining mismatches
+
+23 rows: 17 conditions and 6 claims. Each is listed with the first upstream error from
+`scripts/compare_gold.py` and the cause found in the evidence.
+
+| Case | Row | Gold | Live | First error | Cause |
+|---|---|---|---|---|---|
+| case-01 | `bmi_path_a`, `bmi_path_b.bmi`, `bmi_path_c.bmi`, `claim.bmi_bracket` | sup | rev `timing_disagreement` | `extraction_wrong_value` | A |
+| case-01 | `bmi_path_b`, `bmi_path_c` | ins | rev | `extraction_wrong_value` | A |
+| case-02 | `bmi_path_b.bmi`, `bmi_path_c.bmi` | sup | rev `timing_disagreement` | `extraction_wrong_value` | A |
+| case-02 | `claim.bmi_bracket` | sup | rev `timing_disagreement` | `rules` | A |
+| case-02 | `bmi_path_b` | sup | rev | `extraction_wrong_value` | A |
+| case-02 | `bmi_path_c` | ins | rev | `extraction_wrong_value` | A |
+| case-03 | `bmi_path_a`, `bmi_path_b.bmi`, `bmi_path_c.bmi`, `claim.bmi_bracket` | not / sup | ins | `extraction_wrong_value` | B |
+| case-03 | `claim.bmi_path_b.htn` | rev | ins | `extraction_wrong_value` | C |
+| case-04 | `bmi_path_b.htn`, `bmi_path_b` | sup | ins | `compute_timepoint` | D |
+| case-04 | `lifestyle.activity` | rev | not | `rules` | E |
+| case-04 | `age_18`, `claim.age_18` | sup | ins | `extraction_wrong_value` | F |
+| case-07b | `age_18`, `claim.age_18` | sup | ins | `extraction_wrong_value` | F |
+
+- **A. Timing disagreement on the BMI facts (11 rows: 6 in case-01, 5 in case-02).** The model writes
+  `relative_to_glp1_initiation: unknown` on the height, weight and BMI. Compute derives `at` from
+  the anchored start and the document date, and the disagreement caps every BMI decision at
+  `review` (§3.1 step 8). In case-01 both extractions say `unknown`; the cap only appears now that
+  the start anchors. In case-02 the `extract-v2` extraction said `at` and the `extract-v3` one says
+  `unknown`. The prompt asks for `at` only when the document places the fact at the start, so
+  `unknown` follows the prompt. Whether a model `unknown` against a computed `at` should count as
+  a disagreement is a contract question (§5 item 1), not changed here. case-02's `doc_dates` rows
+  also carry an off-default subject without a cue and anchor nothing; the measurements carry
+  their own date, so this changes no row.
+- **B. Unparseable height (4 rows).** case-03's height is in feet and inches
+  (`unparseable_value`) and its weight has no date, so no BMI is computed. Known gap (C-02,
+  contract §4).
+- **C. K-03 reading (1 row).** case-03 `claim.bmi_path_b.htn`, unchanged from checkpoint A item 7.
+- **D. Medication period "started on X, still on at Y" (2 rows).** case-04; known gap
+  (contract §3.2). Classified `compute_timepoint`.
+- **E. `program_type` has no value for a limitation-only record (1 row).** case-04; known gap
+  (contract §6, guide C-18).
+- **F. Identity facts with a date of birth outside the quote (4 rows).** In case-04 and case-07b
+  every identity fact names a date of birth that its quote does not contain. Verify excludes
+  each with `value_not_in_quote`, so no age is verified. This is new in this sample; the prompt
+  wording for identity facts is unchanged.
+
+### What this changes
+
+- The labelling rule behind checkpoint A item 1 no longer blocks anchoring. The contract fix
+  alone, on the old extractions, removes 9 of the 29 mismatching rows with no new false support.
+- The largest remaining cause is A: the timepoint label on measurements, which now caps BMI
+  rows at `review` instead of leaving them `insufficient`. Both are safe directions.
+- Live totals move less than the offline column because a new sample brings its own errors
+  (A in case-02, F). One run per prompt cannot separate prompt effect from sampling variation.
