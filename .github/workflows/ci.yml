@@ -76,3 +76,46 @@ jobs:
           fi
       - run: uv run python scripts/freeze_splits.py --check --base "${{ github.event.pull_request.base.sha || github.event.before }}"
       - run: uv run python scripts/check_rules.py
+
+  eval:
+    runs-on: ubuntu-latest
+    env:
+      DEEPEVAL_TELEMETRY_OPT_OUT: "YES"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # bridge eval reads reports/baseline-dev.json from the PR base
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --locked --group eval
+      - name: Fetch MTSamples documents
+        id: fetch
+        continue-on-error: true
+        run: |
+          set +e
+          uv run python scripts/fetch_mtsamples.py
+          code=$?
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          exit $code
+      - name: Report MTSamples availability
+        run: |
+          code="${{ steps.fetch.outputs.code }}"
+          if [ "$code" = "2" ]; then
+            echo "MTSamples unavailable (exit 2): the eval report will be incomplete" >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$code" != "0" ]; then
+            echo "fetch_mtsamples failed with exit $code (hash or selection error)" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - name: Baseline change guard
+        if: github.event_name == 'pull_request'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: uv run python scripts/check_baseline_title.py --base "${{ github.event.pull_request.base.sha }}" --title "$PR_TITLE"
+      - name: Offline eval against the base baseline
+        run: uv run bridge eval --split dev --offline --baseline-from "${{ github.event.pull_request.base.sha || github.event.before }}" --out public-report/
+      - run: uv run pytest -q tests/eval
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-dev
+          path: public-report/  # only what export_public_report() let through
+          if-no-files-found: ignore

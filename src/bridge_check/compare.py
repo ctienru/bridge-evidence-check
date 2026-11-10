@@ -31,7 +31,7 @@ from bridge_check.rules_schema import ANTIHYPERTENSIVE_CLASSES, RulesTable
 from bridge_check.store import Store
 from bridge_check.text import sha8
 
-COMPARE_VERSION = 1
+COMPARE_VERSION = 2
 
 ERROR_CLASSES: tuple[str, ...] = (
     "gold_question",
@@ -39,9 +39,14 @@ ERROR_CLASSES: tuple[str, ...] = (
     "extraction_wrong_value",
     "verify_excluded",
     "compute_timepoint",
+    "extraction_extra",
     "rules",
 )
-"""First-upstream-error classes, in the order `classify_condition` tests them."""
+"""First-upstream-error classes, in the order `classify_condition` tests them.
+`extraction_wrong_value` is a dependent gold fact extracted with a wrong value;
+`extraction_extra` is a dependent fact the system extracted that gold does not hold (a
+spurious row, or an `expected_absent` hit). Version 1 reports folded both into
+`extraction_wrong_value`."""
 
 TIMING_REASONS: frozenset[str] = frozenset(
     {"after_initiation", "before_initiation", "timing_unknown", "period_unknown"}
@@ -451,7 +456,7 @@ def classify_condition(
     value; a dependent fact matched but excluded by verify; a timing difference compute
     derived (timing-only wrong value, a timing exclusion of a matched fact, or a computed
     relative timepoint that differs from gold); a spurious dependent fact or expected-absent
-    hit (counted as a wrong extracted value); otherwise rules."""
+    hit (`extraction_extra`); otherwise rules."""
     if (variant_id, condition) in questions:
         return "gold_question"
     dep = [f for f in assignment.facts if _selected(selectors, gold_facts[f.gold_index])]
@@ -479,7 +484,7 @@ def classify_condition(
     spurious = [eid for eid in assignment.false_positives if _selected(selectors, system_rows[eid])]
     absent_fp = [a for a in absent if a["status"] == "false_positive" and _selected(selectors, a)]
     if spurious or absent_fp:
-        return "extraction_wrong_value"
+        return "extraction_extra"
     return "rules"
 
 

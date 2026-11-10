@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 import re
+import stat
 from pathlib import Path
 from typing import Any
 
@@ -19,6 +20,19 @@ from bridge_check.enums import SAFE_ID_PATTERN
 
 MANIFEST_NAME = "splits.yaml"
 _SAFE_ID = re.compile(SAFE_ID_PATTERN)
+
+
+class UnreadableYaml(ValueError):
+    """A YAML file that does not parse. The message names the file only: a parser error
+    would quote the offending line, and case metadata may hold document excerpts."""
+
+
+def safe_yaml(path: Path) -> Any:
+    """`yaml.safe_load` of `path` with the parser's message dropped (`UnreadableYaml`)."""
+    try:
+        return yaml.safe_load(path.read_text(encoding="utf-8"))
+    except yaml.YAMLError:
+        raise UnreadableYaml(f"{path.name}: not valid YAML") from None
 
 
 def is_safe_id(value: str) -> bool:
@@ -31,13 +45,30 @@ def holdout_variants(root: Path) -> frozenset[str]:
     path = root / MANIFEST_NAME
     if not path.is_file():
         return frozenset()
-    data: Any = yaml.safe_load(path.read_text(encoding="utf-8"))
+    data: Any = safe_yaml(path)
     variants = (data or {}).get("variants") or []
     return frozenset(
         str(v["variant_id"])
         for v in variants
         if isinstance(v, dict) and v.get("split") == "holdout" and "variant_id" in v
     )
+
+
+def manifest_variants(root: Path) -> list[dict[str, Any]]:
+    """Every row of `splits.yaml` in manifest order (raw mappings; validation is
+    `scripts/freeze_splits.py`). Empty when the manifest is missing."""
+    path = root / MANIFEST_NAME
+    if not path.is_file():
+        return []
+    data: Any = safe_yaml(path)
+    variants = (data or {}).get("variants") or []
+    return [dict(v) for v in variants if isinstance(v, dict)]
+
+
+def dev_variants(root: Path) -> list[dict[str, Any]]:
+    """The `split: dev` rows only; a holdout row is never returned, so nothing that
+    iterates this list can touch a holdout directory."""
+    return [v for v in manifest_variants(root) if v.get("split") == "dev"]
 
 
 def variant_of_path(root: Path, path: Path) -> str | None:
@@ -65,6 +96,33 @@ def variants_of_path(root: Path, path: Path) -> set[str]:
         rel = None
     if rel is not None and rel.parts:
         found.add(rel.parts[0])
+    found |= _same_directory_as_holdout(root, path)
+    return found
+
+
+def _same_directory_as_holdout(root: Path, path: Path) -> set[str]:
+    """Holdout variants whose directory, by file-system identity, contains the resolved
+    `path`. Catches a holdout directory that is itself a link elsewhere and a dev-named
+    link to that same place, which neither the lexical nor the resolved string check sees,
+    and spellings that differ only in case on a case-insensitive file system."""
+    try:
+        resolved = path.resolve()
+    except OSError:
+        return set()
+    found: set[str] = set()
+    for vid in holdout_variants(root):
+        target = root / "cases" / vid
+        if not target.is_dir():
+            continue
+        for ancestor in (resolved, *resolved.parents):
+            if not ancestor.exists():
+                continue
+            try:
+                if os.path.samefile(ancestor, target):
+                    found.add(vid)
+                    break
+            except OSError:
+                continue
     return found
 
 
@@ -117,11 +175,19 @@ def is_inside(path: Path, directory: Path) -> bool:
 
 
 def read_problem(root: Path, path: Path) -> str | None:
-    """Why `path` may not be read: as written or resolved, it lies in a holdout variant."""
+    """Why `path` may not be read: as written or resolved, it lies in a holdout variant;
+    or the regular file it resolves to (through any symbolic links) has more than one
+    hard link, so its bytes may belong to a holdout name no path check can see."""
     holdout = holdout_variants(root)
     for variant in sorted(variants_of_path(root, path)):
         if variant in holdout:
             return f"{path.name}: lies in holdout variant {variant}, refused"
+    try:
+        st = os.stat(path)  # follows links: the inode that would actually be read
+    except OSError:
+        return None
+    if stat.S_ISREG(st.st_mode) and st.st_nlink > 1:
+        return f"{path.name}: resolves to a file with {st.st_nlink} hard links, refused"
     return None
 
 

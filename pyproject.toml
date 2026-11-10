@@ -28,6 +28,11 @@ dev = [
 data = [
     "openai",
 ]
+# Evaluation shell only (`tests/eval/`, the CI `eval` job); the scoring itself is
+# deterministic code in `bridge_check.scoring` and needs none of this.
+eval = [
+    "deepeval==4.3.3",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -53,8 +58,18 @@ files = ["src", "tests", "scripts"]
 module = ["openai", "openai.*"]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+# `deepeval` is in the optional `eval` group and ships no type information; `tests/eval`
+# skips without it. Treated as `Any` whether or not it is installed, so mypy gives the same
+# answer in the `quality` job (no eval group) and in a full local environment.
+module = ["deepeval", "deepeval.*"]
+ignore_missing_imports = true
+follow_imports = "skip"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# pytest-asyncio arrives with the `eval` group; silence its default-scope warning
+asyncio_default_fixture_loop_scope = "function"
 markers = [
     "live: calls the real Anthropic API; needs ANTHROPIC_API_KEY",
     "slow: slow tests (property tests); skipped by the Stop hook",

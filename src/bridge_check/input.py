@@ -17,7 +17,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from bridge_check.enums import SAFE_ID_PATTERN, DocRole
-from bridge_check.manifest import CHECKOUT_ROOT, holdout_variants, is_safe_id
+from bridge_check.manifest import CHECKOUT_ROOT, holdout_variants, is_safe_id, read_problem
 from bridge_check.text import read_doc, sha256_hex
 
 INPUT_NAME = "input.yaml"
@@ -136,13 +136,24 @@ def case_id_of(case: str, root: Path = CHECKOUT_ROOT) -> str:
     itself, which may contain a name.
     """
     try:
-        return load_input(resolve_case_dir(case, root)).variant_id
+        return load_input(resolve_case_dir(case, root), root).variant_id
     except InputError:
         resolved = str(Path(case).expanduser().resolve())
         return UNRESOLVED_PREFIX + hashlib.sha256(resolved.encode("utf-8")).hexdigest()[:8]
 
 
-def load_input(case_dir: Path) -> CaseInput:
+def _refuse_holdout(root: Path, path: Path, what: str) -> None:
+    """Every exact path is checked, as written and as it resolves, right before it is
+    opened: a link anywhere along the way into a holdout variant is refused here."""
+    if read_problem(root, path) is not None:
+        raise InputError(f"{what} lies in a holdout variant; it is never read here")
+
+
+def load_input(case_dir: Path, root: Path = CHECKOUT_ROOT) -> CaseInput:
+    """Read `input.yaml`; the directory and the file are guarded before the read, so every
+    caller (`case_id_of`, `load_case`) refuses a holdout path without opening it."""
+    _refuse_holdout(root, case_dir, "case directory")
+    _refuse_holdout(root, case_dir / INPUT_NAME, INPUT_NAME)
     path = case_dir / INPUT_NAME
     if not path.is_file():
         raise InputError(f"{INPUT_NAME} not found")
@@ -175,14 +186,16 @@ def _safe_loc(loc: tuple[int | str, ...]) -> str:
 
 
 def load_case(case_dir: Path, root: Path = CHECKOUT_ROOT) -> LoadedCase:
-    """Read `input.yaml` and every listed document. Holdout variants are refused."""
-    inp = load_input(case_dir)
+    """Read `input.yaml` and every listed document. Holdout variants are refused by
+    variant id and by every path about to be opened."""
+    inp = load_input(case_dir, root)
     if inp.variant_id in holdout_variants(root):
         raise InputError("holdout variant; it is never run here")
     texts: dict[str, str] = {}
     hashes: dict[str, str] = {}
     for index, ref in enumerate(inp.documents):
         path = case_dir / DOCS_DIR / f"{ref.doc_id}.txt"
+        _refuse_holdout(root, path, f"documents.{index}")
         if not path.is_file():
             raise InputError(f"document file missing for documents.{index}")
         text = read_doc(path)

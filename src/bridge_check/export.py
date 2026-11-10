@@ -17,11 +17,20 @@ it can be committed and re-run offline. What leaves the store:
 
 Nothing else of the raw response or of the request is read: no system prompt, no messages,
 no thinking block, no tool-use id.
+
+`export_public_report()` is the gate for the evaluation report (`bridge eval`): a
+structural allow-list rather than a field list. Every key and every string value must be
+an id, an enum value, a version, a relative path, a date, a hash or an evidence reference
+`doc_id[start:end] sha8`; a string with any other shape (free text has spaces or
+punctuation these patterns refuse) raises `ExportError`, so no quote, name or note can
+leave through it.
 """
 
 from __future__ import annotations
 
 import json
+import os
+import re
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -45,9 +54,75 @@ RESPONSE_KEYS: tuple[str, ...] = ("model", "role", "type", "stop_reason", "stop_
 USAGE_KEYS: tuple[str, ...] = ("input_tokens", "output_tokens")
 LOCATED = frozenset({"verbatim", "normalized"})
 
+PUBLIC_TOKEN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:/+-]{0,119}$")
+"""An id, enum value, version, ISO date, relative path or hash: no spaces, no brackets."""
+PUBLIC_REF = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*\[\d+:\d+\] [0-9a-f]{8}$")
+"""An evidence reference `doc_id[start:end] sha8` (contract §11)."""
+
 
 class ExportError(Exception):
     """A run that cannot be exported (no extraction, or a position that does not hold)."""
+
+
+def public_string(value: str) -> bool:
+    return PUBLIC_TOKEN.match(value) is not None or PUBLIC_REF.match(value) is not None
+
+
+def export_public_report(payload: Any, _path: str = "report") -> Any:
+    """`payload` with sorted keys, after checking that every key and string value has a
+    public shape (module docstring). Numbers, booleans and None pass; anything else raises
+    `ExportError` naming the key path, never the value."""
+    if isinstance(payload, Mapping):
+        out: dict[str, Any] = {}
+        for key in sorted(payload):
+            if not isinstance(key, str) or not PUBLIC_TOKEN.match(key):
+                raise ExportError(f"{_path}: a key is not a public token")
+            out[key] = export_public_report(payload[key], f"{_path}.{key}")
+        return out
+    if isinstance(payload, list | tuple):
+        return [export_public_report(v, f"{_path}[{i}]") for i, v in enumerate(payload)]
+    if isinstance(payload, str):
+        if not public_string(payload):
+            raise ExportError(f"{_path}: a string value is not a public token or reference")
+        return payload
+    if payload is None or isinstance(payload, bool | int | float):
+        return payload
+    raise ExportError(f"{_path}: unsupported value type {type(payload).__name__}")
+
+
+def link_problem(path: Path) -> str | None:
+    """Why an existing file may be neither read nor replaced in place: it is a symbolic
+    link, or it has more than one hard link (the bytes belong to another name too)."""
+    if path.is_symlink():
+        return "is a symbolic link; refused"
+    try:
+        links = os.lstat(path).st_nlink
+    except FileNotFoundError:
+        return None
+    if links > 1:
+        return f"has {links} hard links; refused"
+    return None
+
+
+def write_public_file(target: Path, text: str) -> None:
+    """Write `text` to `target` by atomic replacement: a sibling temporary file is renamed
+    over the destination (`os.replace`), so the directory entry changes and no inode is
+    truncated in place. A destination that is a symbolic link or has more than one hard
+    link is refused first: writing through it would reach bytes that belong to another
+    name (a holdout gold, for instance). Every public output goes through here."""
+    linked = link_problem(target)
+    if linked is not None:
+        raise ExportError(f"{target.name}: {linked}")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    tmp = target.with_name(f".{target.name}.tmp")
+    if tmp.exists() or tmp.is_symlink():
+        raise ExportError(f"{tmp.name}: temporary file already exists; refused")
+    tmp.write_text(text, encoding="utf-8")
+    try:
+        os.replace(tmp, target)
+    except OSError:
+        tmp.unlink(missing_ok=True)
+        raise
 
 
 def is_mtsamples(doc_id: str) -> bool:

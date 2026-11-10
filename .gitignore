@@ -228,6 +228,9 @@ __marimo__/
 .claude/worktrees/
 .cache/
 public-report/
+# deepeval (tests/eval) writes its run cache into the working directory
+.deepeval/
+.deepeval-cache.json
 # MTSamples text is downloaded at runtime and never committed
 cases/*/docs/D2-mtsamples-*.txt
 excerpts/E19*/excerpt.txt

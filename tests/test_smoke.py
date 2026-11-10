@@ -20,8 +20,13 @@ def test_version_prints_and_exits_zero(capsys: pytest.CaptureFixture[str]) -> No
 
 
 def test_stub_subcommand_returns_failed() -> None:
-    # `check` is implemented; `eval` is still a stub.
-    assert main(["eval"]) == EXIT_FAILED
+    # `check` and `eval` are implemented; `excerpts` is still a stub.
+    assert main(["excerpts"]) == EXIT_FAILED
+
+
+def test_eval_requires_a_split(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["eval"]) == 2  # argparse: --split is required
+    assert "--split" in capsys.readouterr().err
 
 
 def _run_freeze(manifest: Path) -> int:

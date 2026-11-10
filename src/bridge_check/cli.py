@@ -1,6 +1,7 @@
 """Command-line entry point: `bridge`.
 
-`check <case>` runs input → extract → verify → compute → rules → store. Decisions and
+`check <case>` runs input → extract → verify → compute → rules → store. `eval` runs or
+replays every dev variant of `splits.yaml` and scores it (`bridge_check.evalrun`). Decisions and
 `case_runs.status = completed` are written in one transaction (contract §1); a failure in
 compute or rules rolls back, records `failed` at that stage and a dead letter, and publishes
 no decision. The hidden `--stop-after extract|verify` (tests only) ends the run `completed`
@@ -10,7 +11,8 @@ Evidence is printed only as `doc_id[start:end] sha8` with its statuses; `--expla
 decision with the rule step that fired, the evidence it used or excluded (with reasons) and
 the computed values, as machine codes only.
 
-Exit codes (contract §1): 0 = completed, 3 = failed, 4 = another run holds the lock.
+Exit codes (contract §1): 0 = completed, 3 = failed, 4 = another run holds the lock; `eval`
+adds 1 = regression against the baseline (contract §11).
 Output never contains document text, quotes or patient names.
 """
 
@@ -21,6 +23,7 @@ import json
 import os
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -28,7 +31,7 @@ import yaml
 
 from bridge_check import __version__
 from bridge_check.compute import CaseContext, compute
-from bridge_check.extract import LIMITS, PROMPT_VERSION, ExtractionFailed, extract
+from bridge_check.extract import LIMITS, PROMPT_VERSION, ExtractionFailed, ExtractResult, extract
 from bridge_check.input import InputError, LoadedCase, case_id_of, load_case, resolve_case_dir
 from bridge_check.logs import configure_logging, log_event
 from bridge_check.manifest import CHECKOUT_ROOT
@@ -49,6 +52,7 @@ from bridge_check.store import (
 from bridge_check.verify import Document, VerifyContext, VerifyError, verify_case
 
 EXIT_OK = 0
+EXIT_REGRESSION = 1
 EXIT_FAILED = 3
 EXIT_LOCKED = 4
 
@@ -68,7 +72,6 @@ COST_CEILINGS = ("RunCostCeiling", "EvalCostCeiling")
 """Dead-letter error types of a refused call (ADR 0001); the message is echoed on stderr."""
 
 _STUB_COMMANDS = {
-    "eval": "Evaluate a split against frozen gold.",
     "excerpts": "Run the excerpt tests.",
 }
 
@@ -92,6 +95,11 @@ def build_parser() -> argparse.ArgumentParser:
     history.add_argument("case", help="case directory, or a variant id")
     history.add_argument("--json", action="store_true", help="print the runs as JSON")
     history.add_argument("--db", help=f"SQLite database (default: ${DB_ENV} or ./{DEFAULT_DB})")
+
+    from bridge_check.evalrun import add_eval_arguments  # evalrun imports this module
+
+    ev = sub.add_parser("eval", help="Run or replay every dev variant and score it against gold.")
+    add_eval_arguments(ev)
 
     for name, help_text in _STUB_COMMANDS.items():
         sub.add_parser(name, help=help_text)
@@ -339,11 +347,27 @@ def _fail(
     log_event("run_failed", run_id=run_id, case_id=case_id, stage=stage, error_type=error_type)
 
 
+Extractor = Callable[[LoadedCase, Store, int], ExtractResult]
+"""How `check_case` obtains the extraction of a case: the default calls the API (cache and
+saved responses first, contract §11); `eval --offline` seeds a committed replay."""
+
+
+def default_extractor(case: LoadedCase, store: Store, run_id: int) -> ExtractResult:
+    client = make_client(case.case_dir)
+    # `check` runs one case: the eval scope is this run alone (ADR 0001).
+    return extract(case, client, store, run_id=run_id, limits=LIMITS, eval_spent_usd=0.0)
+
+
 def check_case(
-    store: Store, case_arg: str, stop_after: str | None
+    store: Store,
+    case_arg: str,
+    stop_after: str | None,
+    *,
+    extractor: Extractor | None = None,
+    root: Path = CHECKOUT_ROOT,
 ) -> tuple[int, dict[str, Any] | None]:
     """One run under the lock. Returns (run_id, extraction summary)."""
-    cid = case_id_of(case_arg)
+    cid = case_id_of(case_arg, root)
     run_id = store.insert_case_run(
         case_id=cid,
         rules_version=rules_version(),
@@ -363,7 +387,7 @@ def check_case(
 
     case: LoadedCase
     try:
-        case = load_case(resolve_case_dir(case_arg))
+        case = load_case(resolve_case_dir(case_arg, root), root)
     except InputError as exc:
         _fail(store, run_id, cid, "input", "InputError", str(exc))
         return run_id, None
@@ -376,9 +400,7 @@ def check_case(
     )
 
     try:
-        client = make_client(case.case_dir)
-        # `check` runs one case: the eval scope is this run alone (ADR 0001).
-        result = extract(case, client, store, run_id=run_id, limits=LIMITS, eval_spent_usd=0.0)
+        result = (extractor or default_extractor)(case, store, run_id)
     except ExtractionFailed as exc:
         store.finish_case_run(
             run_id,
@@ -643,6 +665,10 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_check(args)
     if args.command == "history":
         return cmd_history(args)
+    if args.command == "eval":
+        from bridge_check.evalrun import cmd_eval  # evalrun imports this module
+
+        return cmd_eval(args)
     print(f"bridge {args.command}: not implemented yet", file=sys.stderr)
     return EXIT_FAILED
 

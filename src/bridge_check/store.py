@@ -132,17 +132,62 @@ class DatabaseHasLinks(RuntimeError):
     """
 
 
+SIDECAR_SUFFIXES: tuple[str, ...] = ("-wal", "-shm", "-journal")
+"""Files SQLite creates or truncates next to the database, by name."""
+
+
+def _sidecar_bases(db_path: Path | str) -> list[Path]:
+    """The path as given and the file it resolves to (deduplicated). SQLite derives the
+    journal and WAL names from the resolved database path, so a database reached through
+    a link has its sidecars next to the target, not next to the link."""
+    given = Path(db_path)
+    try:
+        resolved = given.resolve()
+    except OSError:
+        resolved = given
+    return [given] if resolved == given else [given, resolved]
+
+
+def sidecar_paths(db_path: Path | str) -> list[Path]:
+    """Every sidecar SQLite may create or truncate for `db_path`, by name."""
+    return [
+        base.with_name(base.name + suffix)
+        for base in _sidecar_bases(db_path)
+        for suffix in SIDECAR_SUFFIXES
+    ]
+
+
 def require_single_link(db_path: Path | str) -> None:
-    """Refuse a DB file with more than one hard link (a missing file is fine)."""
+    """Refuse a DB file with more than one hard link, and any sidecar (`-wal`, `-shm`,
+    `-journal`, next to the given path and next to the resolved one) that is a symbolic
+    link or has more than one hard link: SQLite writes and truncates those by name, so a
+    linked sidecar would reach another file's bytes. A missing file is fine."""
     try:
         links = os.stat(db_path).st_nlink
     except FileNotFoundError:
-        return
+        links = 1
     if links > 1:
         raise DatabaseHasLinks(
             f"the database file has {links} hard links; SQLite finds its WAL by path, so a "
             "database must have exactly one name. Remove the extra links and use one path."
         )
+    for base in _sidecar_bases(db_path):
+        for suffix in SIDECAR_SUFFIXES:
+            sidecar = base.with_name(base.name + suffix)
+            if sidecar.is_symlink():
+                raise DatabaseHasLinks(
+                    f"a database sidecar ({suffix}) is a symbolic link; SQLite would write "
+                    "through it. Remove it and use one path."
+                )
+            try:
+                side_links = os.stat(sidecar).st_nlink
+            except FileNotFoundError:
+                continue
+            if side_links > 1:
+                raise DatabaseHasLinks(
+                    f"a database sidecar ({suffix}) has {side_links} hard links; SQLite "
+                    "would truncate a shared file. Remove the extra links and use one path."
+                )
 
 
 def require_sqlite_version(version: str = sqlite3.sqlite_version) -> None:
@@ -399,11 +444,11 @@ def create_schema(conn: sqlite3.Connection, *, new_database: bool) -> None:
 
 def open_store(db_path: Path | str) -> Store:
     path = Path(db_path)
+    require_single_link(path)  # the file and its sidecars, before any SQLite connection
     new_database = not path.exists() or path.stat().st_size == 0
     if not new_database:
         # Read the version through a read-only connection first: a legacy file with WAL pages
         # is refused without SQLite checkpointing it on close.
-        require_single_link(path)
         # `as_uri()` percent-encodes `#`, `?` and spaces, so the file name cannot change the
         # URI's meaning (a literal `#` would open a different file).
         ro = sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True)
