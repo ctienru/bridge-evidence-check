@@ -298,3 +298,127 @@ def test_missing_manifest_at_valid_ref_is_bootstrap(tmp_path: Path) -> None:
     result = _run(tmp_path, "--base", "main")
     assert result.returncode == 0, result.stderr
     assert "bootstrap mode" in result.stdout
+
+
+# --- hash-only rows (variants kept outside the public checkout) -------------------------
+
+
+def _hash_only_variant(variant_id: str, *, split: str = "dev") -> dict[str, Any]:
+    """A row whose cases/<variant_id>/ directory does not exist in this checkout."""
+    return {
+        "case_id": variant_id,
+        "variant_id": variant_id,
+        "split": split,
+        "frozen_at": "2026-11-09",
+        "gold_version": 1,
+        "files": {
+            "input.yaml": "11" * 32,
+            "docs/D1-referral.txt": "22" * 32,
+            "expected.json": "33" * 32,
+        },
+    }
+
+
+def _commit_hash_only(repo: Path, variant_id: str = "case-15-L0") -> list[dict[str, Any]]:
+    variants = _load_variants(repo)
+    variants.append(_hash_only_variant(variant_id))
+    _write_manifest(repo, variants)
+    _git(repo, "commit", "-q", "-am", f"freeze {variant_id} hash-only")
+    return variants
+
+
+def test_hash_only_row_is_accepted(repo: Path) -> None:
+    variants = _load_variants(repo)
+    variants.append(_hash_only_variant("case-15-L0"))
+    _write_manifest(repo, variants)
+    result = _run(repo, "--base", "main")
+    assert result.returncode == 0, result.stderr
+    assert "case-15-L0: hash-only" in result.stdout
+    assert "2 variants: 2 dev, 0 holdout; 1 hash-only" in result.stdout
+
+
+def test_hash_only_row_with_directory_falls_back_to_full_checking(repo: Path) -> None:
+    variants = _commit_hash_only(repo)
+    case_dir = repo / "cases" / "case-15-L0"
+    case_dir.mkdir(parents=True)
+    (case_dir / "input.yaml").write_text("variant_id: case-15-L0\n", encoding="utf-8")
+    _write_manifest(repo, variants)
+    result = _run(repo, "--base", "main")
+    assert result.returncode == 1
+    assert "case-15-L0: input.yaml: sha256 mismatch" in result.stderr
+    assert "case-15-L0: expected.json: file missing" in result.stderr
+    assert "hash-only" not in result.stdout
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("files", {"input.yaml": "11" * 32}, "expected.json is not listed"),
+        ("files", {"input.yaml": "11" * 32, "expected.json": "xyz"}, "hash is not sha256 hex"),
+        ("files", {}, "files"),
+        ("files", None, "files"),
+        ("gold_version", 0, "gold_version"),
+        ("gold_version", None, "gold_version"),
+        ("split", "test", "split"),
+        ("split", None, "split"),
+        ("frozen_at", "", "frozen_at"),
+        ("frozen_at", None, "frozen_at"),
+    ],
+)
+def test_hash_only_row_shape_errors_are_rejected(
+    repo: Path, field: str, value: Any, message: str
+) -> None:
+    row = _hash_only_variant("case-15-L0")
+    if value is None:
+        del row[field]
+    else:
+        row[field] = value
+    _write_manifest(repo, _load_variants(repo) + [row])
+    result = _run(repo, "--base", "main")
+    assert result.returncode == 1
+    assert message in result.stderr
+
+
+def test_hash_only_row_split_change_is_rejected(repo: Path) -> None:
+    variants = _commit_hash_only(repo)
+    variants[-1]["split"] = "holdout"
+    _write_manifest(repo, variants)
+    result = _run(repo, "--base", "main")
+    assert result.returncode == 1
+    assert "case-15-L0: split changed dev -> holdout" in result.stderr
+
+
+def test_hash_only_row_removal_is_rejected(repo: Path) -> None:
+    variants = _commit_hash_only(repo)
+    _write_manifest(repo, variants[:-1])
+    result = _run(repo, "--base", "main")
+    assert result.returncode == 1
+    assert "case-15-L0: frozen variant removed" in result.stderr
+
+
+def test_hash_only_row_gold_bump_passes(repo: Path) -> None:
+    variants = _commit_hash_only(repo)
+    variants[-1]["files"]["expected.json"] = "44" * 32
+    variants[-1]["gold_version"] = 2
+    _write_manifest(repo, variants)
+    result = _run(repo, "--base", "main")
+    assert result.returncode == 0, result.stderr
+
+
+def test_hash_only_row_gold_change_without_bump_fails(repo: Path) -> None:
+    variants = _commit_hash_only(repo)
+    variants[-1]["files"]["expected.json"] = "44" * 32
+    _write_manifest(repo, variants)
+    result = _run(repo, "--base", "main")
+    assert result.returncode == 1
+    assert "gold_version did not increase" in result.stderr
+
+
+def test_hash_only_row_non_gold_hash_change_fails(repo: Path) -> None:
+    variants = _commit_hash_only(repo)
+    variants[-1]["files"]["input.yaml"] = "44" * 32
+    variants[-1]["gold_version"] = 2
+    _write_manifest(repo, variants)
+    result = _run(repo, "--base", "main")
+    assert result.returncode == 1
+    assert "without a new gold" in result.stderr

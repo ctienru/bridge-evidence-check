@@ -31,6 +31,13 @@ Manifest format (version 1)::
     must carry `quote_sha256` and must not carry `quote` (MTSamples text is never
     committed).
 
+Hash-only rows: a variant whose `cases/<variant_id>/` directory does not exist in this
+checkout (its files are kept in the private repo) is checked for shape only (the
+`files` map with `input.yaml` and `expected.json`, sha256 hex hashes, `split`,
+`gold_version`, `frozen_at`) and treated as frozen; (a) and (c) never look for its files.
+(b) applies to it unchanged. If the directory exists, every listed file must exist and
+hash-match as usual.
+
 Exit code 0 when everything passes, 1 otherwise. Output never includes document text.
 """
 
@@ -141,6 +148,11 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def is_hash_only(variant: Variant, root: Path) -> bool:
+    """True when the variant's files are not in this checkout (no cases/<variant_id>/)."""
+    return not (root / "cases" / variant.variant_id).is_dir()
+
+
 # --- (a) file hashes ------------------------------------------------------------------
 
 
@@ -169,6 +181,8 @@ def check_coverage(manifest: Manifest, root: Path) -> list[str]:
 def check_hashes(manifest: Manifest, root: Path) -> list[str]:
     problems: list[str] = []
     for variant in manifest.variants:
+        if is_hash_only(variant, root):
+            continue
         case_dir = root / "cases" / variant.variant_id
         for rel, expected in variant.files.items():
             path = case_dir / rel
@@ -252,6 +266,8 @@ def compare_with_base(current: Manifest, base: Manifest) -> list[str]:
 def check_gold_quotes(manifest: Manifest, root: Path) -> list[str]:
     problems: list[str] = []
     for variant in manifest.variants:
+        if is_hash_only(variant, root):
+            continue
         for rel in variant.files:
             if Path(rel).name != "expected.json":
                 continue
@@ -305,6 +321,12 @@ def check(root: Path, manifest_path: Path, base: str | None) -> int:
         return 1
     manifest = parsed
 
+    hash_only = [v.variant_id for v in manifest.variants if is_hash_only(v, root)]
+    for variant_id in hash_only:
+        print(
+            f"freeze_splits: {variant_id}: hash-only (no cases/{variant_id}/ directory); "
+            "files not verified"
+        )
     problems = check_coverage(manifest, root)
     problems.extend(check_hashes(manifest, root))
     base_manifest, base_problems = load_base_manifest(base, root)
@@ -322,7 +344,7 @@ def check(root: Path, manifest_path: Path, base: str | None) -> int:
     splits = {s: sum(1 for v in manifest.variants if v.split == s) for s in ("dev", "holdout")}
     print(
         f"freeze_splits: {_display(manifest_path, root)} OK ({len(manifest.variants)} variants: "
-        f"{splits['dev']} dev, {splits['holdout']} holdout)"
+        f"{splits['dev']} dev, {splits['holdout']} holdout; {len(hash_only)} hash-only)"
     )
     return 0
 
