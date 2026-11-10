@@ -27,6 +27,7 @@ ADR_OUTPUT_MODE = ROOT / "docs" / "adr" / "0002-extraction-output-mode.md"
 CHECKPOINT_A = ROOT / "docs" / "checkpoint-a.md"
 EVAL_DOC = ROOT / "docs" / "eval.md"
 RECOVERY = ROOT / "docs" / "recovery.md"
+README = ROOT / "README.md"
 
 _G_HEADING = re.compile(r"^### (G-\d+)\b", re.MULTILINE)
 _SOURCE_LINE = re.compile(r"^-?\s*\*{0,2}Source:", re.MULTILINE)
@@ -62,6 +63,10 @@ def test_live_run_and_adr_exist_and_name_no_plan_tickets() -> None:
         text = _read(doc)
         assert not re.search(r"\bW\d{2}\b", text), f"{doc.name} names a plan ticket"
         assert "/Users/" not in text, f"{doc.name} contains a home-directory path"
+
+
+def test_readme_has_no_placeholders() -> None:
+    assert "{{" not in _read(README), "README.md still contains a {{placeholder}}"
 
 
 def test_guide_has_status_header() -> None:
