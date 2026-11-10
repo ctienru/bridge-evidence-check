@@ -48,20 +48,20 @@ Every run is bounded by one set of limits (`docs/adr/0001-global-limits.md`): at
 
 ## 3. Results
 
-Dev: one run of one model on 7 variants, used to find and fix errors. Holdout: frozen before the pipeline first ran on it, run once; pending. The numbers are counts over a deliberately chosen functional test set, not clinic performance, and zero errors on the dev set does not mean a near-zero real error rate.
+Dev: one run of one model on 7 variants, used to find and fix errors. Holdout: frozen before the pipeline first ran on it, run once on 2026-11-10; one of the three runs failed at the parse stage and is counted with every row wrong. The numbers are counts over a deliberately chosen functional test set, not clinic performance, and zero errors on the dev set does not mean a near-zero real error rate.
 
-| Measure | Dev (7 variants) | Holdout |
+| Measure | Dev (7 variants) | Holdout (3 variants, 1 run failed) |
 |---|---|---|
-| Conditions correct (status and flags) | 133/140 | pending (frozen, not yet run) |
-| Claims correct (status) | 36/39 | pending (frozen, not yet run) |
-| False supports, conditions (target 0) | 0 of 112 gold non-supported rows | pending (frozen, not yet run) |
-| Missed exclusion evidence | 0 of 2 | pending (frozen, not yet run) |
-| Human workload (top-level `review` + `conflict` + `insufficient`) | 47 | pending (frozen, not yet run) |
-| Packets with at least one human item | 7/7 | pending (frozen, not yet run) |
-| Correctly automated among gold-automatable | 16/18 | pending (frozen, not yet run) |
-| Cost of the live run (USD, 7 calls) | $0.47 | pending (frozen, not yet run) |
+| Conditions correct (status and flags) | 133/140 | 27/60 |
+| Claims correct (status) | 36/39 | 4/19 |
+| False supports, conditions (target 0) | 0 of 112 gold non-supported rows | 0 of 51 gold non-supported rows |
+| Missed exclusion evidence | 0 of 2 | 3 of 3 |
+| Human workload (top-level `review` + `conflict` + `insufficient`) | 47 | 16 |
+| Packets with at least one human item | 7/7 | 3/3 |
+| Correctly automated among gold-automatable | 16/18 | 2/7 |
+| Cost of the live run (USD, 7 calls / 3 calls) | $0.47 | $0.18 |
 
-False supports are reported next to their denominators and per text-origin section, never summed. The current dev report with the first upstream error of every miss is `reports/eval-dev.md`; the scoring rules are in `docs/eval.md`.
+False supports are reported next to their denominators and per text-origin section, never summed. The current dev report with the first upstream error of every miss is `reports/eval-dev.md`; the scoring rules are in `docs/eval.md`. The holdout run, its per-case condition table, the parse failure on case 11 and the disclosure that the annotator had not completed the final read of the three holdout golds before the run (any later correction bumps `gold_version`, is written to `changes` and turns that case into a regression case) are in `docs/holdout-eval.md`.
 
 ## 4. Data
 
@@ -81,7 +81,7 @@ The remaining cases are planned, not present: this release holds the 7 dev varia
 |---|---|---|---|---|---|---|
 | Abhinav Karan, Julien Feghaly, Anamarys Blanco, Calvin Choi | Dual Culprit ST-Elevation Myocardial Infarction: A Rare but Complex Clinical Entity | Cureus, 2025, 17(8), e90478 | [10.7759/cureus.90478](https://doi.org/10.7759/cureus.90478) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | Case 1 heading and narrative prose (case-17) | no |
 
-**Holdout main documents** (text not in this repository; listed by sha256 in `splits.yaml`). The private repository keeps the selected passages unmodified, with the selected table rows rendered as plain text; the holdout is run once after freezing.
+**Holdout main documents** (text not in this repository; listed by sha256 in `splits.yaml`). The private repository keeps the selected passages unmodified, with the selected table rows rendered as plain text; the holdout was run once after freezing (`docs/holdout-eval.md`).
 
 | Case | Authors | Title | Journal | DOI | Licence | Excerpt |
 |---|---|---|---|---|---|---|

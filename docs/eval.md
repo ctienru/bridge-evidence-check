@@ -100,10 +100,34 @@ reviewed any of them.
 
 **Sections.** Variants are grouped by the origin of their documents: real text from
 MTSamples, real text from a published case report, authored cases, and dirty-ladder levels
-(empty until a final ladder level is public). Each section carries its own totals and its own
+(empty until a final ladder level is public). Ladder membership (`ladder.level` in
+`case.yaml`) is recorded separately: only a dirtied level (L1 and up) goes to the dirty
+section and fills the `ladder level` coverage column; L0, the clean base, is grouped by its
+documents' origin and counts as an integrated case. Each section carries its own totals and its own
 false-support count; sections are never summed into one number. Dev and holdout are never in
-one report: `bridge eval` accepts `--split dev` only, and every manifest row whose split is
-not `dev` is skipped before its directory is named (`holdout_never_read`). A dev row whose
+one report. With `--split dev`, every manifest row whose split is not `dev` is skipped
+before its directory is named (`holdout_never_read`). With `--split holdout` (the one-shot
+holdout evaluation), `--data-root` must name a directory outside this checkout, otherwise
+nothing is read; every row of another split is skipped the same way (`other_split`); the
+report is `eval-holdout.json` and `eval-holdout.md`; there is no holdout baseline, so
+`--baseline-from` and `--write-baseline` are refused. The run database, its lock and its
+SQLite sidecars hold the raw requests and responses, so they may not lie in this checkout.
+Without `--db` the temporary directory is checked first and refused if it lies in this
+checkout. Paths are anchored on the data root, resolved once: each holdout case directory
+must be the real `<data-root>/cases/<variant_id>/` (a link at `cases/`, at the case
+directory or at any file beneath it is refused), every file read must resolve inside it,
+an offline replay must resolve inside `<replays>/<variant_id>/` built the same way, and
+`input.yaml` must name the manifest's variant (`variant_mismatch` otherwise); a holdout row
+without its directory is `holdout_missing`. Every selected row is checked before the first
+extraction: if any row is refused, nothing runs, the rows that passed are listed as
+`batch_refused`, the batch stays at zero attempts, and the evaluation exits 3.
+`bridge check` and `bridge history` refuse a holdout variant before the database or any
+case file is opened. They refuse a bare holdout id, a path into a holdout variant of this
+checkout, and a case directory any of whose entries (a linked file is judged by where it
+resolves) lies in a directory named as a holdout variant (compared case-insensitively) by
+this checkout's manifest or by a `splits.yaml` above it, or is, by file-system identity,
+such a holdout directory (`cases/<id>/` or `holdout/<id>/` next to that manifest). A
+renamed copy outside every manifest cannot be recognised without opening it. A dev row whose
 `cases/<variant_id>/` directory is absent from the data root is a hash-only row (its files
 are kept in the private repo, contract §11): it is skipped with reason `hash_only`, listed
 under `skipped`, never opened and never scored, and it does not make the report
@@ -141,8 +165,9 @@ scope" in every report until they exist.
 ## 2. How to read `eval-dev.md`
 
 1. The header names the prompt, schema, rules, splitter and model versions, the code sha,
-   skipped variants with their reasons (`holdout_never_read`, `hash_only`,
-   `mtsamples_unavailable`, `holdout_path_refused`), and whether the report is incomplete
+   skipped variants with their reasons (`holdout_never_read`, `other_split`, `hash_only`,
+   `mtsamples_unavailable`, `holdout_path_refused`, and in a holdout evaluation
+   `holdout_missing`, `variant_mismatch` and `batch_refused`), and whether the report is incomplete
    (an MTSamples document could not be fetched, so that variant is missing from every
    count; a hash-only skip does not make it incomplete).
 2. Totals: the micro counts above, with the false-support table.

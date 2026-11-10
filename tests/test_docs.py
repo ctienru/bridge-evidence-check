@@ -27,6 +27,7 @@ ADR_OUTPUT_MODE = ROOT / "docs" / "adr" / "0002-extraction-output-mode.md"
 CHECKPOINT_A = ROOT / "docs" / "checkpoint-a.md"
 EVAL_DOC = ROOT / "docs" / "eval.md"
 RECOVERY = ROOT / "docs" / "recovery.md"
+HOLDOUT_EVAL = ROOT / "docs" / "holdout-eval.md"
 README = ROOT / "README.md"
 
 _G_HEADING = re.compile(r"^### (G-\d+)\b", re.MULTILINE)
@@ -59,7 +60,15 @@ def test_both_documents_exist() -> None:
 
 
 def test_live_run_and_adr_exist_and_name_no_plan_tickets() -> None:
-    for doc in (LIVE_RUN, ADR_LIMITS, ADR_OUTPUT_MODE, CHECKPOINT_A, EVAL_DOC, RECOVERY):
+    for doc in (
+        LIVE_RUN,
+        ADR_LIMITS,
+        ADR_OUTPUT_MODE,
+        CHECKPOINT_A,
+        EVAL_DOC,
+        RECOVERY,
+        HOLDOUT_EVAL,
+    ):
         text = _read(doc)
         assert not re.search(r"\bW\d{2}\b", text), f"{doc.name} names a plan ticket"
         assert "/Users/" not in text, f"{doc.name} contains a home-directory path"
@@ -89,7 +98,17 @@ def test_g_clause_ids_are_sequential() -> None:
 
 @pytest.mark.parametrize(
     "doc",
-    [CONTRACT, GUIDE, LIVE_RUN, ADR_LIMITS, ADR_OUTPUT_MODE, CHECKPOINT_A, EVAL_DOC, RECOVERY],
+    [
+        CONTRACT,
+        GUIDE,
+        LIVE_RUN,
+        ADR_LIMITS,
+        ADR_OUTPUT_MODE,
+        CHECKPOINT_A,
+        EVAL_DOC,
+        RECOVERY,
+        HOLDOUT_EVAL,
+    ],
     ids=[
         "contracts",
         "annotation-guide",
@@ -99,6 +118,7 @@ def test_g_clause_ids_are_sequential() -> None:
         "checkpoint-a",
         "eval",
         "recovery",
+        "holdout-eval",
     ],
 )
 def test_documents_contain_no_mtsamples_window(doc: Path) -> None:

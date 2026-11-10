@@ -46,9 +46,14 @@ class CaseMeta:
     tests: tuple[str, ...]
     invalid_ids: int
     section: str
+    ladder_level: str | None = None
+    """Ladder membership (`ladder.level` in `case.yaml`), recorded whatever the level."""
 
     @property
     def dirty(self) -> bool:
+        """A dirtied ladder level (L1 and up): the `dirty` report section and the
+        `ladder_level` coverage column. L0 is the clean base; it is grouped by document
+        origin and counts as an integrated case."""
         return self.section == "dirty"
 
 
@@ -107,7 +112,12 @@ def load_case_meta(case_dir: Path, variant_id: str) -> CaseMeta:
     invalid += dropped
     tests, dropped = _ids(data.get("tests"), SCORED_IDS)
     invalid += dropped
-    dirty = isinstance(data.get("ladder"), dict)  # a dirty-ladder level (contract §9)
+    ladder = data.get("ladder")
+    ladder_level: str | None = None
+    if isinstance(ladder, dict):  # a ladder level (contract §9)
+        level = ladder.get("level")
+        ladder_level = str(level) if isinstance(level, str) and is_safe_id(level) else "unknown"
+    dirty = ladder_level is not None and ladder_level != "L0"  # L0 is the clean base
     return CaseMeta(
         variant_id=variant_id,
         case_id=str(case_id),
@@ -117,6 +127,7 @@ def load_case_meta(case_dir: Path, variant_id: str) -> CaseMeta:
         tests=tests,
         invalid_ids=invalid,
         section=section_of(doc_origins, dirty),
+        ladder_level=ladder_level,
     )
 
 

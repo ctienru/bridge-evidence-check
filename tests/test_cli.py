@@ -530,3 +530,151 @@ def test_historical_start_without_its_date_in_the_quote_anchors_nothing(
     assert not _anchored(decisions)
     for cid in ("bmi_path_a", "bmi_path_b.bmi", "bmi_path_c.bmi", "bmi_path_b", "bmi_path_c"):
         assert decisions[cid]["status"] != "supported", cid
+
+
+# --- check and history never open a holdout case outside the checkout -------------------------
+
+
+def _external_holdout(tmp_path: Path) -> Path:
+    """A private-style layout outside the checkout: `splits.yaml` marking `case-hold` as
+    holdout and the case under `holdout/case-hold` (the private repository's layout)."""
+    priv = tmp_path / "private"
+    hold = priv / "holdout" / "case-hold"
+    shutil.copytree(SMOKE, hold)
+    inp = hold / "input.yaml"
+    inp.write_text(
+        inp.read_text(encoding="utf-8").replace("variant_id: case-smoke", "variant_id: case-hold"),
+        encoding="utf-8",
+    )
+    (priv / "splits.yaml").write_text(
+        "version: 1\nvariants:\n  - {variant_id: case-hold, split: holdout}\n", encoding="utf-8"
+    )
+    return hold
+
+
+def _named_like_public_holdout(tmp_path: Path) -> Path:
+    """A copy outside every manifest whose directory carries a public holdout id."""
+    from bridge_check.manifest import CHECKOUT_ROOT, holdout_variants
+
+    vid = sorted(holdout_variants(CHECKOUT_ROOT))[0]
+    where = tmp_path / "elsewhere" / vid
+    shutil.copytree(SMOKE, where)
+    return where
+
+
+def _opens_under(monkeypatch: pytest.MonkeyPatch, inside: Path) -> list[str]:
+    import builtins
+    import io
+    import os
+
+    seen: list[str] = []
+    real = builtins.open
+
+    def spy(file: Any, *args: Any, **kwargs: Any) -> Any:
+        try:
+            if Path(os.fspath(file)).resolve().is_relative_to(inside.resolve()):
+                seen.append(Path(os.fspath(file)).name)
+        except (TypeError, OSError):
+            pass
+        return real(file, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "open", spy)
+    monkeypatch.setattr(io, "open", spy)
+    return seen
+
+
+@pytest.mark.parametrize("layout", ["private_manifest", "public_holdout_name"])
+def test_check_refuses_an_external_holdout_case_before_opening_it(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    layout: str,
+) -> None:
+    case = (
+        _external_holdout(tmp_path)
+        if layout == "private_manifest"
+        else (_named_like_public_holdout(tmp_path))
+    )
+    monkeypatch.setenv("BRIDGE_FAKE_CLIENT", "1")
+    opened = _opens_under(monkeypatch, case)
+    db = tmp_path / "check.db"
+    assert main(["check", str(case), "--db", str(db)]) == EXIT_FAILED
+    assert opened == []
+    assert "holdout" in capsys.readouterr().err
+    assert not db.exists()
+
+
+@pytest.mark.parametrize("layout", ["private_manifest", "public_holdout_name", "bare_id"])
+def test_history_refuses_a_holdout_case_before_opening_it(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    layout: str,
+) -> None:
+    from bridge_check.manifest import CHECKOUT_ROOT, holdout_variants
+
+    db = tmp_path / "history.db"
+    open_store(db).close()
+    if layout == "private_manifest":
+        case = _external_holdout(tmp_path)
+        arg = str(case)
+    elif layout == "public_holdout_name":
+        case = _named_like_public_holdout(tmp_path)
+        arg = str(case)
+    else:
+        case = tmp_path
+        arg = sorted(holdout_variants(CHECKOUT_ROOT))[0]
+    opened = _opens_under(monkeypatch, case)
+    assert main(["history", arg, "--db", str(db)]) == EXIT_FAILED
+    assert opened == []
+    captured = capsys.readouterr()
+    assert "holdout" in captured.err and "runs for" not in captured.out
+
+
+@pytest.mark.parametrize("command", ["check", "history"])
+@pytest.mark.parametrize("linked", ["input", "document"])
+def test_dev_named_case_with_a_file_linked_into_a_private_holdout_is_refused(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    command: str,
+    linked: str,
+) -> None:
+    """A directory with an innocent name outside every manifest whose `input.yaml` or a
+    document links into a manifest-marked private holdout: refused before anything opens."""
+    hold = _external_holdout(tmp_path)
+    case = tmp_path / "devlike" / "case-x"
+    shutil.copytree(SMOKE, case)
+    rel = Path("input.yaml") if linked == "input" else Path("docs") / "D1-referral.txt"
+    (case / rel).unlink()
+    (case / rel).symlink_to(hold / rel)
+    db = tmp_path / f"{command}.db"
+    if command == "history":
+        open_store(db).close()
+    monkeypatch.setenv("BRIDGE_FAKE_CLIENT", "1")
+    opened = _opens_under(monkeypatch, hold)
+    assert main([command, str(case), "--db", str(db)]) == EXIT_FAILED
+    assert opened == []
+    assert "holdout" in capsys.readouterr().err
+    assert command == "history" or not db.exists()
+
+
+@pytest.mark.parametrize("command", ["check", "history"])
+def test_differently_cased_spelling_of_a_holdout_case_is_refused(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    command: str,
+) -> None:
+    hold = _external_holdout(tmp_path)
+    upper = hold.parent / hold.name.upper()
+    if not upper.exists():
+        pytest.skip("case-sensitive file system: the other spelling names nothing")
+    db = tmp_path / f"{command}.db"
+    if command == "history":
+        open_store(db).close()
+    monkeypatch.setenv("BRIDGE_FAKE_CLIENT", "1")
+    opened = _opens_under(monkeypatch, hold)
+    assert main([command, str(upper), "--db", str(db)]) == EXIT_FAILED
+    assert opened == []
+    assert "holdout" in capsys.readouterr().err

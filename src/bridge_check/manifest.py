@@ -174,20 +174,84 @@ def is_inside(path: Path, directory: Path) -> bool:
     return True
 
 
-def read_problem(root: Path, path: Path) -> str | None:
+def read_problem(root: Path, path: Path, *, allow_holdout: bool = False) -> str | None:
     """Why `path` may not be read: as written or resolved, it lies in a holdout variant;
     or the regular file it resolves to (through any symbolic links) has more than one
-    hard link, so its bytes may belong to a holdout name no path check can see."""
-    holdout = holdout_variants(root)
-    for variant in sorted(variants_of_path(root, path)):
-        if variant in holdout:
-            return f"{path.name}: lies in holdout variant {variant}, refused"
+    hard link, so its bytes may belong to a holdout name no path check can see.
+
+    `allow_holdout` is passed only by `bridge eval --split holdout`, which has already
+    refused a data root inside this checkout; the hard-link check still applies."""
+    if not allow_holdout:
+        holdout = holdout_variants(root)
+        for variant in sorted(variants_of_path(root, path)):
+            if variant in holdout:
+                return f"{path.name}: lies in holdout variant {variant}, refused"
     try:
         st = os.stat(path)  # follows links: the inode that would actually be read
     except OSError:
         return None
     if stat.S_ISREG(st.st_mode) and st.st_nlink > 1:
         return f"{path.name}: resolves to a file with {st.st_nlink} hard links, refused"
+    return None
+
+
+def external_holdout_problem(path: Path, root: Path = CHECKOUT_ROOT) -> str | None:
+    """Why `check` or `history` must not open `path` (a case directory or a file in it),
+    judged as written and as resolved: a directory on its way is named as a holdout variant
+    (compared case-insensitively) by this checkout's manifest, by `root`'s, or by a
+    `splits.yaml` in any directory above it; or it is, by file-system identity, a holdout
+    variant directory `<manifest dir>/cases/<id>` or `<manifest dir>/holdout/<id>` (the
+    private repository keeps its holdout cases under `holdout/`). Only manifests are read,
+    never `path` itself. A renamed copy outside every manifest cannot be recognised without
+    opening it; that is the documented limit of this guard."""
+    names: set[str] = set()
+    places: list[Path] = []
+    for base in (CHECKOUT_ROOT, root):
+        ids = holdout_variants(base)
+        names |= ids
+        places += [base / "cases" / v for v in ids]
+    spots = {path.resolve(), Path(os.path.normpath(os.path.join(os.getcwd(), path)))}
+    for spot in spots:
+        for ancestor in spot.parents:
+            if (ancestor / MANIFEST_NAME).is_file():
+                try:
+                    ids = holdout_variants(ancestor)
+                except UnreadableYaml:
+                    return f"{path.name}: unreadable {MANIFEST_NAME} above the case, refused"
+                names |= ids
+                places += [ancestor / sub / v for v in ids for sub in ("cases", "holdout")]
+    folded = {n.casefold() for n in names}
+    chains = [(spot, *spot.parents) for spot in spots]
+    if any(d.name.casefold() in folded for chain in chains for d in chain):
+        return f"{path.name}: lies in a directory named as a holdout variant, refused"
+    existing = [p for p in places if p.is_dir()]
+    for chain in chains:
+        for d in chain:
+            if not d.exists():
+                continue
+            for place in existing:
+                try:
+                    if os.path.samefile(d, place):
+                        return f"{path.name}: lies in a holdout variant directory, refused"
+                except OSError:
+                    continue
+    return None
+
+
+def containment_problem(root: Path, case_dir: Path, path: Path) -> str | None:
+    """`bridge eval --split holdout` only: the case directory must be the real directory
+    `<root>/cases/<name>` (not a link), and `path` must resolve inside it, so a holdout
+    name can never lead to another variant's files. The hard-link check of `read_problem`
+    is applied separately."""
+    # anchored on the data root, which the caller resolved once: a link at `cases/`, at
+    # the case directory or at any file beneath it resolves elsewhere and is refused
+    expected = root.resolve() / "cases" / case_dir.name
+    if case_dir.is_symlink() or case_dir.resolve() != expected:
+        return f"{case_dir.name}: case directory is a link or lies elsewhere, refused"
+    try:
+        path.resolve().relative_to(expected)
+    except ValueError:
+        return f"{path.name}: resolves outside its case directory, refused"
     return None
 
 

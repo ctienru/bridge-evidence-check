@@ -244,9 +244,12 @@ class PolicySourceRow(_Strict):
     last_modified: str | None
 
 
+Split = Literal["dev", "holdout"]
+
+
 class SplitScore(_Strict):
     scoring_version: int
-    split: Literal["dev"]
+    split: Split
     manifest_sha256: str
     cases: dict[str, CaseScore]
     micro: MicroTotals
@@ -777,8 +780,9 @@ def score_split(
     rules: RulesTable,
     metas: Sequence[CaseMeta],
     fixture_traps: Mapping[str, Sequence[str]],
+    split: Split = "dev",
 ) -> SplitScore:
-    """The dev split: pooled (micro) and per-condition (macro) counts, one section per
+    """One split (dev, or holdout): pooled (micro) and per-condition (macro) counts, one section per
     text origin with its own counts (never summed across sections), traps and coverage."""
     sources = condition_sources(rules)
     by_id = {c.variant_id: c for c in sorted(cases, key=lambda c: c.variant_id)}
@@ -794,7 +798,7 @@ def score_split(
         with_clause = _add(with_clause, c.gold_with_clause)
     return SplitScore(
         scoring_version=SCORING_VERSION,
-        split="dev",
+        split=split,
         manifest_sha256=manifest_sha256,
         cases=by_id,
         micro=micro_totals(list(by_id.values())),

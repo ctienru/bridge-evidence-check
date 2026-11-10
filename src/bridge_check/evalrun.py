@@ -1,4 +1,4 @@
-"""`bridge eval --split dev [--offline] [--data-root] [--json]` (contract §1, §11).
+"""`bridge eval --split dev|holdout [--offline] [--data-root] [--json]` (contract §1, §11).
 
 Builds the list of variants from `splits.yaml`, runs or replays each dev variant through the
 whole pipeline (`cli.check_case`), scores every run (`bridge_check.scoring`), writes the
@@ -13,9 +13,16 @@ repo): it is skipped with reason `hash_only`, listed under `skipped`, never open
 scored, and it does not make the report incomplete; with `--data-root` pointing at a
 checkout that holds the directory it is evaluated like any other dev row. A dev row whose
 directory, any file beneath it or its replay resolves into a holdout variant (a link) is
-refused before any read (`manifest.read_problem`) and the evaluation exits 3. The
-evaluation never reads a holdout file and never scores one. Only `--split dev` exists in
-this checkout.
+refused before any read (`manifest.read_problem`) and the evaluation exits 3. A dev
+evaluation never reads a holdout file and never scores one.
+
+`--split holdout` (the one-shot holdout evaluation, contract §11) requires `--data-root`
+naming a directory outside this checkout (the private data); without it, or with a data
+root inside this checkout, the evaluation is refused before anything is read. Rows of any
+other split are skipped (`other_split`) without being named. The report is written as
+`eval-holdout.json` and `eval-holdout.md`; there is no holdout baseline, so
+`--baseline-from` and `--write-baseline` are refused. `bridge check` and `bridge history`
+still refuse holdout variants.
 
 `--offline`: no API call. Each variant's extraction is the committed replay
 `replays/<variant_id>/<input_hash>-<prompt_version>-<schema_version>.json`, restored and
@@ -78,12 +85,14 @@ from bridge_check.extract import (
     load_system_prompt,
 )
 from bridge_check.gold_schema import Gold
-from bridge_check.input import LoadedCase, canonical_json
+from bridge_check.input import InputError, LoadedCase, canonical_json, load_input
 from bridge_check.logs import log_event
 from bridge_check.manifest import (
     CHECKOUT_ROOT,
     MANIFEST_NAME,
     UnreadableYaml,
+    _within,
+    containment_problem,
     manifest_variants,
     read_problem,
     write_problem,
@@ -91,7 +100,7 @@ from bridge_check.manifest import (
 from bridge_check.rules_schema import load_drugs, load_rules
 from bridge_check.runlock import RunLockHeld, exclusive_run_lock, lock_path, resolve_db_path
 from bridge_check.schema import SCHEMA_VERSION, Extraction
-from bridge_check.scoring import CaseScore, score_split, score_stored_run
+from bridge_check.scoring import CaseScore, Split, score_split, score_stored_run
 from bridge_check.store import (
     DatabaseHasLinks,
     SchemaVersionMismatch,
@@ -104,8 +113,18 @@ from bridge_check.store import (
 )
 
 EVAL_VERSION = 1
-REPORT_STEM = "eval-dev"
 SKIP_HOLDOUT = "holdout_never_read"
+SKIP_OTHER_SPLIT = "other_split"
+"""A row of another split in a holdout evaluation: never named, never opened."""
+SKIP_HOLDOUT_MISSING = "holdout_missing"
+"""A holdout row whose `cases/<variant_id>/` directory is absent from the data root: the
+holdout evaluation fails (exit 3), since a frozen holdout variant went unscored."""
+SKIP_VARIANT_MISMATCH = "variant_mismatch"
+"""A holdout row whose `input.yaml` names another variant: refused, exit 3."""
+SKIP_BATCH_REFUSED = "batch_refused"
+"""A holdout row that passed every check but was not run because another row of the batch
+was refused: every row is checked before the first extraction, so the batch stays at zero
+attempts."""
 SKIP_MTSAMPLES = "mtsamples_unavailable"
 SKIP_REFUSED = "holdout_path_refused"
 SKIP_HASH_ONLY = "hash_only"
@@ -140,18 +159,33 @@ class ReplayExtractor:
     extractions are stored under their own cache key, derived from the request key and the
     replay file's hash, so they and the live cache never meet."""
 
-    def __init__(self, replays_root: Path, root: Path = CHECKOUT_ROOT) -> None:
+    def __init__(
+        self,
+        replays_root: Path,
+        root: Path = CHECKOUT_ROOT,
+        *,
+        holdout: bool = False,
+        anchor: Path | None = None,
+    ) -> None:
         self.replays_root = replays_root
         self.root = root
+        self.holdout = holdout
+        # holdout: the verified replay directory; `<anchor>/<variant_id>/` is built from it
+        # lexically, so a link at `replays/` or at `replays/<variant_id>/` is refused
+        self.anchor = anchor if anchor is not None else replays_root.resolve()
 
     def __call__(self, case: LoadedCase, store: Store, run_id: int) -> ExtractResult:
         request = build_request(case, load_system_prompt(), LIMITS)
         path = replay_path(
             self.replays_root, case.case_id, case.input_hash, PROMPT_VERSION, SCHEMA_VERSION
         )
-        if read_problem(self.root, path) is not None:
+        if read_problem(self.root, path, allow_holdout=self.holdout) is not None:
             raise ExtractionFailed(
                 "extract", "HoldoutRefused", "the replay path resolves into a holdout variant"
+            )
+        if self.holdout and not path.resolve().is_relative_to(self.anchor / case.case_id):
+            raise ExtractionFailed(
+                "extract", "HoldoutRefused", "the replay path resolves outside its variant"
             )
         if not path.is_file():
             raise ExtractionFailed(
@@ -259,7 +293,7 @@ class ApiExtractor:
 
 @dataclass(frozen=True)
 class EvalOptions:
-    split: str = "dev"
+    split: Split = "dev"
     offline: bool = False
     data_root: Path = CHECKOUT_ROOT
     replays_root: Path | None = None
@@ -273,7 +307,12 @@ class EvalOptions:
 
 
 def add_eval_arguments(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--split", choices=["dev"], required=True, help="only dev exists here")
+    parser.add_argument(
+        "--split",
+        choices=["dev", "holdout"],
+        required=True,
+        help="dev, or holdout (requires --data-root outside this checkout; no baseline)",
+    )
     parser.add_argument("--offline", action="store_true", help="replays only; no API call")
     parser.add_argument(
         "--data-root", help="directory holding splits.yaml and cases/ (default: this checkout)"
@@ -285,7 +324,7 @@ def add_eval_arguments(parser: argparse.ArgumentParser) -> None:
         help="git ref whose reports/baseline-dev.json is the regression baseline",
     )
     parser.add_argument(
-        "--out", help="directory for eval-dev.json and eval-dev.md (default: reports/)"
+        "--out", help="directory for eval-<split>.json and eval-<split>.md (default: reports/)"
     )
     parser.add_argument(
         "--write-baseline",
@@ -318,22 +357,51 @@ class _Scored:
     meta: CaseMeta
 
 
-def holdout_problem(root: Path, case_dir: Path) -> str | None:
+def holdout_problem(root: Path, case_dir: Path, *, allow_holdout: bool = False) -> str | None:
     """Why nothing under `case_dir` may be opened: the directory, or any path beneath it
     (links included, resolved), lies in a holdout variant. Only `stat` calls are made.
     `rglob` does not descend into a linked directory, so this is the early, cheap check;
     the exact path of every file is checked again right before it is opened
-    (`input.load_case`, `ReplayExtractor`, `casemeta`, the gold read below)."""
-    problem = read_problem(root, case_dir)
+    (`input.load_case`, `ReplayExtractor`, `casemeta`, the gold read below). With
+    `allow_holdout` (`--split holdout`) only the hard-link check remains."""
+    problem = read_problem(root, case_dir, allow_holdout=allow_holdout)
     if problem is not None:
         return problem
+    if allow_holdout and (case_dir.exists() or case_dir.is_symlink()):
+        problem = containment_problem(root, case_dir, case_dir)
+        if problem is not None:
+            return problem
     if not case_dir.is_dir():
         return None
     for path in sorted(case_dir.rglob("*")):
-        problem = read_problem(root, path)
+        problem = read_problem(root, path, allow_holdout=allow_holdout)
+        if problem is None and allow_holdout:
+            problem = containment_problem(root, case_dir, path)
         if problem is not None:
             return problem
     return None
+
+
+def _private_db_problem(db: Path, root: Path) -> str | None:
+    """A holdout database, its lock and its SQLite sidecars hold raw requests and responses
+    (document text): none may lie in the public checkout or in a holdout variant."""
+    paths = {"database": db, "lock": lock_path(db)}
+    paths |= {f"database-sidecar-{i}": s for i, s in enumerate(sidecar_paths(db))}
+    for what, path in paths.items():
+        for base in (CHECKOUT_ROOT, root):
+            bad = write_problem(base, path, public_roots=[CHECKOUT_ROOT])
+            if bad is not None:
+                return f"{what}: {bad}"
+    return None
+
+
+def _input_variant(case_dir: Path, root: Path) -> str | None:
+    """The `variant_id` a holdout case's own `input.yaml` names (None when unreadable);
+    read with the holdout containment guard, so a link out of the directory is refused."""
+    try:
+        return load_input(case_dir, root, allow_holdout=True).variant_id
+    except InputError:
+        return None
 
 
 def _mtsamples_missing(row: Mapping[str, Any], case_dir: Path) -> bool:
@@ -373,6 +441,26 @@ def run_eval(opts: EvalOptions) -> tuple[int, dict[str, Any], str]:
     `RunLockHeld`, `SqliteTooOld`, `DatabaseHasLinks`, `SchemaVersionMismatch` and
     `ExportError` to the caller (`cmd_eval` maps them to exit codes and messages)."""
     root = opts.data_root
+    holdout = opts.split == "holdout"
+    if holdout:
+        # refused before any destination is checked, any directory created or any file
+        # read: holdout data is never looked for in this checkout
+        if _within(root.resolve(), CHECKOUT_ROOT):  # also a differently cased spelling
+            raise ExportError(
+                "--split holdout: --data-root is required and must lie outside this checkout"
+            )
+        if opts.write_baseline or opts.baseline_ref is not None or opts.baseline_out is not None:
+            raise ExportError(
+                "--split holdout: there is no holdout baseline; "
+                "--baseline-from and --write-baseline are refused"
+            )
+        if opts.db is None and _within(Path(tempfile.gettempdir()).resolve(), CHECKOUT_ROOT):
+            # the default database is a temporary file; it holds the raw requests
+            raise ExportError(
+                "--split holdout: the temporary directory lies inside the public checkout; "
+                "pass --db outside it"
+            )
+    stem = f"eval-{opts.split}"
     replays_root = opts.replays_root or root / "replays"
     out_dir = opts.out or CHECKOUT_ROOT / "reports"
     baseline_target = opts.baseline_out or CHECKOUT_ROOT / BASELINE_PATH
@@ -381,8 +469,8 @@ def run_eval(opts: EvalOptions) -> tuple[int, dict[str, Any], str]:
     # database, its lock file or a SQLite sidecar (`-wal`, `-shm`, `-journal`, which SQLite
     # writes and truncates by name) must never land in a holdout variant or be a link.
     destinations = {
-        f"{REPORT_STEM}.json": out_dir / f"{REPORT_STEM}.json",
-        f"{REPORT_STEM}.md": out_dir / f"{REPORT_STEM}.md",
+        f"{stem}.json": out_dir / f"{stem}.json",
+        f"{stem}.md": out_dir / f"{stem}.md",
         **({"baseline": baseline_target} if opts.write_baseline else {}),
         **(
             {
@@ -394,9 +482,13 @@ def run_eval(opts: EvalOptions) -> tuple[int, dict[str, Any], str]:
             else {}
         ),
     }
+    raw_text = {"database", "lock"} | {w for w in destinations if w.startswith("database-")}
     for what, path in destinations.items():
+        # in a holdout evaluation the database holds every raw request and response (the
+        # document text): it, its lock and its sidecars are private outputs
+        public_roots = [CHECKOUT_ROOT] if holdout and what in raw_text else None
         for base in (CHECKOUT_ROOT, root):
-            bad = write_problem(base, path)
+            bad = write_problem(base, path, public_roots=public_roots)
             if bad is not None:
                 raise ExportError(f"{what}: {bad}")
         linked = link_problem(path)
@@ -418,8 +510,18 @@ def run_eval(opts: EvalOptions) -> tuple[int, dict[str, Any], str]:
     if db is None:
         tmp = tempfile.TemporaryDirectory(prefix="bridge-eval-")
         db = Path(tmp.name) / "eval.db"
+        if holdout:
+            problem = _private_db_problem(db, root)
+            if problem is not None:
+                tmp.cleanup()
+                raise ExportError(problem)
+    replays_anchor = (
+        opts.replays_root.resolve() if opts.replays_root else root.resolve() / "replays"
+    )
     extractor: ReplayExtractor | ApiExtractor = (
-        ReplayExtractor(replays_root, root) if opts.offline else ApiExtractor()
+        ReplayExtractor(replays_root, root, holdout=holdout, anchor=replays_anchor)
+        if opts.offline
+        else ApiExtractor()
     )
     try:
         with exclusive_run_lock(db, blocking=False):
@@ -427,17 +529,26 @@ def run_eval(opts: EvalOptions) -> tuple[int, dict[str, Any], str]:
             try:
                 if recover_orphaned_runs(store.conn):
                     log_event("recovered_orphaned_runs", stage="interrupted")
+                # pass 1 decides every row; pass 2 runs the selected ones
+                selected: list[tuple[str, Path]] = []
                 for row in manifest_variants(root):
                     vid = str(row.get("variant_id") or "")
                     if row.get("split") != opts.split:
                         # never resolved, never opened: the directory is not even named
-                        skipped.append({"variant_id": vid, "reason": SKIP_HOLDOUT})
+                        reason = SKIP_OTHER_SPLIT if holdout else SKIP_HOLDOUT
+                        skipped.append({"variant_id": vid, "reason": reason})
                         log_event("eval_skipped", case_id=vid, stage="input")
                         continue
                     case_dir = root / "cases" / vid
-                    if holdout_problem(root, case_dir) is not None:
+                    if holdout_problem(root, case_dir, allow_holdout=holdout) is not None:
                         # a dev name that leads into a holdout variant: nothing is opened
                         skipped.append({"variant_id": vid, "reason": SKIP_REFUSED})
+                        log_event("eval_refused", case_id=vid, stage="input")
+                        refused += 1
+                        continue
+                    if not case_dir.is_dir() and holdout:
+                        # a frozen holdout variant without its files: never a pass
+                        skipped.append({"variant_id": vid, "reason": SKIP_HOLDOUT_MISSING})
                         log_event("eval_refused", case_id=vid, stage="input")
                         refused += 1
                         continue
@@ -446,12 +557,31 @@ def run_eval(opts: EvalOptions) -> tuple[int, dict[str, Any], str]:
                         skipped.append({"variant_id": vid, "reason": SKIP_HASH_ONLY})
                         log_event("eval_skipped", case_id=vid, stage="input")
                         continue
+                    if holdout and _input_variant(case_dir, root) != vid:
+                        # the manifest row and `input.yaml` must name the same variant
+                        skipped.append({"variant_id": vid, "reason": SKIP_VARIANT_MISMATCH})
+                        log_event("eval_refused", case_id=vid, stage="input")
+                        refused += 1
+                        continue
                     if _mtsamples_missing(row, case_dir):
                         skipped.append({"variant_id": vid, "reason": SKIP_MTSAMPLES})
                         log_event("eval_skipped", case_id=vid, stage="input")
                         continue
+                    selected.append((vid, case_dir))
+                if holdout and refused:
+                    # one refused holdout row stops the whole batch before any extraction
+                    for vid, _ in selected:
+                        skipped.append({"variant_id": vid, "reason": SKIP_BATCH_REFUSED})
+                        log_event("eval_skipped", case_id=vid, stage="input")
+                    selected = []
+                for vid, case_dir in selected:
                     run_id, _ = cli.check_case(
-                        store, str(case_dir), None, extractor=extractor, root=root
+                        store,
+                        str(case_dir),
+                        None,
+                        extractor=extractor,
+                        root=root,
+                        allow_holdout=holdout,
                     )
                     run_cost = store.cost_for_run(run_id)
                     cost += run_cost
@@ -459,8 +589,10 @@ def run_eval(opts: EvalOptions) -> tuple[int, dict[str, Any], str]:
                         extractor.spent = cost
                     gold_path = case_dir / "expected.json"
                     for exact in (gold_path, case_dir / "case.yaml"):
-                        if read_problem(root, exact) is not None:
+                        if read_problem(root, exact, allow_holdout=holdout) is not None:
                             raise ExportError(f"{exact.name} resolves into a holdout variant")
+                        if holdout and containment_problem(root, case_dir, exact) is not None:
+                            raise ExportError(f"{exact.name} resolves outside its case directory")
                     gold_raw = gold_path.read_bytes()
                     gold = Gold.model_validate_json(gold_raw)
                     meta = load_case_meta(case_dir, vid)
@@ -481,6 +613,7 @@ def run_eval(opts: EvalOptions) -> tuple[int, dict[str, Any], str]:
                     rules=rules,
                     metas=[s.meta for s in scored],
                     fixture_traps=fixture_traps(FIXTURES_RULES),
+                    split=opts.split,
                 )
                 generated = _generated_from(store, scored)
                 baseline_data: dict[str, Any] | None = None
@@ -550,7 +683,7 @@ def run_eval(opts: EvalOptions) -> tuple[int, dict[str, Any], str]:
     public = export_public_report(report)
     markdown = render_eval_markdown(public)
 
-    for name, text in ((f"{REPORT_STEM}.json", dump(public)), (f"{REPORT_STEM}.md", markdown)):
+    for name, text in ((f"{stem}.json", dump(public)), (f"{stem}.md", markdown)):
         write_public_file(out_dir / name, text)
     if opts.write_baseline:
         if baseline_data is None:

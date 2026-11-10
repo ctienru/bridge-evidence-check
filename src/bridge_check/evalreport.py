@@ -178,8 +178,14 @@ def render_eval_markdown(report: Mapping[str, Any]) -> str:
         f"{g['rules_version']} · splitter {g['splitter_version']} · model returned "
         f"{g['model_returned']} · code {g['code_sha']}",
         "",
-        f"One run of one model on {micro['variants']} dev variants. Not a holdout result; not "
-        "a validation on real records. Scoring rules: docs/eval.md. Every number is a count.",
+        (
+            f"One run of one model on {micro['variants']} dev variants. Not a holdout result; "
+            "not a validation on real records."
+            if report["split"] == "dev"
+            else f"One run of one model on {micro['variants']} holdout variants, frozen before "
+            "the run; not a validation on real records."
+        )
+        + " Scoring rules: docs/eval.md. Every number is a count.",
         "",
     ]
     if report["skipped"]:

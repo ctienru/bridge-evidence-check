@@ -12,6 +12,7 @@ import json
 import os
 import shutil
 import stat
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -23,9 +24,12 @@ from bridge_check.baseline_schema import Baseline
 from bridge_check.cli import EXIT_FAILED, EXIT_LOCKED, EXIT_OK, EXIT_REGRESSION
 from bridge_check.cli import main as bridge_main
 from bridge_check.evalrun import EvalOptions, NoApiClient, run_eval
-from bridge_check.export import dump_replay, export_public_run, replay_path
-from bridge_check.input import load_case
+from bridge_check.export import ExportError, dump_replay, export_public_run, replay_path
+from bridge_check.extract import PROMPT_VERSION
+from bridge_check.input import InputError, load_case
+from bridge_check.manifest import CHECKOUT_ROOT
 from bridge_check.runlock import exclusive_run_lock
+from bridge_check.schema import SCHEMA_VERSION
 from bridge_check.store import open_store
 
 SMOKE = FIXTURES / "case-smoke"
@@ -956,3 +960,326 @@ def test_linked_sidecar_at_the_resolved_database_path_is_refused(tmp_path: Path)
     assert gold.read_bytes() == before
     assert not (tmp_path / "out").exists()
     assert sorted(p.name for p in real.iterdir()) == ["actual.db", "actual.db-shm"]
+
+
+# --- --split holdout (the one-shot holdout evaluation) -----------------------------------------
+
+
+def _holdout_case(root: Path) -> Path:
+    """Replace the sentinel `cases/case-hold` with a real copy of the smoke case under the
+    holdout id, so a holdout evaluation has something to run."""
+    hold = root / "cases" / "case-hold"
+    shutil.rmtree(hold)
+    shutil.copytree(SMOKE, hold)
+    shutil.copy(GOLD, hold / "expected.json")
+    inp = hold / "input.yaml"
+    inp.write_text(
+        inp.read_text(encoding="utf-8").replace("variant_id: case-smoke", "variant_id: case-hold"),
+        encoding="utf-8",
+    )
+    (hold / "case.yaml").write_text(
+        "case_id: case-hold\nsplit: holdout\nsource: mixed\ndocuments:\n"
+        "  - {doc_id: D1-referral, doc_origin: authored}\n"
+        "traps: [T-hold-one]\ntests: [claim.drug]\n",
+        encoding="utf-8",
+    )
+    return hold
+
+
+def _eval_holdout(root: Path | None, out: Path, *more: str) -> int:
+    where = ["--data-root", str(root)] if root is not None else []
+    return bridge_main(["eval", "--split", "holdout", *where, "--out", str(out), *more])
+
+
+def test_holdout_without_data_root_is_refused_before_any_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setenv("BRIDGE_FAKE_CLIENT", "1")
+    opened = _record_opens(monkeypatch, CHECKOUT_ROOT)
+    out = tmp_path / "out"
+    assert _eval_holdout(None, out) == EXIT_FAILED
+    assert "--data-root is required" in capsys.readouterr().err
+    assert opened == [] and not out.exists()
+
+
+def test_holdout_data_root_inside_the_checkout_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setenv("BRIDGE_FAKE_CLIENT", "1")
+    opened = _record_opens(monkeypatch, CHECKOUT_ROOT)
+    out = tmp_path / "out"
+    assert _eval_holdout(CHECKOUT_ROOT / "fixtures" / "synthetic", out) == EXIT_FAILED
+    assert "must lie outside this checkout" in capsys.readouterr().err
+    assert opened == [] and not out.exists()
+
+
+@pytest.mark.parametrize("more", [["--write-baseline"], ["--baseline-from", "HEAD"]])
+def test_holdout_refuses_baseline_options(
+    tmp_path: Path, more: list[str], capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = _data_root(tmp_path, with_replay=False)
+    _holdout_case(root)
+    baseline = CHECKOUT_ROOT / "reports" / "baseline-dev.json"
+    before = baseline.read_bytes()
+    out = tmp_path / "out"
+    assert _eval_holdout(root, out, *more) == EXIT_FAILED
+    assert "no holdout baseline" in capsys.readouterr().err
+    assert not out.exists() and baseline.read_bytes() == before
+    with pytest.raises(ExportError):
+        run_eval(
+            EvalOptions(split="holdout", data_root=root, out=out, baseline_out=tmp_path / "b.json")
+        )
+
+
+def test_holdout_run_scores_only_the_holdout_variant(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """One call per holdout variant through the (fake) client; dev rows are skipped as
+    `other_split` without being opened; the report files are `eval-holdout.*`."""
+    root = _data_root(tmp_path, with_replay=False)
+    _holdout_case(root)
+    monkeypatch.setenv("BRIDGE_FAKE_CLIENT", "1")
+    opened = _record_opens(monkeypatch, root / "cases" / "case-smoke")
+    out = tmp_path / "out"
+    db = tmp_path / "holdout.db"
+    assert _eval_holdout(root, out, "--db", str(db)) == EXIT_OK
+    assert opened == []
+    assert sorted(p.name for p in out.iterdir()) == ["eval-holdout.json", "eval-holdout.md"]
+    report = json.loads((out / "eval-holdout.json").read_text(encoding="utf-8"))
+    assert report["split"] == "holdout" and report["score"]["split"] == "holdout"
+    assert report["mode"] == "online"
+    assert report["skipped"] == [{"variant_id": "case-smoke", "reason": "other_split"}]
+    assert set(report["score"]["cases"]) == {"case-hold"}
+    case = report["score"]["cases"]["case-hold"]
+    assert case["extraction_source"] == "api" and case["run_status"] == "completed"
+    assert report["cost_usd"] > 0
+    md = (out / "eval-holdout.md").read_text(encoding="utf-8")
+    assert md.startswith("# Eval report, split=holdout, mode=online")
+    assert "1 holdout variants, frozen before the run" in md
+    store = open_store(db)
+    try:
+        [run] = store.history("case-hold")
+        attempts = store.attempts_for_run(run["id"])
+    finally:
+        store.close()
+    assert [a["attempt_no"] for a in attempts] == [1] and attempts[0]["cost_usd"] > 0
+    # `check` (no allow_holdout) still refuses the same directory
+    with pytest.raises(InputError):
+        load_case(root / "cases" / "case-hold", root)
+
+
+def test_second_holdout_pass_in_the_same_database_is_a_cache_hit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _data_root(tmp_path, with_replay=False)
+    _holdout_case(root)
+    monkeypatch.setenv("BRIDGE_FAKE_CLIENT", "1")
+    db = tmp_path / "holdout.db"
+    assert _eval_holdout(root, tmp_path / "pass1", "--db", str(db)) == EXIT_OK
+    assert _eval_holdout(root, tmp_path / "pass2", "--db", str(db)) == EXIT_OK
+    first, second = (
+        json.loads((tmp_path / p / "eval-holdout.json").read_text(encoding="utf-8"))
+        for p in ("pass1", "pass2")
+    )
+    assert second["score"]["cases"]["case-hold"]["extraction_source"] == "cache"
+    assert second["cost_usd"] == 0.0
+    store = open_store(db)
+    try:
+        runs = store.history("case-hold")
+        attempts = [a for r in runs for a in store.attempts_for_run(r["id"])]
+    finally:
+        store.close()
+    assert sorted(r["extraction_source"] for r in runs) == ["api", "cache"]
+    assert len(attempts) == 1
+    # scores are identical; only the source, run id and cost differ
+    for report in (first, second):
+        case = report["score"]["cases"]["case-hold"]
+        for key in ("extraction_source", "run_id", "cost_usd"):
+            case.pop(key)
+        report.pop("cost_usd")
+    assert first["score"] == second["score"]
+
+
+def _attempt_count(db: Path) -> int:
+    if not db.exists():
+        return 0
+    store = open_store(db)
+    try:
+        return store.count("attempts")
+    finally:
+        store.close()
+
+
+def _holdout_refused(
+    root: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, reason: str
+) -> dict[str, Any]:
+    """Run a holdout evaluation that must refuse `case-hold`: exit 3, no attempt, nothing
+    of the dev variant opened; returns the report."""
+    monkeypatch.setenv("BRIDGE_FAKE_CLIENT", "1")
+    opened = _record_opens(monkeypatch, root / "cases" / "case-smoke")
+    out = tmp_path / "out"
+    db = tmp_path / "holdout.db"
+    assert _eval_holdout(root, out, "--db", str(db)) == EXIT_FAILED
+    assert opened == []
+    assert _attempt_count(db) == 0
+    report: dict[str, Any] = json.loads((out / "eval-holdout.json").read_text(encoding="utf-8"))
+    assert {"variant_id": "case-hold", "reason": reason} in report["skipped"]
+    assert report["score"]["cases"] == {}
+    return report
+
+
+def test_holdout_directory_linked_to_a_dev_variant_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _data_root(tmp_path, with_replay=False)
+    hold = root / "cases" / "case-hold"
+    shutil.rmtree(hold)
+    hold.symlink_to(root / "cases" / "case-smoke", target_is_directory=True)
+    _holdout_refused(root, tmp_path, monkeypatch, "holdout_path_refused")
+
+
+def test_holdout_document_linked_to_a_dev_document_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _data_root(tmp_path, with_replay=False)
+    hold = _holdout_case(root)
+    doc = hold / "docs" / "D1-referral.txt"
+    doc.unlink()
+    doc.symlink_to(root / "cases" / "case-smoke" / "docs" / "D1-referral.txt")
+    _holdout_refused(root, tmp_path, monkeypatch, "holdout_path_refused")
+
+
+def test_holdout_input_naming_another_variant_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _data_root(tmp_path, with_replay=False)
+    hold = _holdout_case(root)
+    inp = hold / "input.yaml"
+    inp.write_text(
+        inp.read_text(encoding="utf-8").replace("variant_id: case-hold", "variant_id: case-smoke"),
+        encoding="utf-8",
+    )
+    _holdout_refused(root, tmp_path, monkeypatch, "variant_mismatch")
+
+
+def test_missing_holdout_directory_fails_the_evaluation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _data_root(tmp_path, with_replay=False)
+    shutil.rmtree(root / "cases" / "case-hold")
+    _holdout_refused(root, tmp_path, monkeypatch, "holdout_missing")
+
+
+@pytest.mark.parametrize("name", ["holdout.sqlite", "sub/holdout.db"])
+def test_holdout_database_inside_the_public_checkout_is_refused(
+    tmp_path: Path, name: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The holdout database holds every raw request and response (document text): it, its
+    lock and its SQLite sidecars never land in the public checkout."""
+    root = _data_root(tmp_path, with_replay=False)
+    _holdout_case(root)
+    db = CHECKOUT_ROOT / ".holdout-db-test" / name
+    try:
+        assert _eval_holdout(root, tmp_path / "out", "--db", str(db)) == EXIT_FAILED
+        assert "inside the public checkout" in capsys.readouterr().err
+        assert not (CHECKOUT_ROOT / ".holdout-db-test").exists()
+        assert not (tmp_path / "out").exists()
+    finally:
+        shutil.rmtree(CHECKOUT_ROOT / ".holdout-db-test", ignore_errors=True)
+
+
+# --- holdout anchors, temporary database and batch preflight (second review) ------------------
+
+
+def test_holdout_cases_parent_linked_elsewhere_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`<data-root>/cases` itself is a link: the anchor comes from the verified data root,
+    so the real `case-hold` behind the link is never opened."""
+    root = _data_root(tmp_path, with_replay=False)
+    _holdout_case(root)
+    other = tmp_path / "other"
+    other.mkdir()
+    shutil.move(str(root / "cases"), str(other / "cases"))
+    (root / "cases").symlink_to(other / "cases", target_is_directory=True)
+    opened = _record_opens(monkeypatch, other)
+    _holdout_refused(root, tmp_path, monkeypatch, "holdout_path_refused")
+    assert opened == []
+
+
+@pytest.mark.parametrize("linked", ["variant_dir", "replays_dir"])
+def test_holdout_replay_behind_a_link_is_never_opened(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, linked: str
+) -> None:
+    """Offline holdout: `replays/<vid>/` or the whole `replays/` is a link; the file at the
+    expected replay name behind it is refused before it is opened."""
+    root = _data_root(tmp_path, with_replay=False)
+    hold = _holdout_case(root)
+    input_hash = load_case(hold, root, allow_holdout=True).input_hash
+    elsewhere = tmp_path / "elsewhere" / "replays"
+    target = replay_path(elsewhere, "case-hold", input_hash, PROMPT_VERSION, SCHEMA_VERSION)
+    target.parent.mkdir(parents=True)
+    target.write_text("{}", encoding="utf-8")
+    if linked == "variant_dir":
+        (root / "replays").mkdir()
+        (root / "replays" / "case-hold").symlink_to(target.parent, target_is_directory=True)
+    else:
+        (root / "replays").symlink_to(elsewhere, target_is_directory=True)
+    opened = _record_opens(monkeypatch, tmp_path / "elsewhere")
+    out = tmp_path / "out"
+    db = tmp_path / "holdout.db"
+    assert _eval_holdout(root, out, "--offline", "--db", str(db)) == EXIT_FAILED
+    assert opened == []
+    report = json.loads((out / "eval-holdout.json").read_text(encoding="utf-8"))
+    assert report["score"]["cases"]["case-hold"]["run_status"] == "failed"
+
+
+def test_holdout_default_database_in_a_checkout_tmpdir_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Without `--db` the database is a temporary file; when the temporary directory lies
+    in the public checkout, the holdout evaluation is refused before it is created."""
+    root = _data_root(tmp_path, with_replay=False)
+    _holdout_case(root)
+    monkeypatch.setenv("BRIDGE_FAKE_CLIENT", "1")
+    inside = CHECKOUT_ROOT / ".holdout-tmpdir-test"
+    inside.mkdir()
+    try:
+        monkeypatch.setattr(tempfile, "tempdir", str(inside))
+        assert _eval_holdout(root, tmp_path / "out") == EXIT_FAILED
+        assert "public checkout" in capsys.readouterr().err
+        assert list(inside.iterdir()) == []
+    finally:
+        shutil.rmtree(inside, ignore_errors=True)
+
+
+def _holdout_pair_manifest(root: Path, order: list[str]) -> None:
+    rows = "".join(
+        f"  - case_id: {vid}\n    variant_id: {vid}\n    split: holdout\n"
+        f"    frozen_at: 2026-11-10\n    gold_version: 1\n"
+        f"    files: {{input.yaml: {'3' * 64}, expected.json: {'3' * 64}}}\n"
+        for vid in order
+    )
+    (root / "splits.yaml").write_text(f"version: 1\nvariants:\n{rows}", encoding="utf-8")
+
+
+@pytest.mark.parametrize("order", [["case-hold", "case-gone"], ["case-gone", "case-hold"]])
+def test_holdout_batch_with_a_refused_row_runs_nothing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, order: list[str]
+) -> None:
+    """Every selected holdout row is checked before the first extraction: one refused row
+    (here a missing directory) leaves the whole batch at zero attempts."""
+    root = _data_root(tmp_path, with_replay=False)
+    _holdout_case(root)
+    _holdout_pair_manifest(root, order)
+    monkeypatch.setenv("BRIDGE_FAKE_CLIENT", "1")
+    out = tmp_path / "out"
+    db = tmp_path / "holdout.db"
+    assert _eval_holdout(root, out, "--db", str(db)) == EXIT_FAILED
+    assert _attempt_count(db) == 0
+    report = json.loads((out / "eval-holdout.json").read_text(encoding="utf-8"))
+    assert {s["variant_id"]: s["reason"] for s in report["skipped"]} == {
+        "case-gone": "holdout_missing",
+        "case-hold": "batch_refused",
+    }
+    assert report["score"]["cases"] == {}

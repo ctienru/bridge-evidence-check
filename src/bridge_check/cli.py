@@ -34,7 +34,14 @@ import yaml
 from bridge_check import __version__
 from bridge_check.compute import CaseContext, compute
 from bridge_check.extract import LIMITS, PROMPT_VERSION, ExtractionFailed, ExtractResult, extract
-from bridge_check.input import InputError, LoadedCase, case_id_of, load_case, resolve_case_dir
+from bridge_check.input import (
+    InputError,
+    LoadedCase,
+    case_id_of,
+    holdout_case_problem,
+    load_case,
+    resolve_case_dir,
+)
 from bridge_check.logs import configure_logging, log_event
 from bridge_check.manifest import CHECKOUT_ROOT
 from bridge_check.rules import Decision, Policy, evaluate_rules
@@ -368,9 +375,11 @@ def check_case(
     *,
     extractor: Extractor | None = None,
     root: Path = CHECKOUT_ROOT,
+    allow_holdout: bool = False,
 ) -> tuple[int, dict[str, Any] | None]:
-    """One run under the lock. Returns (run_id, extraction summary)."""
-    cid = case_id_of(case_arg, root)
+    """One run under the lock. Returns (run_id, extraction summary). `allow_holdout` is
+    set only by `bridge eval --split holdout`; `check` never sets it."""
+    cid = case_id_of(case_arg, root, allow_holdout=allow_holdout)
     run_id = store.insert_case_run(
         case_id=cid,
         rules_version=rules_version(),
@@ -390,7 +399,7 @@ def check_case(
 
     case: LoadedCase
     try:
-        case = load_case(resolve_case_dir(case_arg, root), root)
+        case = load_case(resolve_case_dir(case_arg, root), root, allow_holdout=allow_holdout)
     except InputError as exc:
         _fail(store, run_id, cid, "input", "InputError", str(exc))
         return run_id, None
@@ -558,6 +567,10 @@ def _print_check(report: dict[str, Any], explain: bool) -> None:
 def cmd_check(args: argparse.Namespace) -> int:
     from bridge_check.fake_client import InjectedFault, fault_hook
 
+    refused = holdout_case_problem(args.case)
+    if refused is not None:  # before the database is opened and before any case file
+        print(f"bridge check: {refused}", file=sys.stderr)
+        return EXIT_FAILED
     db = _db_path(args.db)
     try:
         require_sqlite_version()
@@ -606,6 +619,10 @@ def cmd_check(args: argparse.Namespace) -> int:
 
 
 def cmd_history(args: argparse.Namespace) -> int:
+    refused = holdout_case_problem(args.case)
+    if refused is not None:  # before the database is opened and before any case file
+        print(f"bridge history: {refused}", file=sys.stderr)
+        return EXIT_FAILED
     db = _db_path(args.db)
     if not db.exists():
         print("bridge history: no database at the given path", file=sys.stderr)
