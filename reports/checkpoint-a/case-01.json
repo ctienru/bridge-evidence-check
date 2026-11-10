@@ -574,13 +574,11 @@
       "field": "patient_identity",
       "gold_index": 0,
       "gold_ref": "D0-pa-form-draft[100:117] 38985609",
-      "mismatched_keys": [
-        "event_date"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched_but_excluded",
       "position_status": "verbatim",
       "selector": null,
-      "timing_only": true
+      "timing_only": false
     },
     {
       "assertion_check": "matched",
@@ -592,13 +590,11 @@
       "field": "patient_identity",
       "gold_index": 1,
       "gold_ref": "D0-pa-form-draft[118:133] 670eaf61",
-      "mismatched_keys": [
-        "event_date"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched_but_excluded",
       "position_status": "verbatim",
       "selector": null,
-      "timing_only": true
+      "timing_only": false
     },
     {
       "assertion_check": "matched",
@@ -608,13 +604,11 @@
       "field": "pa_form_claims",
       "gold_index": 2,
       "gold_ref": "D0-pa-form-draft[228:255] 5e283b8a",
-      "mismatched_keys": [
-        "event_date"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": "claim.age_18",
-      "timing_only": true
+      "timing_only": false
     },
     {
       "assertion_check": "matched",
@@ -624,13 +618,11 @@
       "field": "pa_form_claims",
       "gold_index": 3,
       "gold_ref": "D0-pa-form-draft[256:278] 144dde34",
-      "mismatched_keys": [
-        "event_date"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": "claim.drug",
-      "timing_only": true
+      "timing_only": false
     },
     {
       "assertion_check": "matched",
@@ -640,13 +632,11 @@
       "field": "pa_form_claims",
       "gold_index": 4,
       "gold_ref": "D0-pa-form-draft[279:336] 9b2dbad4",
-      "mismatched_keys": [
-        "event_date"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": "claim.bmi_bracket",
-      "timing_only": true
+      "timing_only": false
     },
     {
       "assertion_check": "matched",
@@ -656,13 +646,11 @@
       "field": "pa_form_claims",
       "gold_index": 5,
       "gold_ref": "D0-pa-form-draft[337:356] 119a2ec1",
-      "mismatched_keys": [
-        "event_date"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": "claim.exclusion.t2dm",
-      "timing_only": true
+      "timing_only": false
     },
     {
       "assertion_check": "matched",
@@ -672,13 +660,11 @@
       "field": "pa_form_claims",
       "gold_index": 6,
       "gold_ref": "D0-pa-form-draft[357:407] bd2e7df4",
-      "mismatched_keys": [
-        "event_date"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": "claim.bmi_path_b.hfpef",
-      "timing_only": true
+      "timing_only": false
     },
     {
       "assertion_check": "matched",
@@ -688,10 +674,8 @@
       "field": "pa_form_claims",
       "gold_index": 7,
       "gold_ref": "D0-pa-form-draft[428:476] b4d1d7ce",
-      "mismatched_keys": [
-        "event_date"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": "claim.exclusion.part_d_glp1",
       "timing_only": false
@@ -704,13 +688,11 @@
       "field": "pa_form_claims",
       "gold_index": 8,
       "gold_ref": "D0-pa-form-draft[477:524] 32001dde",
-      "mismatched_keys": [
-        "event_date"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": "claim.lifestyle.nutrition",
-      "timing_only": true
+      "timing_only": false
     },
     {
       "assertion_check": "matched",
@@ -720,13 +702,11 @@
       "field": "pa_form_claims",
       "gold_index": 9,
       "gold_ref": "D0-pa-form-draft[525:555] ff3a1aa1",
-      "mismatched_keys": [
-        "event_date"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": "claim.lifestyle.activity",
-      "timing_only": true
+      "timing_only": false
     },
     {
       "assertion_check": "matched",
@@ -736,13 +716,11 @@
       "field": "pa_form_claims",
       "gold_index": 10,
       "gold_ref": "D0-pa-form-draft[408:427] 72356408",
-      "mismatched_keys": [
-        "event_date"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": "claim.bmi_path_c.stroke",
-      "timing_only": true
+      "timing_only": false
     },
     {
       "assertion_check": "matched",
@@ -752,13 +730,11 @@
       "field": "patient_identity",
       "gold_index": 11,
       "gold_ref": "D1-referral[55:128] 769e9d6b",
-      "mismatched_keys": [
-        "event_date"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": null,
-      "timing_only": true
+      "timing_only": false
     },
     {
       "assertion_check": "matched",
@@ -768,13 +744,11 @@
       "field": "patient_identity",
       "gold_index": 12,
       "gold_ref": "D1-referral[129:151] e3ef7ba8",
-      "mismatched_keys": [
-        "event_date"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": null,
-      "timing_only": true
+      "timing_only": false
     },
     {
       "assertion_check": "matched",
@@ -1061,10 +1035,10 @@
       "selector": null
     }
   ],
-  "gold_sha256": "bb5391b3276f2df2a472bc2c0a305b9d7b6fc47abfb0918b2b87dbbb8b9f0c64",
-  "gold_version": 1,
+  "gold_sha256": "b1bece92204f7e5b378cb698306458658508e49fe99139f4c9989c3d5faccae6",
+  "gold_version": 2,
   "run": {
-    "code_sha": "bbdc5348e02d79c236a01d1cc5ca1f5b3874e823-dirty",
+    "code_sha": "0ee89908a292bfd950efabafd98f7c8428a85516-dirty",
     "extraction_source": "cache",
     "input_hash": "43931e3233b805cc291e8d542a56e56e9693ea3e8e9d977012a635d664bbebe5",
     "prompt_version": "extract-v4",
@@ -1093,11 +1067,11 @@
       "verify_excluded": 0
     },
     "gold_facts": 31,
-    "matched": 9,
-    "matched_but_excluded": 0,
+    "matched": 20,
+    "matched_but_excluded": 2,
     "missed": 4,
     "missed_exclusion": 0,
-    "wrong_value": 18
+    "wrong_value": 5
   },
   "variant_id": "case-01"
 }

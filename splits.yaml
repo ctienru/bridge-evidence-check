@@ -10,13 +10,13 @@ variants:
     variant_id: case-01
     split: dev
     frozen_at: 2026-11-09
-    gold_version: 1
+    gold_version: 2
     files:
       input.yaml: e659621473908c2edf433a30ce95827346430051220da4239031cf18560419af
       docs/D0-pa-form-draft.txt: bf0751514d01d28025ebef4d3e63223b6a29a09297a6b2a731bdf0f03fcf78d8
       docs/D1-referral.txt: 29bf838174a475554aeb5f813ff463bfb371b449011cd83661f64b5578a17623
       docs/D2-mtsamples-4985.txt: a3eb773b768baaa6d88d31ddc37be19d9917b041725954ee3e96e794db8bdd45
-      expected.json: bb5391b3276f2df2a472bc2c0a305b9d7b6fc47abfb0918b2b87dbbb8b9f0c64
+      expected.json: b1bece92204f7e5b378cb698306458658508e49fe99139f4c9989c3d5faccae6
   - case_id: case-07
     variant_id: case-07
     split: dev
@@ -68,21 +68,21 @@ variants:
     variant_id: case-03
     split: dev
     frozen_at: 2026-11-09
-    gold_version: 1
+    gold_version: 2
     files:
       input.yaml: 24d8bb9b0cb7030fa54ff52ab88d0ca9e2917e6f8ffd752bd87660a1d1ea3f91
       docs/D0-pa-form-draft.txt: 9118d6a49ac0668d3b05d464c9a0228a927ee9646f1626ccd4bef2cd76cd909a
       docs/D1-referral.txt: 09e7b1a16e23647877ec8858cfebb0549cf43221b78b0d5baae4c7f64ba39786
       docs/D2-mtsamples-4689.txt: 388aeee7a34b67a70d5f1df67ba87c374e805c2521c156671256b7c57a8b79b4
-      expected.json: 54d41ffa315901ff508f12ae32d81eee2bef537fbfa77b4b6f0a15c90ad4f78a
+      expected.json: ba1b352639818f1fa2e6198a531ddedfe62e0d9efe319431d56f1112d6fda642
   - case_id: case-17
     variant_id: case-17
     split: dev
     frozen_at: 2026-11-09
-    gold_version: 1
+    gold_version: 2
     files:
       input.yaml: 01d4f6d707ddb89bbd5e94cc708582dcafaab69ccaeb006b32db5edeec3845ec
       docs/D0-pa-form-draft.txt: b1629def703d0b584d9ea10a75b717dc5070039689c52728911aadc220b485df
       docs/D1-referral.txt: 4aef345f1fa5578e03fe917c2091bc171d6b5d307ed43785e17e163d12adcbb2
       docs/D2-case-report-cureus-2025.txt: 014429c1eb55f7751a1105f83ddfd404127550ede745d3cde151eed60ea5df41
-      expected.json: 01f49ac501728684a6da800882a09a894391f527ccfa177dd6e7fa08cceea297
+      expected.json: 770b1f281bd0d91fe6c0aea1643a36461393dbee6ddd12e8506dad5dc21b90bd

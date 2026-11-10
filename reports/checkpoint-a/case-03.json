@@ -622,13 +622,11 @@
       "field": "patient_identity",
       "gold_index": 12,
       "gold_ref": "D2-mtsamples-4689[92:103] c2b516ec",
-      "mismatched_keys": [
-        "event_date"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched_but_excluded",
       "position_status": "verbatim",
       "selector": null,
-      "timing_only": true
+      "timing_only": false
     },
     {
       "assertion_check": "matched",
@@ -821,10 +819,10 @@
       "selector": null
     }
   ],
-  "gold_sha256": "54d41ffa315901ff508f12ae32d81eee2bef537fbfa77b4b6f0a15c90ad4f78a",
-  "gold_version": 1,
+  "gold_sha256": "ba1b352639818f1fa2e6198a531ddedfe62e0d9efe319431d56f1112d6fda642",
+  "gold_version": 2,
   "run": {
-    "code_sha": "bbdc5348e02d79c236a01d1cc5ca1f5b3874e823-dirty",
+    "code_sha": "0ee89908a292bfd950efabafd98f7c8428a85516-dirty",
     "extraction_source": "cache",
     "input_hash": "7d40a9949aedf10dd061c1127cb4cd809d551398b6c666e6607cb91e0bfbc140",
     "prompt_version": "extract-v4",
@@ -854,10 +852,10 @@
     },
     "gold_facts": 23,
     "matched": 12,
-    "matched_but_excluded": 2,
+    "matched_but_excluded": 3,
     "missed": 0,
     "missed_exclusion": 0,
-    "wrong_value": 9
+    "wrong_value": 8
   },
   "variant_id": "case-03"
 }

@@ -1,6 +1,6 @@
 ## case-01 (run 8)
 
-Facts: 9 of 31 matched, 0 matched but excluded, 18 wrong value, 4 missed, 1 false positive(s); expected-absent 11 correct, 0 false positive(s). Conditions 19/20, claims 8/9.
+Facts: 20 of 31 matched, 2 matched but excluded, 5 wrong value, 4 missed, 1 false positive(s); expected-absent 11 correct, 0 false positive(s). Conditions 19/20, claims 8/9.
 
 | Row | Gold | Gold flags | Live | Live flags | Match | First error |
 |---|---|---|---|---|---|---|
@@ -36,19 +36,8 @@ Facts: 9 of 31 matched, 0 matched but excluded, 18 wrong value, 4 missed, 1 fals
 
 | Gold fact | Field | Outcome | Evidence | Reasons / keys |
 |---|---|---|---|---|
-| `D0-pa-form-draft[100:117] 38985609` | patient_identity | wrong_value | `D0-pa-form-draft[100:117] 38985609` | claim_document |
-| `D0-pa-form-draft[118:133] 670eaf61` | patient_identity | wrong_value | `D0-pa-form-draft[118:133] 670eaf61` | claim_document |
-| `D0-pa-form-draft[228:255] 5e283b8a` | pa_form_claims/claim.age_18 | wrong_value | `D0-pa-form-draft[228:255] 5e283b8a` | event_date |
-| `D0-pa-form-draft[256:278] 144dde34` | pa_form_claims/claim.drug | wrong_value | `D0-pa-form-draft[256:278] 144dde34` | event_date |
-| `D0-pa-form-draft[279:336] 9b2dbad4` | pa_form_claims/claim.bmi_bracket | wrong_value | `D0-pa-form-draft[329:336] 5e549f68` | event_date |
-| `D0-pa-form-draft[337:356] 119a2ec1` | pa_form_claims/claim.exclusion.t2dm | wrong_value | `D0-pa-form-draft[337:356] 119a2ec1` | event_date |
-| `D0-pa-form-draft[357:407] bd2e7df4` | pa_form_claims/claim.bmi_path_b.hfpef | wrong_value | `D0-pa-form-draft[357:407] bd2e7df4` | event_date |
-| `D0-pa-form-draft[428:476] b4d1d7ce` | pa_form_claims/claim.exclusion.part_d_glp1 | wrong_value | `D0-pa-form-draft[428:476] b4d1d7ce` | event_date |
-| `D0-pa-form-draft[477:524] 32001dde` | pa_form_claims/claim.lifestyle.nutrition | wrong_value | `D0-pa-form-draft[477:524] 32001dde` | event_date |
-| `D0-pa-form-draft[525:555] ff3a1aa1` | pa_form_claims/claim.lifestyle.activity | wrong_value | `D0-pa-form-draft[525:555] ff3a1aa1` | event_date |
-| `D0-pa-form-draft[408:427] 72356408` | pa_form_claims/claim.bmi_path_c.stroke | wrong_value | `D0-pa-form-draft[408:427] 72356408` | event_date |
-| `D1-referral[55:128] 769e9d6b` | patient_identity | wrong_value | `D1-referral[55:128] 769e9d6b` | event_date |
-| `D1-referral[129:151] e3ef7ba8` | patient_identity | wrong_value | `D1-referral[129:151] e3ef7ba8` | event_date |
+| `D0-pa-form-draft[100:117] 38985609` | patient_identity | matched_but_excluded | `D0-pa-form-draft[100:117] 38985609` | claim_document |
+| `D0-pa-form-draft[118:133] 670eaf61` | patient_identity | matched_but_excluded | `D0-pa-form-draft[118:133] 670eaf61` | claim_document |
 | `D2-mtsamples-4985[1871:1975] 0ae7773e` | diagnoses/hypertension | missed | – | – |
 | `D2-mtsamples-4985[1871:1975] 0ae7773e` | diagnoses/other | missed | – | – |
 | `D2-mtsamples-4985[2026:2088] 414605e3` | diagnoses/hypertension | missed | – | – |
@@ -104,7 +93,7 @@ Facts: 17 of 19 matched, 2 matched but excluded, 0 wrong value, 0 missed, 6 fals
 
 ## case-03 (run 10)
 
-Facts: 12 of 23 matched, 2 matched but excluded, 9 wrong value, 0 missed, 4 false positive(s); expected-absent 14 correct, 0 false positive(s). Conditions 17/20, claims 4/6.
+Facts: 12 of 23 matched, 3 matched but excluded, 8 wrong value, 0 missed, 4 false positive(s); expected-absent 14 correct, 0 false positive(s). Conditions 17/20, claims 4/6.
 
 | Row | Gold | Gold flags | Live | Live flags | Match | First error |
 |---|---|---|---|---|---|---|
@@ -140,7 +129,7 @@ Facts: 12 of 23 matched, 2 matched but excluded, 9 wrong value, 0 missed, 4 fals
 | `D0-pa-form-draft[65:83] 6311f629` | patient_identity | matched_but_excluded | `D0-pa-form-draft[65:83] 6311f629` | claim_document |
 | `D0-pa-form-draft[84:99] 972269ad` | patient_identity | matched_but_excluded | `D0-pa-form-draft[84:99] 972269ad` | claim_document |
 | `D1-referral[166:242] 345e66ca` | doc_dates | wrong_value | `D1-referral[166:242] 345e66ca` | subject |
-| `D2-mtsamples-4689[92:103] c2b516ec` | patient_identity | wrong_value | `D2-mtsamples-4689[92:103] c2b516ec` | assertion_mismatch |
+| `D2-mtsamples-4689[92:103] c2b516ec` | patient_identity | matched_but_excluded | `D2-mtsamples-4689[92:103] c2b516ec` | assertion_mismatch |
 | `D2-mtsamples-4689[893:923] 70915489` | diagnoses/hypertension | wrong_value | `D2-mtsamples-4689[2007:2033] e560e715` | subject |
 | `D2-mtsamples-4689[1511:1522] 36206672` | bp_readings | wrong_value | `D2-mtsamples-4689[1511:1522] 36206672` | event_date, relative_to_glp1_initiation |
 | `D2-mtsamples-4689[1564:1569] 7a22ad88` | anthropometrics/height | wrong_value | `D2-mtsamples-4689[1559:1570] 1c936786` | unparseable_value |
@@ -285,7 +274,7 @@ Facts: 17 of 22 matched, 5 matched but excluded, 0 wrong value, 0 missed, 4 fals
 
 ## case-17 (run 14)
 
-Facts: 11 of 16 matched, 2 matched but excluded, 3 wrong value, 0 missed, 3 false positive(s); expected-absent 18 correct, 0 false positive(s). Conditions 20/20, claims 6/6.
+Facts: 12 of 16 matched, 2 matched but excluded, 2 wrong value, 0 missed, 3 false positive(s); expected-absent 18 correct, 0 false positive(s). Conditions 20/20, claims 6/6.
 
 | Row | Gold | Gold flags | Live | Live flags | Match | First error |
 |---|---|---|---|---|---|---|
@@ -321,7 +310,6 @@ Facts: 11 of 16 matched, 2 matched but excluded, 3 wrong value, 0 missed, 3 fals
 | `D0-pa-form-draft[67:85] 0bcd888e` | patient_identity | matched_but_excluded | `D0-pa-form-draft[67:85] 0bcd888e` | claim_document |
 | `D0-pa-form-draft[86:101] e9a030ab` | patient_identity | matched_but_excluded | `D0-pa-form-draft[86:101] e9a030ab` | claim_document |
 | `D1-referral[161:253] 41bc5300` | doc_dates | wrong_value | `D1-referral[161:253] 41bc5300` | value_not_in_quote |
-| `D2-case-report-cureus-2025[8:366] 0ab016c2` | patient_identity | wrong_value | `D2-case-report-cureus-2025[8:26] 3f432e74` | event_date |
 | `D2-case-report-cureus-2025[507:661] ef337a7f` | bp_readings | wrong_value | `D2-case-report-cureus-2025[554:583] 0e8dedf5` | event_date, relative_to_glp1_initiation |
 | – | doc_dates | false_positive | `D1-referral[16:32] 6f09346f` | – |
 | – | medications | false_positive | `D2-case-report-cureus-2025[2143:2164] ac0b0d53` | – |
