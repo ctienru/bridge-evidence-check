@@ -75,6 +75,10 @@ uv run bridge history fixtures/synthetic/case-smoke
 
 Every run is bounded by the limits in `docs/adr/0001-global-limits.md` (`Limits` in `src/bridge_check/extract.py`): at most 4 API attempts, 1 of them parse-class, 5 minutes of wall clock, a request timeout, `max_tokens`, and two cost ceilings (per run and per eval) checked before each API call against the cost already spent plus a reservation for the next call; a call that would exceed a ceiling is refused with a message on stderr and exit 3, and nothing downstream runs. The extraction schema travels as the `input_schema` of a single non-strict tool, `record_extraction`, and the reply's tool input is validated locally (`docs/adr/0002-extraction-output-mode.md`). `uv run pytest -q -m live` makes one real call on the synthetic smoke case to check that the API accepts the request and the reply parses (needs the key; excluded from CI). The first live runs are recorded in `docs/live-run-01.md`.
 
+### Failure recovery
+
+A run that stops part way is recovered by the next `check`: a leftover `running` run is marked `failed` + `interrupted`; a reply already saved to disk is parsed again without an API call; an extraction already stored is reused and verify, compute and rules run again. A timeout, or a kill before the reply reached disk, means the next check calls the API again and may pay again: recovery is at-least-once, not exactly-once. `docs/recovery.md` describes the three scenarios, what `bridge history` shows, and how to reproduce each with the fake client (`BRIDGE_FAKE_FAULT`, honoured only with `BRIDGE_FAKE_CLIENT`).
+
 ## Data-line tools
 
 Scripts the annotator uses to prepare and check gold (contract §7–§8, annotation guide §8–§10). None of them writes gold; `expected.json` is always written by a human.

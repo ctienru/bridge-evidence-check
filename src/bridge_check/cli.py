@@ -5,7 +5,9 @@ replays every dev variant of `splits.yaml` and scores it (`bridge_check.evalrun`
 `case_runs.status = completed` are written in one transaction (contract §1); a failure in
 compute or rules rolls back, records `failed` at that stage and a dead letter, and publishes
 no decision. The hidden `--stop-after extract|verify` (tests only) ends the run `completed`
-at that stage boundary and records `stopped_after` on the run.
+at that stage boundary and records `stopped_after` on the run. With the fake client,
+`BRIDGE_FAKE_FAULT` stops the run at a named boundary as a kill would (`docs/recovery.md`);
+the run is left `running` and exit code 3 is returned.
 
 Evidence is printed only as `doc_id[start:end] sha8` with its statuses; `--explain` adds every
 decision with the rule step that fired, the evidence it used or excluded (with reasons) and
@@ -134,13 +136,14 @@ def make_client(case_dir: Path | None = None) -> Any:
     """The fake client when `BRIDGE_FAKE_CLIENT` is set, else the real SDK client with SDK
     retries disabled (AGENTS.md). With the default fake scenario, a case directory that
     holds its own scripted reply (`fake-reply.json`, synthetic fixtures only) uses it."""
-    from bridge_check.fake_client import ENV_VAR, FakeClient, scenario
+    from bridge_check.fake_client import ENV_VAR, FakeClient, fault_point, scenario
 
     name = os.environ.get(ENV_VAR, "").strip()
     if name:
+        fault = fault_point()
         if name in ("1", "valid") and case_dir is not None and (case_dir / FAKE_REPLY).is_file():
-            return FakeClient([case_dir / FAKE_REPLY])
-        return FakeClient([scenario(name)])
+            return FakeClient([case_dir / FAKE_REPLY], fault=fault)
+        return FakeClient([scenario(name)], fault=fault)
     import anthropic
 
     return anthropic.Anthropic(max_retries=0)
@@ -553,11 +556,15 @@ def _print_check(report: dict[str, Any], explain: bool) -> None:
 
 
 def cmd_check(args: argparse.Namespace) -> int:
+    from bridge_check.fake_client import InjectedFault, fault_hook
+
     db = _db_path(args.db)
     try:
         require_sqlite_version()
+        hook = fault_hook()  # None unless the fake client and BRIDGE_FAKE_FAULT are both set
         with exclusive_run_lock(db, blocking=False):
             store = open_store(db)
+            store.fault_hook = hook
             try:
                 recovered = recover_orphaned_runs(store.conn)
                 if recovered:
@@ -572,6 +579,13 @@ def cmd_check(args: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         return EXIT_LOCKED
+    except InjectedFault as exc:
+        print(
+            f"bridge check: injected fault at {exc.point}; the run was left as a killed "
+            "process would leave it",
+            file=sys.stderr,
+        )
+        return EXIT_FAILED
     except (SqliteTooOld, DatabaseHasLinks) as exc:
         print(f"bridge check: {exc}", file=sys.stderr)
         return EXIT_FAILED

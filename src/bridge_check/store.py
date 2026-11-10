@@ -23,7 +23,7 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -523,8 +523,18 @@ class SavedAttempt:
 class Store:
     """Typed access to the tables used by the pipeline."""
 
+    fault_hook: Callable[[str], None] | None = None
+    """Fault injection for the failure-recovery tests (`fake_client.fault_hook`): called with
+    `after_response_saved` and `in_rules` at those boundaries. Only `bridge check` under the
+    fake client sets it; it is None everywhere else."""
+
     def __init__(self, conn: sqlite3.Connection) -> None:
         self.conn = conn
+
+    def _fault(self, point: str) -> None:
+        hook = self.fault_hook
+        if hook is not None:
+            hook(point)
 
     def close(self) -> None:
         self.conn.close()
@@ -667,6 +677,7 @@ class Store:
                     attempt_id,
                 ),
             )
+        self._fault("after_response_saved")  # committed: the raw response is on disk
 
     def set_attempt_status(
         self,
@@ -1005,6 +1016,7 @@ class Store:
                         json.dumps(list(d.flags)),
                     ),
                 )
+            self._fault("in_rules")  # inside the transaction: the decisions roll back
             self.conn.execute(
                 "UPDATE case_runs SET status = 'completed', case_flags = ?, finished_at = ? "
                 "WHERE id = ?",
