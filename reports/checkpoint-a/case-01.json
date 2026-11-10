@@ -18,20 +18,18 @@
       ]
     },
     "claim.bmi_bracket": {
-      "correct": false,
+      "correct": true,
       "excluded": [],
-      "first_error": "extraction_wrong_value",
-      "flags": [
-        "timing_disagreement"
-      ],
+      "first_error": null,
+      "flags": [],
       "gold_flags": [],
       "gold_status": "supported",
-      "status": "review",
+      "status": "supported",
       "used": [
         "D1-referral[208:277] e30011f8",
         "D1-referral[152:207] a607a58e",
         "D2-mtsamples-4985[614:635] c12c5805",
-        "D0-pa-form-draft[279:336] 9b2dbad4"
+        "D0-pa-form-draft[329:336] 5e549f68"
       ]
     },
     "claim.bmi_path_b.hfpef": {
@@ -109,13 +107,13 @@
       ]
     },
     "claim.lifestyle.nutrition": {
-      "correct": true,
+      "correct": false,
       "excluded": [],
-      "first_error": null,
+      "first_error": "extraction_wrong_value",
       "flags": [],
       "gold_flags": [],
       "gold_status": "insufficient",
-      "status": "insufficient",
+      "status": "review",
       "used": [
         "D0-pa-form-draft[477:524] 32001dde"
       ]
@@ -144,15 +142,13 @@
       ]
     },
     "bmi_path_a": {
-      "correct": false,
+      "correct": true,
       "excluded": [],
-      "first_error": "extraction_wrong_value",
-      "flags": [
-        "timing_disagreement"
-      ],
+      "first_error": null,
+      "flags": [],
       "gold_flags": [],
       "gold_status": "supported",
-      "status": "review",
+      "status": "supported",
       "used": [
         "D1-referral[208:277] e30011f8",
         "D1-referral[152:207] a607a58e",
@@ -160,13 +156,13 @@
       ]
     },
     "bmi_path_b": {
-      "correct": false,
+      "correct": true,
       "excluded": [],
-      "first_error": "extraction_wrong_value",
+      "first_error": null,
       "flags": [],
       "gold_flags": [],
       "gold_status": "insufficient",
-      "status": "review",
+      "status": "insufficient",
       "used": [
         "D1-referral[208:277] e30011f8",
         "D1-referral[152:207] a607a58e",
@@ -174,15 +170,13 @@
       ]
     },
     "bmi_path_b.bmi": {
-      "correct": false,
+      "correct": true,
       "excluded": [],
-      "first_error": "extraction_wrong_value",
-      "flags": [
-        "timing_disagreement"
-      ],
+      "first_error": null,
+      "flags": [],
       "gold_flags": [],
       "gold_status": "supported",
-      "status": "review",
+      "status": "supported",
       "used": [
         "D1-referral[208:277] e30011f8",
         "D1-referral[152:207] a607a58e",
@@ -220,13 +214,13 @@
       "used": []
     },
     "bmi_path_c": {
-      "correct": false,
+      "correct": true,
       "excluded": [],
-      "first_error": "extraction_wrong_value",
+      "first_error": null,
       "flags": [],
       "gold_flags": [],
       "gold_status": "insufficient",
-      "status": "review",
+      "status": "insufficient",
       "used": [
         "D1-referral[208:277] e30011f8",
         "D1-referral[152:207] a607a58e",
@@ -235,15 +229,13 @@
       ]
     },
     "bmi_path_c.bmi": {
-      "correct": false,
+      "correct": true,
       "excluded": [],
-      "first_error": "extraction_wrong_value",
-      "flags": [
-        "timing_disagreement"
-      ],
+      "first_error": null,
+      "flags": [],
       "gold_flags": [],
       "gold_status": "supported",
-      "status": "review",
+      "status": "supported",
       "used": [
         "D1-referral[208:277] e30011f8",
         "D1-referral[152:207] a607a58e",
@@ -345,22 +337,26 @@
       "used": []
     },
     "lifestyle.nutrition": {
-      "correct": true,
+      "correct": false,
       "excluded": [
+        {
+          "reason": "superseded_by_at",
+          "ref": "D2-mtsamples-4985[4061:4118] 805f44fb"
+        },
         {
           "reason": "superseded_by_at",
           "ref": "D2-mtsamples-4985[4146:4209] 13885c79"
         }
       ],
-      "first_error": null,
+      "first_error": "extraction_wrong_value",
       "flags": [],
       "gold_flags": [],
       "gold_status": "insufficient",
-      "status": "insufficient",
+      "status": "review",
       "used": [
         "D1-referral[208:277] e30011f8",
         "D1-referral[152:207] a607a58e",
-        "D2-mtsamples-4985[4061:4143] 5644a3b9"
+        "D2-mtsamples-4985[251:358] 16595162"
       ]
     },
     "patient_identity": {
@@ -439,15 +435,6 @@
       "selector": null
     },
     {
-      "evidence_ref": "D2-mtsamples-4985[1532:1542] 00dd228f",
-      "exclusion_reasons": [
-        "assertion_mismatch"
-      ],
-      "field": "medications",
-      "position_status": "verbatim",
-      "selector": null
-    },
-    {
       "evidence_ref": "D2-mtsamples-4985[1543:1599] 33a120ee",
       "exclusion_reasons": [
         "assertion_mismatch"
@@ -473,6 +460,15 @@
       "field": "medications",
       "position_status": "verbatim",
       "selector": null
+    },
+    {
+      "evidence_ref": "D2-mtsamples-4985[2483:2577] ec71fbd3",
+      "exclusion_reasons": [
+        "value_not_in_quote"
+      ],
+      "field": "diagnoses",
+      "position_status": "verbatim",
+      "selector": "ckd"
     }
   ],
   "expected_absent": [
@@ -559,7 +555,9 @@
     {
       "concept": "ckd",
       "evidence_refs": [],
-      "excluded_refs": [],
+      "excluded_refs": [
+        "D2-mtsamples-4985[2483:2577] ec71fbd3"
+      ],
       "field": "diagnoses",
       "kind": null,
       "status": "not_found_correct"
@@ -637,7 +635,7 @@
     {
       "assertion_check": "matched",
       "doc_id": "D0-pa-form-draft",
-      "evidence_ref": "D0-pa-form-draft[279:336] 9b2dbad4",
+      "evidence_ref": "D0-pa-form-draft[329:336] 5e549f68",
       "exclusion_reasons": [],
       "field": "pa_form_claims",
       "gold_index": 4,
@@ -837,7 +835,7 @@
     {
       "assertion_check": "matched",
       "doc_id": "D2-mtsamples-4985",
-      "evidence_ref": "D2-mtsamples-4985[755:820] 3f467685",
+      "evidence_ref": "D2-mtsamples-4985[755:838] d3d844d6",
       "exclusion_reasons": [],
       "field": "diagnoses",
       "gold_index": 17,
@@ -960,7 +958,7 @@
     {
       "assertion_check": "mismatch",
       "doc_id": "D2-mtsamples-4985",
-      "evidence_ref": "D2-mtsamples-4985[1328:1342] 281b7114",
+      "evidence_ref": "D2-mtsamples-4985[1328:1367] 5bd26c08",
       "exclusion_reasons": [
         "assertion_mismatch"
       ],
@@ -978,15 +976,13 @@
     {
       "assertion_check": "matched",
       "doc_id": "D2-mtsamples-4985",
-      "evidence_ref": "D2-mtsamples-4985[4061:4143] 5644a3b9",
+      "evidence_ref": "D2-mtsamples-4985[251:358] 16595162",
       "exclusion_reasons": [],
       "field": "lifestyle",
       "gold_index": 26,
       "gold_ref": "D2-mtsamples-4985[168:503] df204d04",
       "mismatched_keys": [
-        "end_kind",
-        "program_type",
-        "temporality"
+        "end_kind"
       ],
       "outcome": "wrong_value",
       "position_status": "verbatim",
@@ -996,7 +992,7 @@
     {
       "assertion_check": "matched",
       "doc_id": "D2-mtsamples-4985",
-      "evidence_ref": "D2-mtsamples-4985[4061:4143] 5644a3b9",
+      "evidence_ref": "D2-mtsamples-4985[4061:4118] 805f44fb",
       "exclusion_reasons": [],
       "field": "lifestyle",
       "gold_index": 27,
@@ -1010,7 +1006,7 @@
     {
       "assertion_check": "matched",
       "doc_id": "D2-mtsamples-4985",
-      "evidence_ref": "D2-mtsamples-4985[557:577] 7016e73c",
+      "evidence_ref": "D2-mtsamples-4985[550:577] 5a878c8c",
       "exclusion_reasons": [
         "unparseable_value"
       ],
@@ -1068,12 +1064,12 @@
   "gold_sha256": "bb5391b3276f2df2a472bc2c0a305b9d7b6fc47abfb0918b2b87dbbb8b9f0c64",
   "gold_version": 1,
   "run": {
-    "code_sha": "68b1c8698631ca45565b78be7314dae9f9eb4f72-dirty",
+    "code_sha": "bbdc5348e02d79c236a01d1cc5ca1f5b3874e823-dirty",
     "extraction_source": "cache",
     "input_hash": "43931e3233b805cc291e8d542a56e56e9693ea3e8e9d977012a635d664bbebe5",
-    "prompt_version": "extract-v3",
+    "prompt_version": "extract-v4",
     "rules_version": "bridge-v1",
-    "run_id": 22,
+    "run_id": 8,
     "schema_version": "v2",
     "status": "completed"
   },
@@ -1083,7 +1079,7 @@
     "claims_correct": 8,
     "claims_false_support": 0,
     "claims_total": 9,
-    "conditions_correct": 15,
+    "conditions_correct": 19,
     "conditions_total": 20,
     "excluded_unmatched": 10,
     "false_positives": 1,
@@ -1091,7 +1087,7 @@
     "first_error": {
       "compute_timepoint": 0,
       "extraction_missed": 0,
-      "extraction_wrong_value": 6,
+      "extraction_wrong_value": 2,
       "gold_question": 0,
       "rules": 0,
       "verify_excluded": 0

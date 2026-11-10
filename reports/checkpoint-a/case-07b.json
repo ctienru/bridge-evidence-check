@@ -6,13 +6,13 @@
   },
   "claims": {
     "claim.age_18": {
-      "correct": false,
+      "correct": true,
       "excluded": [],
-      "first_error": "extraction_wrong_value",
+      "first_error": null,
       "flags": [],
       "gold_flags": [],
       "gold_status": "supported",
-      "status": "insufficient",
+      "status": "supported",
       "used": [
         "D0-pa-form-draft[138:165] 5e283b8a"
       ]
@@ -74,14 +74,17 @@
   "compare_version": 1,
   "conditions": {
     "age_18": {
-      "correct": false,
+      "correct": true,
       "excluded": [],
-      "first_error": "extraction_wrong_value",
+      "first_error": null,
       "flags": [],
       "gold_flags": [],
       "gold_status": "supported",
-      "status": "insufficient",
-      "used": []
+      "status": "supported",
+      "used": [
+        "D1-referral[74:99] 47929e73",
+        "D3-initiation-note[75:100] 47929e73"
+      ]
     },
     "bmi_path_a": {
       "correct": true,
@@ -318,10 +321,31 @@
       "gold_flags": [],
       "gold_status": "conflict",
       "status": "conflict",
-      "used": []
+      "used": [
+        "D1-referral[74:99] 47929e73",
+        "D3-initiation-note[75:100] 47929e73"
+      ]
     }
   },
   "excluded_unmatched": [
+    {
+      "evidence_ref": "D0-pa-form-draft[71:91] aae81912",
+      "exclusion_reasons": [
+        "claim_document"
+      ],
+      "field": "patient_identity",
+      "position_status": "verbatim",
+      "selector": null
+    },
+    {
+      "evidence_ref": "D2-nutrition-note[41:61] a32d863f",
+      "exclusion_reasons": [
+        "wrong_patient"
+      ],
+      "field": "patient_identity",
+      "position_status": "verbatim",
+      "selector": null
+    },
     {
       "evidence_ref": "D0-pa-form-draft[49:70] 63aaf278",
       "exclusion_reasons": [
@@ -453,16 +477,13 @@
       "doc_id": "D0-pa-form-draft",
       "evidence_ref": "D0-pa-form-draft[92:110] ef0c3a9e",
       "exclusion_reasons": [
-        "value_not_in_quote",
         "claim_document"
       ],
       "field": "patient_identity",
       "gold_index": 0,
       "gold_ref": "D0-pa-form-draft[92:110] ef0c3a9e",
-      "mismatched_keys": [
-        "dob"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched_but_excluded",
       "position_status": "verbatim",
       "selector": null,
       "timing_only": false
@@ -470,18 +491,15 @@
     {
       "assertion_check": "matched",
       "doc_id": "D0-pa-form-draft",
-      "evidence_ref": "D0-pa-form-draft[92:110] ef0c3a9e",
+      "evidence_ref": "D0-pa-form-draft[111:136] 47929e73",
       "exclusion_reasons": [
-        "value_not_in_quote",
         "claim_document"
       ],
       "field": "patient_identity",
       "gold_index": 1,
       "gold_ref": "D0-pa-form-draft[111:136] 47929e73",
-      "mismatched_keys": [
-        "patient_id"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched_but_excluded",
       "position_status": "verbatim",
       "selector": null,
       "timing_only": false
@@ -560,16 +578,12 @@
       "assertion_check": "matched",
       "doc_id": "D1-referral",
       "evidence_ref": "D1-referral[55:73] ef0c3a9e",
-      "exclusion_reasons": [
-        "value_not_in_quote"
-      ],
+      "exclusion_reasons": [],
       "field": "patient_identity",
       "gold_index": 7,
       "gold_ref": "D1-referral[55:73] ef0c3a9e",
-      "mismatched_keys": [
-        "dob"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": null,
       "timing_only": false
@@ -577,17 +591,13 @@
     {
       "assertion_check": "matched",
       "doc_id": "D1-referral",
-      "evidence_ref": "D1-referral[55:73] ef0c3a9e",
-      "exclusion_reasons": [
-        "value_not_in_quote"
-      ],
+      "evidence_ref": "D1-referral[74:99] 47929e73",
+      "exclusion_reasons": [],
       "field": "patient_identity",
       "gold_index": 8,
       "gold_ref": "D1-referral[74:99] 47929e73",
-      "mismatched_keys": [
-        "patient_id"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": null,
       "timing_only": false
@@ -681,16 +691,13 @@
       "doc_id": "D2-nutrition-note",
       "evidence_ref": "D2-nutrition-note[62:73] c7666028",
       "exclusion_reasons": [
-        "value_not_in_quote",
         "wrong_patient"
       ],
       "field": "patient_identity",
       "gold_index": 15,
       "gold_ref": "D2-nutrition-note[62:73] c7666028",
-      "mismatched_keys": [
-        "dob"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched_but_excluded",
       "position_status": "verbatim",
       "selector": null,
       "timing_only": false
@@ -698,18 +705,15 @@
     {
       "assertion_check": "matched",
       "doc_id": "D2-nutrition-note",
-      "evidence_ref": "D2-nutrition-note[62:73] c7666028",
+      "evidence_ref": "D2-nutrition-note[74:89] 670eaf61",
       "exclusion_reasons": [
-        "value_not_in_quote",
         "wrong_patient"
       ],
       "field": "patient_identity",
       "gold_index": 16,
       "gold_ref": "D2-nutrition-note[74:89] 670eaf61",
-      "mismatched_keys": [
-        "patient_id"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched_but_excluded",
       "position_status": "verbatim",
       "selector": null,
       "timing_only": false
@@ -734,16 +738,12 @@
       "assertion_check": "matched",
       "doc_id": "D3-initiation-note",
       "evidence_ref": "D3-initiation-note[56:74] ef0c3a9e",
-      "exclusion_reasons": [
-        "value_not_in_quote"
-      ],
+      "exclusion_reasons": [],
       "field": "patient_identity",
       "gold_index": 18,
       "gold_ref": "D3-initiation-note[56:74] ef0c3a9e",
-      "mismatched_keys": [
-        "dob"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": null,
       "timing_only": false
@@ -751,17 +751,13 @@
     {
       "assertion_check": "matched",
       "doc_id": "D3-initiation-note",
-      "evidence_ref": "D3-initiation-note[56:74] ef0c3a9e",
-      "exclusion_reasons": [
-        "value_not_in_quote"
-      ],
+      "evidence_ref": "D3-initiation-note[75:100] 47929e73",
+      "exclusion_reasons": [],
       "field": "patient_identity",
       "gold_index": 19,
       "gold_ref": "D3-initiation-note[75:100] 47929e73",
-      "mismatched_keys": [
-        "patient_id"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": null,
       "timing_only": false
@@ -797,6 +793,20 @@
   ],
   "false_positives": [
     {
+      "evidence_ref": "D1-referral[34:54] aae81912",
+      "exclusion_reasons": [],
+      "field": "patient_identity",
+      "position_status": "verbatim",
+      "selector": null
+    },
+    {
+      "evidence_ref": "D3-initiation-note[35:55] aae81912",
+      "exclusion_reasons": [],
+      "field": "patient_identity",
+      "position_status": "verbatim",
+      "selector": null
+    },
+    {
       "evidence_ref": "D1-referral[17:33] 6f09346f",
       "exclusion_reasons": [],
       "field": "doc_dates",
@@ -814,40 +824,40 @@
   "gold_sha256": "022e80bef19e7075c9e7c8b116919a6a958c75c8699c7be7a712373bf252aba8",
   "gold_version": 1,
   "run": {
-    "code_sha": "68b1c8698631ca45565b78be7314dae9f9eb4f72-dirty",
+    "code_sha": "bbdc5348e02d79c236a01d1cc5ca1f5b3874e823-dirty",
     "extraction_source": "cache",
     "input_hash": "2b7dc575d40b4b24079bb0dec95cf0333b6036b5dc13962048276124aa3fe181",
-    "prompt_version": "extract-v3",
+    "prompt_version": "extract-v4",
     "rules_version": "bridge-v1",
-    "run_id": 27,
+    "run_id": 13,
     "schema_version": "v2",
     "status": "completed"
   },
   "totals": {
     "absent_correct": 13,
     "absent_false_positive": 0,
-    "claims_correct": 4,
+    "claims_correct": 5,
     "claims_false_support": 0,
     "claims_total": 5,
-    "conditions_correct": 19,
+    "conditions_correct": 20,
     "conditions_total": 20,
-    "excluded_unmatched": 2,
-    "false_positives": 2,
+    "excluded_unmatched": 4,
+    "false_positives": 4,
     "false_support": 0,
     "first_error": {
       "compute_timepoint": 0,
       "extraction_missed": 0,
-      "extraction_wrong_value": 2,
+      "extraction_wrong_value": 0,
       "gold_question": 0,
       "rules": 0,
       "verify_excluded": 0
     },
     "gold_facts": 22,
-    "matched": 13,
-    "matched_but_excluded": 1,
+    "matched": 17,
+    "matched_but_excluded": 5,
     "missed": 0,
     "missed_exclusion": 0,
-    "wrong_value": 8
+    "wrong_value": 0
   },
   "variant_id": "case-07b"
 }

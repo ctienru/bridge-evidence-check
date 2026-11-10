@@ -10,6 +10,10 @@ Timepoints: a fact with its own verified date (`event_date_source == "llm"`) is 
 the initiation date by interval; a fact whose quote names a date but whose model date is empty
 uses that quote date and never inherits; a fact with no date of its own inherits the verified
 document date (`event_date_source = doc_dates:<evidence_id>`); everything else is `unknown`.
+The model's `relative_to_glp1_initiation` is not used for any decision: `unknown` from the
+model means "not stated" and is never a claim, and `timing_disagreement` is raised only when
+the model's `at` / `before` / `after` contradicts the computed value (`relative_computed`,
+the column scoring uses).
 """
 
 from __future__ import annotations
@@ -949,8 +953,13 @@ def _timepoints(
             tp = Timepoint(
                 tp.date.relative_to(initiation.date), tp.date, tp.source, tp.source_evidence_id
             )
-            # Any difference from the model's value is recorded (contract §5 item 1).
-            if tp.relative != r.ev.relative_llm and "timing_disagreement" not in r.flags:
+            # The model's `unknown` states nothing; only its `at` / `before` / `after` can
+            # contradict the computed value (contract §5 item 1).
+            if (
+                r.ev.relative_llm != "unknown"
+                and tp.relative != r.ev.relative_llm
+                and "timing_disagreement" not in r.flags
+            ):
                 r.flags.append("timing_disagreement")
         r.tp = tp
 

@@ -302,15 +302,6 @@
   },
   "excluded_unmatched": [
     {
-      "evidence_ref": "D0-pa-form-draft[50:66] 25ef92a1",
-      "exclusion_reasons": [
-        "claim_document"
-      ],
-      "field": "patient_identity",
-      "position_status": "verbatim",
-      "selector": null
-    },
-    {
       "evidence_ref": "D0-pa-form-draft[33:49] 6f09346f",
       "exclusion_reasons": [
         "claim_document"
@@ -662,7 +653,7 @@
     {
       "assertion_check": "matched",
       "doc_id": "D2-case-report-cureus-2025",
-      "evidence_ref": "D2-case-report-cureus-2025[34:63] 34151413",
+      "evidence_ref": "D2-case-report-cureus-2025[32:63] c3f838de",
       "exclusion_reasons": [],
       "field": "diagnoses",
       "gold_index": 13,
@@ -707,13 +698,6 @@
   ],
   "false_positives": [
     {
-      "evidence_ref": "D1-referral[33:49] 25ef92a1",
-      "exclusion_reasons": [],
-      "field": "patient_identity",
-      "position_status": "verbatim",
-      "selector": null
-    },
-    {
       "evidence_ref": "D1-referral[16:32] 6f09346f",
       "exclusion_reasons": [],
       "field": "doc_dates",
@@ -738,12 +722,12 @@
   "gold_sha256": "01f49ac501728684a6da800882a09a894391f527ccfa177dd6e7fa08cceea297",
   "gold_version": 1,
   "run": {
-    "code_sha": "68b1c8698631ca45565b78be7314dae9f9eb4f72-dirty",
+    "code_sha": "bbdc5348e02d79c236a01d1cc5ca1f5b3874e823-dirty",
     "extraction_source": "cache",
     "input_hash": "24dd49910d64ebe88129867a6810796768b882d7eee52f985abced6b5c6f0cd6",
-    "prompt_version": "extract-v3",
+    "prompt_version": "extract-v4",
     "rules_version": "bridge-v1",
-    "run_id": 28,
+    "run_id": 14,
     "schema_version": "v2",
     "status": "completed"
   },
@@ -755,8 +739,8 @@
     "claims_total": 6,
     "conditions_correct": 20,
     "conditions_total": 20,
-    "excluded_unmatched": 2,
-    "false_positives": 4,
+    "excluded_unmatched": 1,
+    "false_positives": 3,
     "false_support": 0,
     "first_error": {
       "compute_timepoint": 0,

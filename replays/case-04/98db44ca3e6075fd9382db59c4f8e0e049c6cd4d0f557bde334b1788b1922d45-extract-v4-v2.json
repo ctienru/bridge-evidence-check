@@ -1,0 +1,788 @@
+{
+  "attempt": {
+    "attempt_no": 1,
+    "cost_usd": 0.077018,
+    "created_at": "2026-11-10T01:47:21.565+00:00",
+    "input_tokens": 13044,
+    "latency_ms": 23396,
+    "output_tokens": 5093,
+    "status": "parsed"
+  },
+  "cache_key_sha8": "e7c05a90",
+  "doc_sha256": {
+    "D0-pa-form-draft": "d231c7878b97eb5ac3e293eb7eb5522b9f14c4fc1815ded6c984741851826362",
+    "D1-referral": "b1adb5a53ed8e21cd8d4c58e5d9e0d57b95d7ceef9309d8e1995e84a33f225d9",
+    "D2-clinical-timeline": "d5f0fecef7d8ccb03e4338077aeb6f0e5dc1389c72b4df423a146d157d4a16cb",
+    "D3-antihypertensive-history": "d9d016e2b5aa3263d90c75bae3c2b15b761d96dd1b262af0887e5ef916a0dd0f"
+  },
+  "extraction": {
+    "anthropometrics": [
+      {
+        "certainty": "present",
+        "date_precision": "day",
+        "doc_id": "D2-clinical-timeline",
+        "event_date": "2026-01-02",
+        "kind": "bmi",
+        "quote": {
+          "end": 124,
+          "replay_fidelity": "exact",
+          "sha256": "069fcbf16dd3d600705763cc7a021afa638e95ac4cfb37ac7b005701294c107e",
+          "start": 92,
+          "text": "BMI on 2026-01-02 was 33.0 kg/m2"
+        },
+        "raw_unit": "kg/m2",
+        "raw_value": "33.0",
+        "relative_to_glp1_initiation": "before",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "day",
+        "doc_id": "D2-clinical-timeline",
+        "event_date": "2026-04-02",
+        "kind": "bmi",
+        "quote": {
+          "end": 193,
+          "replay_fidelity": "exact",
+          "sha256": "2ebaa3fc8dea09cf0ed232ae75592ec4335321b1b77306f5d3d8123f7cc5dbb6",
+          "start": 161,
+          "text": "BMI on 2026-04-02 was 31.0 kg/m2"
+        },
+        "raw_unit": "kg/m2",
+        "raw_value": "31.0",
+        "relative_to_glp1_initiation": "before",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "day",
+        "doc_id": "D2-clinical-timeline",
+        "event_date": "2026-05-14",
+        "kind": "height",
+        "quote": {
+          "end": 261,
+          "replay_fidelity": "exact",
+          "sha256": "971646cc4c1172ae78f75dda42620e5c729e54f5b195e2951c209a76fe63cae7",
+          "start": 230,
+          "text": "Height on 2026-05-14 was 165 cm"
+        },
+        "raw_unit": "cm",
+        "raw_value": "165",
+        "relative_to_glp1_initiation": "at",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "day",
+        "doc_id": "D2-clinical-timeline",
+        "event_date": "2026-05-14",
+        "kind": "weight",
+        "quote": {
+          "end": 295,
+          "replay_fidelity": "exact",
+          "sha256": "281ce3a595e17828725c03185a13e0f373c5ad8f0615914daef9fbf7f7c35122",
+          "start": 263,
+          "text": "Weight on 2026-05-14 was 84.4 kg"
+        },
+        "raw_unit": "kg",
+        "raw_value": "84.4",
+        "relative_to_glp1_initiation": "at",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "day",
+        "doc_id": "D2-clinical-timeline",
+        "event_date": "2026-08-06",
+        "kind": "bmi",
+        "quote": {
+          "end": 412,
+          "replay_fidelity": "exact",
+          "sha256": "7e41af9577a9800100b6589ec464d242dabe4ed870d2ef2fcab96cf564cb7155",
+          "start": 380,
+          "text": "BMI on 2026-08-06 was 29.0 kg/m2"
+        },
+        "raw_unit": "kg/m2",
+        "raw_value": "29.0",
+        "relative_to_glp1_initiation": "after",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "day",
+        "doc_id": "D2-clinical-timeline",
+        "event_date": "2026-10-01",
+        "kind": "bmi",
+        "quote": {
+          "end": 526,
+          "replay_fidelity": "exact",
+          "sha256": "f90099a6683cc0fb16765123fab346b162a86192bc0b2d9f3bee4a6fe59e6022",
+          "start": 494,
+          "text": "BMI on 2026-10-01 was 28.0 kg/m2"
+        },
+        "raw_unit": "kg/m2",
+        "raw_value": "28.0",
+        "relative_to_glp1_initiation": "after",
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "bp_readings": [
+      {
+        "certainty": "present",
+        "date_precision": "day",
+        "dbp": 98,
+        "doc_id": "D2-clinical-timeline",
+        "event_date": "2026-01-02",
+        "quote": {
+          "end": 158,
+          "replay_fidelity": "exact",
+          "sha256": "3df756a7a5b1940f631f7c5ca7d918f8f59402bfa0aa12558275c9ec9494a63f",
+          "start": 126,
+          "text": "BP on 2026-01-02 was 168/98 mmHg"
+        },
+        "relative_to_glp1_initiation": "before",
+        "sbp": 168,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "day",
+        "dbp": 90,
+        "doc_id": "D2-clinical-timeline",
+        "event_date": "2026-04-02",
+        "quote": {
+          "end": 227,
+          "replay_fidelity": "exact",
+          "sha256": "9344120eb61c3b447f2dc5a9d9cc15998e03885963fe64248af2a3498afe0b09",
+          "start": 195,
+          "text": "BP on 2026-04-02 was 150/90 mmHg"
+        },
+        "relative_to_glp1_initiation": "before",
+        "sbp": 150,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "day",
+        "dbp": 90,
+        "doc_id": "D2-clinical-timeline",
+        "event_date": "2026-05-14",
+        "quote": {
+          "end": 329,
+          "replay_fidelity": "exact",
+          "sha256": "75f571180438d0d29032b1f9d38df3fb8ed2fd4b7aba359a87705d729a877bd4",
+          "start": 297,
+          "text": "BP on 2026-05-14 was 146/90 mmHg"
+        },
+        "relative_to_glp1_initiation": "at",
+        "sbp": 146,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "day",
+        "dbp": 90,
+        "doc_id": "D2-clinical-timeline",
+        "event_date": "2026-08-06",
+        "quote": {
+          "end": 446,
+          "replay_fidelity": "exact",
+          "sha256": "cb237f6b57bdaff190f000784a96c3c6a6812e0732e84b4c76b3c852a23d0f00",
+          "start": 414,
+          "text": "BP on 2026-08-06 was 143/90 mmHg"
+        },
+        "relative_to_glp1_initiation": "after",
+        "sbp": 143,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "day",
+        "dbp": 78,
+        "doc_id": "D2-clinical-timeline",
+        "event_date": "2026-10-01",
+        "quote": {
+          "end": 560,
+          "replay_fidelity": "exact",
+          "sha256": "df18d3b43ad9bb14c1f4830423f1145c18acc819a2ca81f0c8a3317e86dfdbe1",
+          "start": 528,
+          "text": "BP on 2026-10-01 was 127/78 mmHg"
+        },
+        "relative_to_glp1_initiation": "after",
+        "sbp": 127,
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "diagnoses": [
+      {
+        "ahi": null,
+        "certainty": "present",
+        "cirrhosis": null,
+        "ckd_stage": "",
+        "concept": "prediabetes",
+        "date_precision": "day",
+        "doc_id": "D2-clinical-timeline",
+        "event_date": "2026-05-14",
+        "fibrosis_stage": "",
+        "osa_severity": "unspecified",
+        "quote": {
+          "end": 378,
+          "replay_fidelity": "exact",
+          "sha256": "bf11e235f0abd6d0d75c9ac6a1f23994a1f4b2031c6a2b8e979077fb3efa0644",
+          "start": 331,
+          "text": "The visit on 2026-05-14 documented prediabetes."
+        },
+        "relative_to_glp1_initiation": "at",
+        "subject": "patient",
+        "symptomatic": "unknown",
+        "temporality": "current"
+      },
+      {
+        "ahi": null,
+        "certainty": "negated",
+        "cirrhosis": null,
+        "ckd_stage": "",
+        "concept": "osa",
+        "date_precision": "day",
+        "doc_id": "D2-clinical-timeline",
+        "event_date": "2026-08-06",
+        "fibrosis_stage": "",
+        "osa_severity": "unspecified",
+        "quote": {
+          "end": 492,
+          "replay_fidelity": "exact",
+          "sha256": "7e09a0c4721d2724fdc1371fb94b6bdffeb346618ddc4dee5c3398dc9adfb26b",
+          "start": 448,
+          "text": "The sleep study on 2026-08-06 ruled out OSA."
+        },
+        "relative_to_glp1_initiation": "after",
+        "subject": "patient",
+        "symptomatic": "unknown",
+        "temporality": "current"
+      }
+    ],
+    "doc_dates": [
+      {
+        "certainty": "present",
+        "date": "2026-10-15",
+        "date_precision": "day",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "2026-10-15",
+        "quote": {
+          "end": 42,
+          "replay_fidelity": "exact",
+          "sha256": "6f09346fca4b7ebec676c43bce9a678b9c1218e183505911987f4d01717dc849",
+          "start": 26,
+          "text": "Date: 2026-10-15"
+        },
+        "relative_to_glp1_initiation": "after",
+        "subject": "patient",
+        "target_doc_id": "D0-pa-form-draft",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date": "2026-10-15",
+        "date_precision": "day",
+        "doc_id": "D1-referral",
+        "event_date": "2026-10-15",
+        "quote": {
+          "end": 32,
+          "replay_fidelity": "exact",
+          "sha256": "6f09346fca4b7ebec676c43bce9a678b9c1218e183505911987f4d01717dc849",
+          "start": 16,
+          "text": "Date: 2026-10-15"
+        },
+        "relative_to_glp1_initiation": "after",
+        "subject": "patient",
+        "target_doc_id": "D1-referral",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date": "2026-10-15",
+        "date_precision": "day",
+        "doc_id": "D2-clinical-timeline",
+        "event_date": "2026-10-15",
+        "quote": {
+          "end": 34,
+          "replay_fidelity": "exact",
+          "sha256": "6f09346fca4b7ebec676c43bce9a678b9c1218e183505911987f4d01717dc849",
+          "start": 18,
+          "text": "Date: 2026-10-15"
+        },
+        "relative_to_glp1_initiation": "after",
+        "subject": "patient",
+        "target_doc_id": "D2-clinical-timeline",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date": "2026-05-14",
+        "date_precision": "day",
+        "doc_id": "D3-antihypertensive-history",
+        "event_date": "2026-05-14",
+        "quote": {
+          "end": 52,
+          "replay_fidelity": "exact",
+          "sha256": "c9aff7a0904617ffe41ed62fc5a37c4ac71a2d2b9f3e70edfe3e09605a786bfe",
+          "start": 36,
+          "text": "Date: 2026-05-14"
+        },
+        "relative_to_glp1_initiation": "at",
+        "subject": "patient",
+        "target_doc_id": "D3-antihypertensive-history",
+        "temporality": "current"
+      }
+    ],
+    "glp1_start": [
+      {
+        "certainty": "present",
+        "date": "2026-05-14",
+        "date_precision": "day",
+        "doc_id": "D1-referral",
+        "drug": "Wegovy",
+        "event_date": "2026-05-14",
+        "purpose": "weight",
+        "quote": {
+          "end": 139,
+          "replay_fidelity": "exact",
+          "sha256": "a905e6d2e7e05ab4cdc6dd562799f018a4a0c0681e0c1d5930bcf062dd530015",
+          "start": 90,
+          "text": "Wegovy was started on 05/14/2026 for weight loss."
+        },
+        "relative_to_glp1_initiation": "at",
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "labs": [],
+    "lifestyle": [
+      {
+        "attendance": "unknown",
+        "certainty": "present",
+        "date_precision": "day",
+        "description": "physical activity limited by knee osteoarthritis",
+        "doc_id": "D2-clinical-timeline",
+        "end": null,
+        "end_kind": "unknown",
+        "event_date": "2026-10-15",
+        "kind": "activity",
+        "limitation": "knee osteoarthritis still limits physical activity",
+        "program_type": "none_stated",
+        "quote": {
+          "end": 632,
+          "replay_fidelity": "exact",
+          "sha256": "d260e958fe5d71eddd8b0ac5031e5ed6edc704f5e25d4cde2f61b5978cd03fd0",
+          "start": 563,
+          "text": "As of 2026-10-15, knee osteoarthritis still limits physical activity."
+        },
+        "relative_to_glp1_initiation": "after",
+        "start": null,
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "medication_lists": [],
+    "medications": [
+      {
+        "certainty": "present",
+        "date_precision": "day",
+        "doc_id": "D3-antihypertensive-history",
+        "dose": "",
+        "end": null,
+        "end_kind": "ongoing",
+        "end_precision": null,
+        "event_date": "2026-01-02",
+        "indication": "blood pressure",
+        "list_id": "",
+        "name": "Exforge",
+        "quote": {
+          "end": 198,
+          "replay_fidelity": "exact",
+          "sha256": "1d20c20fa23718660f8735717aa9d2745d90b672ced37e6146ba24e2d2f2dbfc",
+          "start": 110,
+          "text": "Exforge was started for blood pressure on 2026-01-02 and was still in use on 2026-05-14."
+        },
+        "relative_to_glp1_initiation": "before",
+        "start": "2026-01-02",
+        "start_precision": "day",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "day",
+        "doc_id": "D3-antihypertensive-history",
+        "dose": "",
+        "end": null,
+        "end_kind": "ongoing",
+        "end_precision": null,
+        "event_date": "2026-04-02",
+        "indication": "blood pressure",
+        "list_id": "",
+        "name": "HCTZ",
+        "quote": {
+          "end": 300,
+          "replay_fidelity": "exact",
+          "sha256": "275155b471fc2f6e8076f28e48686855d2b6801962be569e9f59317584cf1923",
+          "start": 199,
+          "text": "A separate HCTZ tablet was added for blood pressure on 2026-04-02 and was still in use on 2026-05-14."
+        },
+        "relative_to_glp1_initiation": "before",
+        "start": "2026-04-02",
+        "start_precision": "day",
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "pa_form_claims": [
+      {
+        "certainty": "present",
+        "claim_id": "claim.age_18",
+        "claimed_value": "yes",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 127,
+          "replay_fidelity": "exact",
+          "sha256": "5e283b8a4edf155eadef3f641a8ad67c61c6f4c264ceb23985228c19c7353c36",
+          "start": 100,
+          "text": "Patient is 18 or older: Yes"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.drug",
+        "claimed_value": "Wegovy",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 150,
+          "replay_fidelity": "exact",
+          "sha256": "144dde34ba4a7bdbcd745b23b0aa04b9e3fad86a1c6bca7b294fdd737eb49944",
+          "start": 128,
+          "text": "Requested drug: Wegovy"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.bmi_bracket",
+        "claimed_value": "30-34.9",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 172,
+          "replay_fidelity": "exact",
+          "sha256": "056fe379f2dd171878629ca8d88e3ba10ea5320f76b551258150135a5a2d75b0",
+          "start": 151,
+          "text": "BMI category: 30-34.9"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.exclusion.osa",
+        "claimed_value": "yes",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 200,
+          "replay_fidelity": "exact",
+          "sha256": "9af5733235f3cb87978c166a87fb2d85826d306b7a073b07d06e5c426d9c9219",
+          "start": 173,
+          "text": "Moderate to severe OSA: Yes"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "patient_identity": [
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "name": "",
+        "patient_id": "P-4004",
+        "quote": {
+          "end": 82,
+          "replay_fidelity": "exact",
+          "sha256": "01b945aa3eb9018cff90fe041e630e45fc2469dedc3e91bb49fb613c79f44c68",
+          "start": 64,
+          "text": "Patient ID: P-4004"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": "1966-11-18",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "name": "",
+        "patient_id": "",
+        "quote": {
+          "end": 98,
+          "replay_fidelity": "exact",
+          "sha256": "491a894e0c77561128b87ed1dcec487bac24186512798a9bf94644933f13bd3e",
+          "start": 83,
+          "text": "DOB: 1966-11-18"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "name": "Alex Mercer",
+        "patient_id": "",
+        "quote": {
+          "end": 63,
+          "replay_fidelity": "exact",
+          "sha256": "629e31aa6f4b77058efa59495189ade8fb28331bdb188467fccb82450eb87251",
+          "start": 43,
+          "text": "Patient: Alex Mercer"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D1-referral",
+        "event_date": "",
+        "name": "",
+        "patient_id": "P-4004",
+        "quote": {
+          "end": 72,
+          "replay_fidelity": "exact",
+          "sha256": "01b945aa3eb9018cff90fe041e630e45fc2469dedc3e91bb49fb613c79f44c68",
+          "start": 54,
+          "text": "Patient ID: P-4004"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": "1966-11-18",
+        "doc_id": "D1-referral",
+        "event_date": "",
+        "name": "",
+        "patient_id": "",
+        "quote": {
+          "end": 88,
+          "replay_fidelity": "exact",
+          "sha256": "491a894e0c77561128b87ed1dcec487bac24186512798a9bf94644933f13bd3e",
+          "start": 73,
+          "text": "DOB: 1966-11-18"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D1-referral",
+        "event_date": "",
+        "name": "Alex Mercer",
+        "patient_id": "",
+        "quote": {
+          "end": 53,
+          "replay_fidelity": "exact",
+          "sha256": "629e31aa6f4b77058efa59495189ade8fb28331bdb188467fccb82450eb87251",
+          "start": 33,
+          "text": "Patient: Alex Mercer"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D2-clinical-timeline",
+        "event_date": "",
+        "name": "",
+        "patient_id": "P-4004",
+        "quote": {
+          "end": 74,
+          "replay_fidelity": "exact",
+          "sha256": "01b945aa3eb9018cff90fe041e630e45fc2469dedc3e91bb49fb613c79f44c68",
+          "start": 56,
+          "text": "Patient ID: P-4004"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": "1966-11-18",
+        "doc_id": "D2-clinical-timeline",
+        "event_date": "",
+        "name": "",
+        "patient_id": "",
+        "quote": {
+          "end": 90,
+          "replay_fidelity": "exact",
+          "sha256": "491a894e0c77561128b87ed1dcec487bac24186512798a9bf94644933f13bd3e",
+          "start": 75,
+          "text": "DOB: 1966-11-18"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D2-clinical-timeline",
+        "event_date": "",
+        "name": "Alex Mercer",
+        "patient_id": "",
+        "quote": {
+          "end": 55,
+          "replay_fidelity": "exact",
+          "sha256": "629e31aa6f4b77058efa59495189ade8fb28331bdb188467fccb82450eb87251",
+          "start": 35,
+          "text": "Patient: Alex Mercer"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D3-antihypertensive-history",
+        "event_date": "",
+        "name": "",
+        "patient_id": "P-4004",
+        "quote": {
+          "end": 92,
+          "replay_fidelity": "exact",
+          "sha256": "01b945aa3eb9018cff90fe041e630e45fc2469dedc3e91bb49fb613c79f44c68",
+          "start": 74,
+          "text": "Patient ID: P-4004"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": "1966-11-18",
+        "doc_id": "D3-antihypertensive-history",
+        "event_date": "",
+        "name": "",
+        "patient_id": "",
+        "quote": {
+          "end": 108,
+          "replay_fidelity": "exact",
+          "sha256": "491a894e0c77561128b87ed1dcec487bac24186512798a9bf94644933f13bd3e",
+          "start": 93,
+          "text": "DOB: 1966-11-18"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D3-antihypertensive-history",
+        "event_date": "",
+        "name": "Alex Mercer",
+        "patient_id": "",
+        "quote": {
+          "end": 73,
+          "replay_fidelity": "exact",
+          "sha256": "629e31aa6f4b77058efa59495189ade8fb28331bdb188467fccb82450eb87251",
+          "start": 53,
+          "text": "Patient: Alex Mercer"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "prior_glp1": []
+  },
+  "input_hash": "98db44ca3e6075fd9382db59c4f8e0e049c6cd4d0f557bde334b1788b1922d45",
+  "lossy_quote_count": 0,
+  "model_returned": "claude-sonnet-5-5",
+  "mtsamples_doc_ids": [],
+  "prompt_version": "extract-v4",
+  "quote_count": 37,
+  "replay_version": 1,
+  "response": {
+    "model": "claude-sonnet-5-5",
+    "role": "assistant",
+    "stop_reason": "tool_use",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "input_tokens": 13044,
+      "output_tokens": 5093
+    }
+  },
+  "schema_version": "v2",
+  "variant_id": "case-04"
+}
