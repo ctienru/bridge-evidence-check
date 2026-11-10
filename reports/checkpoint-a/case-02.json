@@ -18,15 +18,13 @@
       ]
     },
     "claim.bmi_bracket": {
-      "correct": false,
+      "correct": true,
       "excluded": [],
-      "first_error": "rules",
-      "flags": [
-        "timing_disagreement"
-      ],
+      "first_error": null,
+      "flags": [],
       "gold_flags": [],
       "gold_status": "supported",
-      "status": "review",
+      "status": "supported",
       "used": [
         "D1-referral[118:167] 309626bd",
         "D2-initiation-note[102:134] 5abae078",
@@ -92,13 +90,13 @@
       ]
     },
     "bmi_path_b": {
-      "correct": false,
+      "correct": true,
       "excluded": [],
-      "first_error": "extraction_wrong_value",
+      "first_error": null,
       "flags": [],
       "gold_flags": [],
       "gold_status": "supported",
-      "status": "review",
+      "status": "supported",
       "used": [
         "D1-referral[118:167] 309626bd",
         "D2-initiation-note[102:134] 5abae078",
@@ -107,15 +105,13 @@
       ]
     },
     "bmi_path_b.bmi": {
-      "correct": false,
+      "correct": true,
       "excluded": [],
-      "first_error": "extraction_wrong_value",
-      "flags": [
-        "timing_disagreement"
-      ],
+      "first_error": null,
+      "flags": [],
       "gold_flags": [],
       "gold_status": "supported",
-      "status": "review",
+      "status": "supported",
       "used": [
         "D1-referral[118:167] 309626bd",
         "D2-initiation-note[102:134] 5abae078",
@@ -156,13 +152,13 @@
       "used": []
     },
     "bmi_path_c": {
-      "correct": false,
+      "correct": true,
       "excluded": [],
-      "first_error": "extraction_wrong_value",
+      "first_error": null,
       "flags": [],
       "gold_flags": [],
       "gold_status": "insufficient",
-      "status": "review",
+      "status": "insufficient",
       "used": [
         "D1-referral[118:167] 309626bd",
         "D2-initiation-note[102:134] 5abae078",
@@ -170,15 +166,13 @@
       ]
     },
     "bmi_path_c.bmi": {
-      "correct": false,
+      "correct": true,
       "excluded": [],
-      "first_error": "extraction_wrong_value",
-      "flags": [
-        "timing_disagreement"
-      ],
+      "first_error": null,
+      "flags": [],
       "gold_flags": [],
       "gold_status": "supported",
-      "status": "review",
+      "status": "supported",
       "used": [
         "D1-referral[118:167] 309626bd",
         "D2-initiation-note[102:134] 5abae078",
@@ -774,22 +768,22 @@
   "gold_sha256": "bcae1f0d9cd56f57a3f2b79fd12325a7e4a307dbd3d7edaa9d01f8f9ca306cbb",
   "gold_version": 1,
   "run": {
-    "code_sha": "68b1c8698631ca45565b78be7314dae9f9eb4f72-dirty",
+    "code_sha": "bbdc5348e02d79c236a01d1cc5ca1f5b3874e823-dirty",
     "extraction_source": "cache",
     "input_hash": "3934e23a9ca78bee80aaf57224ad3fa22b09c0507b27dfeeccc095954015d97f",
-    "prompt_version": "extract-v3",
+    "prompt_version": "extract-v4",
     "rules_version": "bridge-v1",
-    "run_id": 23,
+    "run_id": 9,
     "schema_version": "v2",
     "status": "completed"
   },
   "totals": {
     "absent_correct": 16,
     "absent_false_positive": 0,
-    "claims_correct": 3,
+    "claims_correct": 4,
     "claims_false_support": 0,
     "claims_total": 4,
-    "conditions_correct": 16,
+    "conditions_correct": 20,
     "conditions_total": 20,
     "excluded_unmatched": 2,
     "false_positives": 6,
@@ -797,9 +791,9 @@
     "first_error": {
       "compute_timepoint": 0,
       "extraction_missed": 0,
-      "extraction_wrong_value": 4,
+      "extraction_wrong_value": 0,
       "gold_question": 0,
-      "rules": 1,
+      "rules": 0,
       "verify_excluded": 0
     },
     "gold_facts": 19,

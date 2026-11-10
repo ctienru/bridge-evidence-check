@@ -354,3 +354,128 @@ are `current`. No evidence row of this run carries `temporality_unverified`.
   rows at `review` instead of leaving them `insufficient`. Both are safe directions.
 - Live totals move less than the offline column because a new sample brings its own errors
   (A in case-02, F). One run per prompt cannot separate prompt effect from sampling variation.
+
+## After the timepoint and identity fix
+
+Date 2026-11-09. Same extractor (returned `claude-sonnet-5-5` on every call), prompt
+`extract-v4`, schema `v2`, rules `bridge-v1`, splitter `sentences-v1`, code `bbdc534` plus the
+working tree of this change. Same seven dev variants; gold unchanged.
+
+**Still one run of one model on seven dev cases; not a holdout result; not an evaluation.**
+
+What changed:
+
+- Contract §5 item 1. A model `relative_to_glp1_initiation: unknown` means "not stated" and
+  is not a claim. `timing_disagreement` is raised only when the model's `at` / `before` /
+  `after` contradicts `relative_computed`. Scoring and decisions already used
+  `relative_computed`; only the flag, and with it the step-8 cap, changes.
+- Prompt `extract-v4` adds two sentences to `extract-v3`. Every value of a fact must be
+  readable inside that fact's own quote. For `patient_identity`, `dob` and `patient_id` are
+  given only when the quote itself contains them. Verify is unchanged: such rows were and
+  are excluded with `value_not_in_quote`. New prompt text means new cache keys.
+
+The per-case files under `reports/checkpoint-a/`, `compare.md` and `reports/baseline-dev.json`
+now hold this run. The previous versions are at commit `bbdc534`. The `extract-v2` and
+`extract-v3` replays stay next to the new `extract-v4` replays.
+
+### Calls
+
+One fresh database outside the checkout; each case checked twice.
+
+| Case | Input tokens | Output tokens | Latency | Cost | Attempts (pass 1) | Pass 2 | Evidence rows |
+|---|---:|---:|---:|---:|---|---|---:|
+| case-01 | 14 570 | 5 577 | 26.1 s | $0.0849 | 1 `parsed` | cache hit, no attempt | 37 |
+| case-02 | 12 823 | 3 656 | 16.8 s | $0.0622 | 1 `parsed` | cache hit, no attempt | 27 |
+| case-03 | 13 649 | 3 899 | 17.7 s | $0.0663 | 1 `parsed` | cache hit, no attempt | 28 |
+| case-04 | 13 044 | 5 093 | 23.4 s | $0.0770 | 1 `parsed` | cache hit, no attempt | 37 |
+| case-07 | 12 828 | 3 492 | 16.2 s | $0.0606 | 1 `parsed` | cache hit, no attempt | 25 |
+| case-07b | 12 947 | 4 141 | 18.8 s | $0.0673 | 1 `parsed` | cache hit, no attempt | 30 |
+| case-17 | 13 462 | 2 908 | 13.8 s | $0.0560 | 1 `parsed` | cache hit, no attempt | 20 |
+| **Total** | **93 323** | **28 766** | **132.7 s** | **$0.4743** | 7 calls, 0 retries | 7 of 7 | 204 |
+
+Plus `pytest -m live` on the synthetic smoke case: 12 564 input and 2 387 output tokens,
+11.3 s, $0.0490. **Spend for this change: $0.5233.** No run came near a ceiling.
+
+The second pass of every case gives the same status, flags, rule and reason as the first
+for all 179 decisions. Every quote was found verbatim in its document (204 of 204). Each
+`extract-v4` replay, restored and re-run offline, gives the same status, flags, rule and
+reason for every decision of its live run (179 of 179).
+
+### Totals
+
+| Measure | Previous run (v3, live) | Contract fix only (v3 replays) | This run (v4, live) |
+|---|---:|---:|---:|
+| Conditions matching gold | 123 / 140 | 132 / 140 | 133 / 140 |
+| Claims matching gold | 33 / 39 | 35 / 39 | 36 / 39 |
+| False supports, conditions and claims | 0 | 0 | 0 |
+| Missed exclusions | 0 | 0 | 0 |
+| Mismatching rows | 23 | 12 | 10 |
+
+The middle column re-runs the committed `extract-v3` replays offline through the new verify,
+compute and rules. It needs no API call and isolates the contract change from the prompt
+change.
+
+| Case | Conditions: v3 live / v3 replay / v4 live | Claims: v3 live / v3 replay / v4 live |
+|---|---|---|
+| case-01 | 15 / 20 / 19 | 8 / 9 / 8 |
+| case-02 | 16 / 20 / 20 | 3 / 4 / 4 |
+| case-03 | 17 / 17 / 17 | 4 / 4 / 4 |
+| case-04 | 16 / 16 / 17 | 3 / 3 / 4 |
+| case-07 | 20 / 20 / 20 | 5 / 5 / 5 |
+| case-07b | 19 / 19 / 20 | 4 / 4 / 5 |
+| case-17 | 20 / 20 / 20 | 5 / 6 / 6 |
+
+Facts, this run: 104 of 158 gold facts matched (94 in the previous run), 18 matched but
+excluded by verify (12), 32 wrong value (48), 4 missed (4), 26 false positives (22),
+expected-absent 99 / 99 (99 / 99). The contract change alone moves no fact count; it changes
+flags, not values.
+
+Identity: the `extract-v3` replays have 8 identity rows excluded with `value_not_in_quote`.
+This run has none; each identity row names a date of birth or an identifier only when its
+quote holds it. Evidence rows with `timing_disagreement`: none in the `extract-v3` replays
+under the new compute; one in this run, a nutrition record whose flag decides nothing.
+
+### What the fix changed
+
+- Cause A is gone (11 rows). case-01 and case-02: `bmi_path_a`, the BMI sub-results of paths
+  B and C, both pathways and `claim.bmi_bracket` now match gold. The offline column shows
+  this comes from the contract change alone, with no new false support.
+- Cause F is gone (4 rows). case-04 and case-07b: `age_18` and `claim.age_18` now match gold.
+  This needs the new extraction; the offline column still shows it.
+
+### Remaining mismatches
+
+10 rows: 7 conditions and 3 claims. Each is listed with the first upstream error from
+`scripts/compare_gold.py` and the cause found in the evidence.
+
+| Case | Row | Gold | Live | First error | Cause |
+|---|---|---|---|---|---|
+| case-01 | `lifestyle.nutrition`, `claim.lifestyle.nutrition` | ins | rev | `extraction_wrong_value` | G |
+| case-03 | `bmi_path_a` | not | ins | `extraction_wrong_value` | B |
+| case-03 | `bmi_path_b.bmi`, `bmi_path_c.bmi`, `claim.bmi_bracket` | sup | ins | `extraction_wrong_value` | B |
+| case-03 | `claim.bmi_path_b.htn` | rev | ins | `extraction_wrong_value` | C |
+| case-04 | `bmi_path_b.htn`, `bmi_path_b` | sup | ins | `compute_timepoint` | D |
+| case-04 | `lifestyle.activity` | rev | not | `rules` | E |
+
+- **B. Unparseable height (4 rows).** Unchanged: case-03's height is in feet and inches
+  (`unparseable_value`) and its weight has no date, so no BMI is computed. Known gap (C-02,
+  contract §4).
+- **C. K-03 reading (1 row).** Unchanged from checkpoint A item 7.
+- **D. Medication period "started on X, still on at Y" (2 rows).** Unchanged; known gap
+  (contract §3.2).
+- **E. `program_type` has no value for a limitation-only record (1 row).** Unchanged; known
+  gap (contract §6, guide C-18).
+- **G. End of a commercial nutrition program (2 rows, new in this sample).** In case-01 the
+  model gives the commercial program `end_kind: unknown`; gold says `ended`. With no end
+  recorded, the program counts as applicable and the decision is `review` (§3.5 lifestyle
+  step 3) instead of `insufficient`. The `extract-v3` sample matched gold here; the new prompt
+  sentences do not touch `end_kind`. This is sampling variation, in the safe direction.
+
+### What this changes
+
+- The two largest causes after the anchoring fix are closed: A by the contract, F by the
+  prompt. What remains is four known gaps (B, C, D, E) and one sampled extraction error (G).
+- The contract change alone, on the old extractions, removes 11 of the 23 mismatching rows
+  with no new false support. The prompt change removes the 4 identity rows and brings 2 new
+  rows of its own sample. One run per prompt cannot separate prompt effect from sampling
+  variation.

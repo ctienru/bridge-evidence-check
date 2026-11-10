@@ -7,7 +7,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from conftest import INITIATION, checked, ctx
+from conftest import INITIATION, checked, ctx, decide
 
 from bridge_check.compute import (
     BMI_TOLERANCE,
@@ -143,11 +143,65 @@ def test_disagreeing_doc_dates_date_nothing() -> None:
     assert facts.doc_facts["D1"].doc_date_disagreement == (2, 3)
 
 
-def test_model_unknown_differing_from_the_computed_timepoint_is_flagged() -> None:
+def test_model_unknown_is_not_a_disagreement_with_the_computed_timepoint() -> None:
+    """Contract §5 item 1: the model's `unknown` states nothing, so it never contradicts."""
     bp = checked("bp_readings", sbp=152, dbp=94, event_date="2025-03-15", relative_llm="unknown")
     facts = compute([INITIATION, bp], ctx())
     assert facts.bp_readings[0].src.tp.relative == "at"
+    assert facts.evidence_updates[1].relative_computed == "at"
+    assert facts.evidence_updates[1].flags == ()
+
+
+def test_model_definite_value_contradicting_the_computed_timepoint_is_flagged() -> None:
+    bp = checked("bp_readings", sbp=152, dbp=94, event_date="2025-03-15", relative_llm="before")
+    facts = compute([INITIATION, bp], ctx())
+    assert facts.evidence_updates[1].relative_computed == "at"
     assert facts.evidence_updates[1].flags == ("timing_disagreement",)
+
+
+def test_case01_undated_measurements_labelled_unknown_are_not_capped() -> None:
+    """case-01: height, weight and BMI in an undated document whose date another document
+    gives; the model labels all three `unknown`, compute derives `at` from the document date.
+    No `timing_disagreement`, so the BMI decisions are not capped at `review` (§3.1 step 8)."""
+    rows = [
+        checked(
+            "anthropometrics",
+            doc_id="D2",
+            kind="height",
+            raw_value="167.6",
+            raw_unit="cm",
+            relative_llm="unknown",
+        ),
+        checked(
+            "anthropometrics",
+            doc_id="D2",
+            kind="weight",
+            raw_value="129.5",
+            raw_unit="kg",
+            relative_llm="unknown",
+        ),
+        checked(
+            "anthropometrics",
+            doc_id="D2",
+            kind="bmi",
+            raw_value="46",
+            raw_unit="",
+            relative_llm="unknown",
+        ),
+    ]
+    doc_date_d2 = checked(
+        "doc_dates", target_doc_id="D2", date="2025-03-15", event_date="2025-03-15"
+    )
+    evidence = [INITIATION, doc_date_d2, *rows]
+    facts = compute(evidence, ctx(evidence_ids=[1, 2, 3, 4, 5]))
+    for u in facts.evidence_updates[2:]:
+        assert u.relative_computed == "at", u.evidence_id
+        assert "timing_disagreement" not in u.flags, u.evidence_id
+    decisions = decide(evidence)
+    for cid in ("bmi_path_a", "bmi_path_b.bmi", "bmi_path_c.bmi"):
+        assert decisions[cid].status == "supported", cid
+        assert "timing_disagreement" not in decisions[cid].flags, cid
+    assert decisions["bmi_path_a"].rule_id == "bmi_path_a:7"
 
 
 def test_step0_drops_excluded_and_keeps_candidates_apart() -> None:

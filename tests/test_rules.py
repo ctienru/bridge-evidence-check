@@ -729,9 +729,10 @@ def test_contradictory_same_day_readings_are_a_conflict(high_first: bool) -> Non
     assert d.status == "conflict" and len(d.used_evidence) == 3  # both readings and the start
 
 
-def test_dated_bmi_with_an_unknown_model_timepoint_is_review() -> None:
+def test_dated_bmi_with_an_unknown_model_timepoint_is_not_capped() -> None:
+    """Contract §5 item 1: the model's `unknown` is "not stated", not a disagreement."""
     d = decide(BASE + [_bmi("36.5", event_date="2025-03-15", relative_llm="unknown")])["bmi_path_a"]
-    assert d.status == "review" and "timing_disagreement" in d.flags
+    assert d.status == "supported" and "timing_disagreement" not in d.flags
 
 
 def test_claims_keep_the_charts_uncertainty() -> None:

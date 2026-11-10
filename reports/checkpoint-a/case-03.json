@@ -675,7 +675,7 @@
     {
       "assertion_check": "matched",
       "doc_id": "D2-mtsamples-4689",
-      "evidence_ref": "D2-mtsamples-4689[2003:2020] d6673a1e",
+      "evidence_ref": "D2-mtsamples-4689[2007:2033] e560e715",
       "exclusion_reasons": [],
       "field": "diagnoses",
       "gold_index": 16,
@@ -708,7 +708,7 @@
     {
       "assertion_check": "matched",
       "doc_id": "D2-mtsamples-4689",
-      "evidence_ref": "D2-mtsamples-4689[1559:1569] 78ebeb37",
+      "evidence_ref": "D2-mtsamples-4689[1559:1570] 1c936786",
       "exclusion_reasons": [
         "unparseable_value"
       ],
@@ -728,7 +728,7 @@
     {
       "assertion_check": "matched",
       "doc_id": "D2-mtsamples-4689",
-      "evidence_ref": "D2-mtsamples-4689[1572:1583] a644c23e",
+      "evidence_ref": "D2-mtsamples-4689[1572:1584] ef380f64",
       "exclusion_reasons": [],
       "field": "anthropometrics",
       "gold_index": 19,
@@ -761,7 +761,7 @@
     {
       "assertion_check": "matched",
       "doc_id": "D2-mtsamples-4689",
-      "evidence_ref": "D2-mtsamples-4689[2003:2020] d6673a1e",
+      "evidence_ref": "D2-mtsamples-4689[2007:2033] e560e715",
       "exclusion_reasons": [],
       "field": "diagnoses",
       "gold_index": 21,
@@ -824,12 +824,12 @@
   "gold_sha256": "54d41ffa315901ff508f12ae32d81eee2bef537fbfa77b4b6f0a15c90ad4f78a",
   "gold_version": 1,
   "run": {
-    "code_sha": "68b1c8698631ca45565b78be7314dae9f9eb4f72-dirty",
+    "code_sha": "bbdc5348e02d79c236a01d1cc5ca1f5b3874e823-dirty",
     "extraction_source": "cache",
     "input_hash": "7d40a9949aedf10dd061c1127cb4cd809d551398b6c666e6607cb91e0bfbc140",
-    "prompt_version": "extract-v3",
+    "prompt_version": "extract-v4",
     "rules_version": "bridge-v1",
-    "run_id": 24,
+    "run_id": 10,
     "schema_version": "v2",
     "status": "completed"
   },
