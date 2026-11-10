@@ -1,0 +1,9 @@
+{
+  "questions": [
+    {
+      "variant_id": "case-smoke",
+      "item": "bmi_path_c.mi",
+      "note": "synthetic gold question"
+    }
+  ]
+}

@@ -11,6 +11,12 @@ import re
 from pathlib import Path
 
 import pytest
+from leakcheck import (
+    WINDOW,
+    mtsamples_files,
+    read_exact,
+)
+from leakcheck import assert_no_shared_windows as _assert_no_shared_windows
 
 ROOT = Path(__file__).resolve().parent.parent
 CONTRACT = ROOT / "docs" / "contracts.md"
@@ -18,7 +24,7 @@ GUIDE = ROOT / "docs" / "annotation-guide.md"
 LIVE_RUN = ROOT / "docs" / "live-run-01.md"
 ADR_LIMITS = ROOT / "docs" / "adr" / "0001-global-limits.md"
 ADR_OUTPUT_MODE = ROOT / "docs" / "adr" / "0002-extraction-output-mode.md"
-WINDOW = 40
+CHECKPOINT_A = ROOT / "docs" / "checkpoint-a.md"
 
 _G_HEADING = re.compile(r"^### (G-\d+)\b", re.MULTILINE)
 _SOURCE_LINE = re.compile(r"^-?\s*\*{0,2}Source:", re.MULTILINE)
@@ -50,7 +56,7 @@ def test_both_documents_exist() -> None:
 
 
 def test_live_run_and_adr_exist_and_name_no_plan_tickets() -> None:
-    for doc in (LIVE_RUN, ADR_LIMITS, ADR_OUTPUT_MODE):
+    for doc in (LIVE_RUN, ADR_LIMITS, ADR_OUTPUT_MODE, CHECKPOINT_A):
         text = _read(doc)
         assert not re.search(r"\bW\d{2}\b", text), f"{doc.name} names a plan ticket"
         assert "/Users/" not in text, f"{doc.name} contains a home-directory path"
@@ -74,42 +80,18 @@ def test_g_clause_ids_are_sequential() -> None:
     assert ids == list(range(1, len(ids) + 1))
 
 
-def _mtsamples_files() -> list[Path]:
-    return sorted((ROOT / "cases").glob("*/docs/D2-mtsamples-*.txt"))
-
-
-def _windows(text: str) -> set[str]:
-    return {text[i : i + WINDOW] for i in range(0, max(len(text) - WINDOW + 1, 0))}
-
-
-def _shared_window_count(target: str, source: str) -> int:
-    return sum(1 for w in _windows(source) if w in target)
-
-
-def _assert_no_shared_windows(target: str, target_name: str, source: str, source_name: str) -> None:
-    """Fail with a message that carries counts and names only, never the matched text."""
-    hits = _shared_window_count(target, source)
-    if hits:
-        pytest.fail(
-            f"{target_name} shares {hits} {WINDOW}-char window(s) with {source_name}",
-            pytrace=False,
-        )
-
-
 @pytest.mark.parametrize(
     "doc",
-    [CONTRACT, GUIDE, LIVE_RUN, ADR_LIMITS, ADR_OUTPUT_MODE],
-    ids=["contracts", "annotation-guide", "live-run-01", "adr-0001", "adr-0002"],
+    [CONTRACT, GUIDE, LIVE_RUN, ADR_LIMITS, ADR_OUTPUT_MODE, CHECKPOINT_A],
+    ids=["contracts", "annotation-guide", "live-run-01", "adr-0001", "adr-0002", "checkpoint-a"],
 )
 def test_documents_contain_no_mtsamples_window(doc: Path) -> None:
-    sources = _mtsamples_files()
+    sources = mtsamples_files()
     if not sources:
         pytest.skip("no local MTSamples documents under cases/*/docs/")
     target = _read(doc)
     for source in sources:
-        with source.open(encoding="utf-8", newline="") as fh:
-            text = fh.read()
-        _assert_no_shared_windows(target, doc.name, text, source.name)
+        _assert_no_shared_windows(target, doc.name, read_exact(source), source.name)
 
 
 def test_window_failure_message_does_not_leak_source_text() -> None:

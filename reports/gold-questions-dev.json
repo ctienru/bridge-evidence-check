@@ -1,0 +1,49 @@
+{
+  "questions": [
+    {
+      "variant_id": "case-01",
+      "item": "fact:patient_identity",
+      "note": "Five identity facts carry an event_date (the document date); identity facts in cases 02, 04, 07, 07b carry none. The extractor leaves the date empty and compute inherits none, so every dated identity fact fails the event_date key. Decide in guide revision 02 (T-04 on identity facts) whether identity facts are dated."
+    },
+    {
+      "variant_id": "case-01",
+      "item": "fact:pa_form_claims",
+      "note": "All nine claim facts carry an event_date; claim facts in the other six cases carry none. Same T-04 question as identity facts: whether PA-form claims are dated in gold."
+    },
+    {
+      "variant_id": "case-03",
+      "item": "fact:patient_identity",
+      "note": "One identity fact carries an event_date (T-04 on identity facts, as in case-01)."
+    },
+    {
+      "variant_id": "case-17",
+      "item": "fact:patient_identity",
+      "note": "One identity fact carries an event_date (T-04 on identity facts, as in case-01)."
+    },
+    {
+      "variant_id": "case-01",
+      "item": "fact:glp1_start",
+      "note": "The gold glp1_start fact carries payer 'unknown', but the extraction schema has no payer on glp1_start while contract section 8 matches glp1_start on payer. The comparison treats 'unknown' as not stated; the contract key list or the gold field needs one answer."
+    },
+    {
+      "variant_id": "case-03",
+      "item": "fact:diagnoses",
+      "note": "The OSA fact has no osa_severity; deferred from the gold PR to guide revision 02 (G-10)."
+    },
+    {
+      "variant_id": "case-04",
+      "item": "fact:diagnoses",
+      "note": "The OSA fact has no osa_severity; deferred from the gold PR to guide revision 02 (G-10)."
+    },
+    {
+      "variant_id": "case-07",
+      "item": "fact:prior_glp1",
+      "note": "Self-paid GLP-1 use is not labelled as a prior_glp1 fact; deferred from the gold PR to guide revision 02 (G-12)."
+    },
+    {
+      "variant_id": "case-07b",
+      "item": "fact:prior_glp1",
+      "note": "Self-paid GLP-1 use is not labelled as a prior_glp1 fact; deferred from the gold PR to guide revision 02 (G-12)."
+    }
+  ]
+}
