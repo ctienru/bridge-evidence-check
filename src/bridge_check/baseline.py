@@ -12,7 +12,8 @@ rows of the same variant, conditions and claims alike:
 4. `exclusion_downgrade`: an `exclusion.*` row that was `review` in the baseline and is
    now `insufficient` or `not_supported`, whatever gold says;
 5. `run_failed` / `case_missing`: a baseline variant whose run did not complete, or that
-   the evaluation did not score at all (skipped variants excepted).
+   the evaluation did not score at all (skipped variants excepted). Hash-only dev rows are
+   listed by id under `hash_only` and have no case entry.
 
 The file may change only in a PR whose title carries `[update baseline]`; a baseline the
 base has and the head deletes always fails (`baseline_change_problem`).
@@ -98,15 +99,22 @@ def build(
 ) -> dict[str, Any]:
     """The baseline of every dev variant of `splits.yaml`, in manifest order: the newest
     completed run of each (or the run in `runs`) compared against its gold. The gold file
-    must still have the manifest hash; every run must share one configuration."""
+    must still have the manifest hash; every run must share one configuration. A dev row
+    whose `cases/<variant_id>/` directory is absent (a hash-only row, contract §11) is
+    recorded by id under `hash_only` and nothing of it is hashed or compared."""
     manifest = root / MANIFEST_NAME
     rules = load_rules(rules_path)
     drugs = DrugIndex(load_drugs(drugs_path))
     cases: dict[str, Any] = {}
+    hash_only: list[str] = []
     generated: dict[str, str] = {}
     for entry in dev_variants(root):
         vid = str(entry["variant_id"])
-        gold_path = root / "cases" / vid / "expected.json"
+        case_dir = root / "cases" / vid
+        if read_problem(root, case_dir) is None and not case_dir.is_dir():
+            hash_only.append(vid)
+            continue
+        gold_path = case_dir / "expected.json"
         if read_problem(root, gold_path) is not None:
             raise ValueError(f"{vid}: expected.json resolves into a holdout variant")
         gold_sha = sha256_file(gold_path)
@@ -165,6 +173,7 @@ def build(
         "split": "dev",
         "manifest_sha256": sha256_file(manifest),
         "generated_from": generated,
+        "hash_only": hash_only,
         "cases": cases,
         "totals": {
             "cases": len(cases),

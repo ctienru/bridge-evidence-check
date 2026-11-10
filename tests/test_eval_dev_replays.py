@@ -26,9 +26,14 @@ def offline(tmp_path_factory: pytest.TempPathFactory) -> tuple[int, dict, str]: 
 
 def test_reproduces_the_committed_baseline(offline: tuple[int, dict, str]) -> None:  # type: ignore[type-arg]
     code, report, _ = offline
-    assert code == 0 and report["skipped"] == [] and not report["incomplete"]
-    m = report["score"]["micro"]
     baseline = Baseline.model_validate_json((ROOT / BASELINE_PATH).read_bytes())
+    assert code == 0 and not report["incomplete"]
+    # the only skips are the holdout rows (never read) and the hash-only dev rows the
+    # baseline lists by id (contract §11); nothing was refused or missing
+    reasons = {s["variant_id"]: s["reason"] for s in report["skipped"]}
+    assert set(reasons.values()) <= {"holdout_never_read", "hash_only"}
+    assert {v for v, r in reasons.items() if r == "hash_only"} == set(baseline.hash_only)
+    m = report["score"]["micro"]
     t = baseline.totals
     assert m["conditions_correct"] == {"n": t.conditions_correct, "of": t.conditions_total}
     assert m["claims_correct"] == {"n": t.claims_correct, "of": t.claims_total}

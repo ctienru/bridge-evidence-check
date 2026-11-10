@@ -47,7 +47,13 @@ def test_file_is_canonical(raw: dict[str, Any]) -> None:
 
 
 def test_covers_every_dev_variant_and_condition(baseline: Baseline) -> None:
-    assert set(baseline.cases) == set(_dev())
+    """Every dev variant that has a directory in the checkout has a case entry; a hash-only
+    dev row (no directory, contract §11) is recorded by id under `hash_only` only."""
+    dev = _dev()
+    with_dir = {vid for vid in dev if (ROOT / "cases" / vid).is_dir()}
+    assert set(baseline.cases) == with_dir
+    assert set(baseline.hash_only) == set(dev) - with_dir
+    assert not (set(baseline.hash_only) & set(baseline.cases))
     for case in baseline.cases.values():
         assert set(case.conditions) == set(CONDITION_IDS)
 

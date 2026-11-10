@@ -1,4 +1,5 @@
-"""DeepEval shell (planning section 5.1): one test case per frozen dev variant, scored by
+"""DeepEval shell (planning section 5.1): one test case per frozen dev variant that has a
+directory in this checkout (hash-only dev rows are not cases, contract §11), scored by
 `DeterministicCaseMetric`, whose success is "no false support" and whose score is the
 condition accuracy of `bridge_check.scoring`. Runs offline from the committed replays and
 needs the `eval` dependency group; without `deepeval`, the replays or the MTSamples
@@ -28,11 +29,19 @@ from bridge_check.manifest import CHECKOUT_ROOT, dev_variants  # noqa: E402
 from bridge_check.schema import SCHEMA_VERSION  # noqa: E402
 
 ROOT = CHECKOUT_ROOT
-DEV = [str(v["variant_id"]) for v in dev_variants(ROOT)]
+
+
+def _dev_with_directory() -> list[dict[str, Any]]:
+    """The dev rows this checkout can run: a dev row without a `cases/<variant_id>/`
+    directory is a hash-only row (contract §11), skipped by `bridge eval`, never a case."""
+    return [v for v in dev_variants(ROOT) if (ROOT / "cases" / str(v["variant_id"])).is_dir()]
+
+
+DEV = [str(v["variant_id"]) for v in _dev_with_directory()]
 
 
 def _ready() -> str | None:
-    for v in dev_variants(ROOT):
+    for v in _dev_with_directory():
         vid = str(v["variant_id"])
         if any(
             rel.startswith("docs/D2-mtsamples-") and not (ROOT / "cases" / vid / rel).is_file()
