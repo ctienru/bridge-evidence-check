@@ -405,3 +405,37 @@ def test_export_public_report_refuses_free_text() -> None:
         assert "patient" not in str(exc.value) and "quote" not in str(exc.value)
     with pytest.raises(ExportError):
         export_public_report({"x": object()})
+
+
+@pytest.mark.parametrize(
+    ("level", "section", "column"),
+    [("L0", "case_report", "integrated_case"), ("L1", "dirty", "ladder_level")],
+)
+def test_ladder_level_l0_is_grouped_by_document_origin(
+    tmp_path: Path, level: str, section: str, column: str
+) -> None:
+    """Ladder membership is recorded on its own (`ladder_level`); only a dirtied level
+    (L1 and up) is reported in the `dirty` section and fills the `ladder_level` coverage
+    column. L0, the clean base, is grouped by its documents' origin and counts as an
+    integrated case."""
+    (tmp_path / "case.yaml").write_text(
+        "case_id: case-x\nsplit: holdout\nsource: mixed\ndocuments:\n"
+        "  - {doc_id: D1-referral, doc_origin: authored}\n"
+        "  - {doc_id: D2-case-report-x, doc_origin: case_report}\n"
+        f"ladder: {{level: {level}, operations: []}}\ntraps: [T-x]\ntests: []\n",
+        encoding="utf-8",
+    )
+    meta = load_case_meta(tmp_path, "case-x")
+    assert meta.ladder_level == level
+    assert meta.section == section
+    matrix = coverage_matrix([meta], {})
+    assert matrix.cells["T-x"][column] == ["case-x"]
+
+
+def test_case_without_ladder_has_no_ladder_level(tmp_path: Path) -> None:
+    (tmp_path / "case.yaml").write_text(
+        "case_id: case-x\ndocuments:\n  - {doc_id: D2-x, doc_origin: case_report}\n",
+        encoding="utf-8",
+    )
+    meta = load_case_meta(tmp_path, "case-x")
+    assert meta.ladder_level is None and meta.section == "case_report"
