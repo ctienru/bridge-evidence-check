@@ -1,0 +1,776 @@
+{
+  "case_flags": {
+    "correct": true,
+    "gold": [],
+    "live": []
+  },
+  "claims": {
+    "claim.age_18": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "supported",
+      "status": "supported",
+      "used": [
+        "D0-pa-form-draft[103:130] 5e283b8a"
+      ]
+    },
+    "claim.bmi_bracket": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": [
+        "D0-pa-form-draft[154:175] 056fe379"
+      ]
+    },
+    "claim.bmi_path_b.hfpef": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": [
+        "D0-pa-form-draft[240:250] 61c875a2"
+      ]
+    },
+    "claim.bmi_path_b.htn": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": [
+        "D0-pa-form-draft[176:239] eb8134f1"
+      ]
+    },
+    "claim.bmi_path_c.mi": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "supported",
+      "status": "supported",
+      "used": [
+        "D0-pa-form-draft[251:267] ebbbf44b"
+      ]
+    },
+    "claim.drug": {
+      "correct": false,
+      "excluded": [],
+      "first_error": "extraction_wrong_value",
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "supported",
+      "status": "insufficient",
+      "used": [
+        "D0-pa-form-draft[131:153] 144dde34"
+      ]
+    }
+  },
+  "claims_not_in_gold": [],
+  "compare_version": 1,
+  "conditions": {
+    "age_18": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "supported",
+      "status": "supported",
+      "used": [
+        "D1-referral[69:84] e9a030ab"
+      ]
+    },
+    "bmi_path_a": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_b": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_b.bmi": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_b.ckd": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_b.hfpef": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_b.htn": {
+      "correct": true,
+      "excluded": [
+        {
+          "reason": "timing_unknown",
+          "ref": "D2-case-report-cureus-2025[554:583] 0e8dedf5"
+        }
+      ],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_c": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": [
+        "D2-case-report-cureus-2025[107:170] 0b4a3475"
+      ]
+    },
+    "bmi_path_c.bmi": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_c.mi": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "supported",
+      "status": "supported",
+      "used": [
+        "D2-case-report-cureus-2025[107:170] 0b4a3475"
+      ]
+    },
+    "bmi_path_c.pad": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_c.prediabetes": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_c.stroke": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "exclusion.mash": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "exclusion.osa": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "exclusion.part_d_glp1": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "exclusion.t2dm": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "lifestyle.activity": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "lifestyle.nutrition": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "patient_identity": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [
+        "id_missing"
+      ],
+      "gold_flags": [
+        "id_missing"
+      ],
+      "gold_status": "review",
+      "status": "review",
+      "used": [
+        "D1-referral[69:84] e9a030ab"
+      ]
+    }
+  },
+  "excluded_unmatched": [
+    {
+      "evidence_ref": "D0-pa-form-draft[50:66] 25ef92a1",
+      "exclusion_reasons": [
+        "claim_document"
+      ],
+      "field": "patient_identity",
+      "position_status": "verbatim",
+      "selector": null
+    },
+    {
+      "evidence_ref": "D0-pa-form-draft[33:49] 6f09346f",
+      "exclusion_reasons": [
+        "claim_document"
+      ],
+      "field": "doc_dates",
+      "position_status": "verbatim",
+      "selector": null
+    }
+  ],
+  "expected_absent": [
+    {
+      "concept": null,
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "anthropometrics",
+      "kind": "bmi",
+      "status": "not_found_correct"
+    },
+    {
+      "concept": null,
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "anthropometrics",
+      "kind": "height",
+      "status": "not_found_correct"
+    },
+    {
+      "concept": null,
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "anthropometrics",
+      "kind": "weight",
+      "status": "not_found_correct"
+    },
+    {
+      "concept": null,
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "prior_glp1",
+      "kind": "payer",
+      "status": "not_found_correct"
+    },
+    {
+      "concept": null,
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "medications",
+      "kind": "antihypertensive",
+      "status": "not_found_correct"
+    },
+    {
+      "concept": null,
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "labs",
+      "kind": "a1c",
+      "status": "not_found_correct"
+    },
+    {
+      "concept": null,
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "labs",
+      "kind": "fpg",
+      "status": "not_found_correct"
+    },
+    {
+      "concept": null,
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "labs",
+      "kind": "egfr",
+      "status": "not_found_correct"
+    },
+    {
+      "concept": "t2dm",
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "diagnoses",
+      "kind": null,
+      "status": "not_found_correct"
+    },
+    {
+      "concept": "osa",
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "diagnoses",
+      "kind": null,
+      "status": "not_found_correct"
+    },
+    {
+      "concept": "mash",
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "diagnoses",
+      "kind": null,
+      "status": "not_found_correct"
+    },
+    {
+      "concept": "prediabetes",
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "diagnoses",
+      "kind": null,
+      "status": "not_found_correct"
+    },
+    {
+      "concept": "hfpef",
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "diagnoses",
+      "kind": null,
+      "status": "not_found_correct"
+    },
+    {
+      "concept": "ckd",
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "diagnoses",
+      "kind": null,
+      "status": "not_found_correct"
+    },
+    {
+      "concept": "stroke",
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "diagnoses",
+      "kind": null,
+      "status": "not_found_correct"
+    },
+    {
+      "concept": "pad",
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "diagnoses",
+      "kind": null,
+      "status": "not_found_correct"
+    },
+    {
+      "concept": null,
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "lifestyle",
+      "kind": "nutrition",
+      "status": "not_found_correct"
+    },
+    {
+      "concept": null,
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "lifestyle",
+      "kind": "activity",
+      "status": "not_found_correct"
+    }
+  ],
+  "facts": [
+    {
+      "assertion_check": "matched",
+      "doc_id": "D0-pa-form-draft",
+      "evidence_ref": "D0-pa-form-draft[67:85] 0bcd888e",
+      "exclusion_reasons": [
+        "claim_document"
+      ],
+      "field": "patient_identity",
+      "gold_index": 0,
+      "gold_ref": "D0-pa-form-draft[67:85] 0bcd888e",
+      "mismatched_keys": [],
+      "outcome": "matched_but_excluded",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D0-pa-form-draft",
+      "evidence_ref": "D0-pa-form-draft[86:101] e9a030ab",
+      "exclusion_reasons": [
+        "claim_document"
+      ],
+      "field": "patient_identity",
+      "gold_index": 1,
+      "gold_ref": "D0-pa-form-draft[86:101] e9a030ab",
+      "mismatched_keys": [],
+      "outcome": "matched_but_excluded",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D0-pa-form-draft",
+      "evidence_ref": "D0-pa-form-draft[103:130] 5e283b8a",
+      "exclusion_reasons": [],
+      "field": "pa_form_claims",
+      "gold_index": 2,
+      "gold_ref": "D0-pa-form-draft[103:130] 5e283b8a",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": "claim.age_18",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D0-pa-form-draft",
+      "evidence_ref": "D0-pa-form-draft[131:153] 144dde34",
+      "exclusion_reasons": [],
+      "field": "pa_form_claims",
+      "gold_index": 3,
+      "gold_ref": "D0-pa-form-draft[131:153] 144dde34",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": "claim.drug",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D0-pa-form-draft",
+      "evidence_ref": "D0-pa-form-draft[154:175] 056fe379",
+      "exclusion_reasons": [],
+      "field": "pa_form_claims",
+      "gold_index": 4,
+      "gold_ref": "D0-pa-form-draft[154:175] 056fe379",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": "claim.bmi_bracket",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D0-pa-form-draft",
+      "evidence_ref": "D0-pa-form-draft[176:239] eb8134f1",
+      "exclusion_reasons": [],
+      "field": "pa_form_claims",
+      "gold_index": 5,
+      "gold_ref": "D0-pa-form-draft[176:239] eb8134f1",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": "claim.bmi_path_b.htn",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D0-pa-form-draft",
+      "evidence_ref": "D0-pa-form-draft[240:250] 61c875a2",
+      "exclusion_reasons": [],
+      "field": "pa_form_claims",
+      "gold_index": 6,
+      "gold_ref": "D0-pa-form-draft[240:250] 61c875a2",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": "claim.bmi_path_b.hfpef",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D0-pa-form-draft",
+      "evidence_ref": "D0-pa-form-draft[251:267] ebbbf44b",
+      "exclusion_reasons": [],
+      "field": "pa_form_claims",
+      "gold_index": 7,
+      "gold_ref": "D0-pa-form-draft[251:267] ebbbf44b",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": "claim.bmi_path_c.mi",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D1-referral",
+      "evidence_ref": "D1-referral[50:68] 0bcd888e",
+      "exclusion_reasons": [],
+      "field": "patient_identity",
+      "gold_index": 8,
+      "gold_ref": "D1-referral[50:68] 0bcd888e",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D1-referral",
+      "evidence_ref": "D1-referral[69:84] e9a030ab",
+      "exclusion_reasons": [],
+      "field": "patient_identity",
+      "gold_index": 9,
+      "gold_ref": "D1-referral[69:84] e9a030ab",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": false
+    },
+    {
+      "assertion_check": "unrecognized",
+      "doc_id": "D1-referral",
+      "evidence_ref": "D1-referral[105:160] 6059e87a",
+      "exclusion_reasons": [],
+      "field": "glp1_start",
+      "gold_index": 10,
+      "gold_ref": "D1-referral[105:160] 6059e87a",
+      "mismatched_keys": [
+        "temporality"
+      ],
+      "outcome": "wrong_value",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D1-referral",
+      "evidence_ref": "D1-referral[161:253] 41bc5300",
+      "exclusion_reasons": [
+        "value_not_in_quote"
+      ],
+      "field": "doc_dates",
+      "gold_index": 11,
+      "gold_ref": "D1-referral[161:253] 41bc5300",
+      "mismatched_keys": [],
+      "outcome": "matched_but_excluded",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D2-case-report-cureus-2025",
+      "evidence_ref": "D2-case-report-cureus-2025[8:26] 3f432e74",
+      "exclusion_reasons": [],
+      "field": "patient_identity",
+      "gold_index": 12,
+      "gold_ref": "D2-case-report-cureus-2025[8:366] 0ab016c2",
+      "mismatched_keys": [
+        "event_date"
+      ],
+      "outcome": "wrong_value",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": true
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D2-case-report-cureus-2025",
+      "evidence_ref": "D2-case-report-cureus-2025[34:63] 34151413",
+      "exclusion_reasons": [],
+      "field": "diagnoses",
+      "gold_index": 13,
+      "gold_ref": "D2-case-report-cureus-2025[8:366] 0ab016c2",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": "hypertension",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D2-case-report-cureus-2025",
+      "evidence_ref": "D2-case-report-cureus-2025[107:170] 0b4a3475",
+      "exclusion_reasons": [],
+      "field": "diagnoses",
+      "gold_index": 14,
+      "gold_ref": "D2-case-report-cureus-2025[8:366] 0ab016c2",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": "mi",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D2-case-report-cureus-2025",
+      "evidence_ref": "D2-case-report-cureus-2025[554:583] 0e8dedf5",
+      "exclusion_reasons": [],
+      "field": "bp_readings",
+      "gold_index": 15,
+      "gold_ref": "D2-case-report-cureus-2025[507:661] ef337a7f",
+      "mismatched_keys": [
+        "event_date",
+        "relative_to_glp1_initiation"
+      ],
+      "outcome": "wrong_value",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": false
+    }
+  ],
+  "false_positives": [
+    {
+      "evidence_ref": "D1-referral[33:49] 25ef92a1",
+      "exclusion_reasons": [],
+      "field": "patient_identity",
+      "position_status": "verbatim",
+      "selector": null
+    },
+    {
+      "evidence_ref": "D1-referral[16:32] 6f09346f",
+      "exclusion_reasons": [],
+      "field": "doc_dates",
+      "position_status": "verbatim",
+      "selector": null
+    },
+    {
+      "evidence_ref": "D2-case-report-cureus-2025[2143:2164] ac0b0d53",
+      "exclusion_reasons": [],
+      "field": "medications",
+      "position_status": "verbatim",
+      "selector": null
+    },
+    {
+      "evidence_ref": "D2-case-report-cureus-2025[2169:2207] 7763a3e0",
+      "exclusion_reasons": [],
+      "field": "medications",
+      "position_status": "verbatim",
+      "selector": null
+    }
+  ],
+  "gold_sha256": "01f49ac501728684a6da800882a09a894391f527ccfa177dd6e7fa08cceea297",
+  "gold_version": 1,
+  "run": {
+    "code_sha": "f0bb792476a711f1f9c81971c59ea678ce4b6a7a",
+    "extraction_source": "cache",
+    "input_hash": "24dd49910d64ebe88129867a6810796768b882d7eee52f985abced6b5c6f0cd6",
+    "prompt_version": "extract-v2",
+    "rules_version": "bridge-v1",
+    "run_id": 14,
+    "schema_version": "v2",
+    "status": "completed"
+  },
+  "totals": {
+    "absent_correct": 18,
+    "absent_false_positive": 0,
+    "claims_correct": 5,
+    "claims_false_support": 0,
+    "claims_total": 6,
+    "conditions_correct": 20,
+    "conditions_total": 20,
+    "excluded_unmatched": 2,
+    "false_positives": 4,
+    "false_support": 0,
+    "first_error": {
+      "compute_timepoint": 0,
+      "extraction_missed": 0,
+      "extraction_wrong_value": 1,
+      "gold_question": 0,
+      "rules": 0,
+      "verify_excluded": 0
+    },
+    "gold_facts": 16,
+    "matched": 10,
+    "matched_but_excluded": 3,
+    "missed": 0,
+    "missed_exclusion": 0,
+    "wrong_value": 3
+  },
+  "variant_id": "case-17"
+}

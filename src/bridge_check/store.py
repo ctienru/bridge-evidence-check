@@ -67,6 +67,39 @@ SCHEMA_VERSION = 2
 """Store schema version, kept in `PRAGMA user_version`. Bump on any change to `schema_sql()`
 or to an enum CHECK list; see the module docstring."""
 
+SCORING_ATTRIBUTE_KEYS: tuple[str, ...] = (
+    "sbp",
+    "dbp",
+    "start",
+    "end",
+    "end_kind",
+    "list_id",
+    "complete",
+    "program_type",
+    "attendance",
+    "osa_severity",
+    "ahi",
+    "fibrosis_stage",
+    "cirrhosis",
+    "ckd_stage",
+    "symptomatic",
+    "payer",
+    "purpose",
+    "claim_id",
+    "claimed_value",
+    "target_doc_id",
+    "date",
+    "dob",
+    "stated_age",
+    "compounded",
+    "patient_id",
+    "drug",
+    "name",
+)
+"""Evidence attributes `facts_for_run` returns: the contract §8 match keys plus the names the
+comparison canonicalizes in memory. Free text (`dose`, `indication`, `section_title`,
+`limitation`, `description`) is never returned."""
+
 
 class SchemaVersionMismatch(RuntimeError):
     """The database was created by another store schema version (no migrations)."""
@@ -680,6 +713,73 @@ class Store:
         if row is None:
             raise KeyError(attempt_id)
         return dict(row)
+
+    # scoring and export reads (compare against gold, public replays)
+
+    def latest_completed_run(self, case_id: str) -> int | None:
+        """The newest run of `case_id` that completed every stage, else None."""
+        row = self.conn.execute(
+            "SELECT id FROM case_runs WHERE case_id = ? AND status = 'completed' "
+            "AND stopped_after IS NULL ORDER BY id DESC LIMIT 1",
+            (case_id,),
+        ).fetchone()
+        return int(row[0]) if row is not None else None
+
+    def extraction_for_run(self, run_id: int) -> dict[str, Any] | None:
+        """The extraction a run used, with its source attempt; None when it has none."""
+        row = self.conn.execute(
+            "SELECT e.id, e.cache_key, e.attempt_id, e.parsed_json, e.prompt_version, "
+            "e.schema_version FROM case_runs r JOIN extractions e ON e.id = r.extraction_id "
+            "WHERE r.id = ?",
+            (run_id,),
+        ).fetchone()
+        return dict(row) if row is not None else None
+
+    def facts_for_run(self, run_id: int) -> list[dict[str, Any]]:
+        """Scoring view of every evidence row (contract §8): columns plus the allow-listed
+        attributes of `SCORING_ATTRIBUTE_KEYS`. No quote. `attrs` may hold identifiers and
+        drug names, which callers use in memory and never write out."""
+        rows = self.conn.execute(
+            'SELECT id, field, kind, concept, doc_id, start, "end", norm_value, norm_unit, '
+            "event_date, date_precision, certainty_llm, subject_llm, temporality_llm, "
+            "assertion_check, relative_llm, relative_computed, event_date_source, "
+            "position_status, exclusion_reasons, flags, attributes FROM evidence "
+            "WHERE case_run_id = ? "
+            "ORDER BY id",
+            (run_id,),
+        ).fetchall()
+        out = []
+        for r in rows:
+            attributes = json.loads(r["attributes"])
+            out.append(
+                {
+                    "evidence_id": r["id"],
+                    "field": r["field"],
+                    "kind": r["kind"],
+                    "concept": r["concept"],
+                    "doc_id": r["doc_id"],
+                    "offset_start": r["start"],
+                    "offset_end": r["end"],
+                    "ref": attributes["ref"],
+                    "fact_path": attributes["fact_path"],
+                    "norm_value": r["norm_value"],
+                    "norm_unit": r["norm_unit"],
+                    "event_date": r["event_date"],
+                    "date_precision": r["date_precision"],
+                    "certainty": r["certainty_llm"],
+                    "subject": r["subject_llm"],
+                    "temporality": r["temporality_llm"],
+                    "assertion_check": r["assertion_check"],
+                    "relative_llm": r["relative_llm"],
+                    "relative_computed": r["relative_computed"],
+                    "event_date_source": r["event_date_source"],
+                    "position_status": r["position_status"],
+                    "exclusion_reasons": json.loads(r["exclusion_reasons"]),
+                    "flags": json.loads(r["flags"]),
+                    "attrs": {k: attributes[k] for k in SCORING_ATTRIBUTE_KEYS if k in attributes},
+                }
+            )
+        return out
 
     # evidence and doc_facts
 

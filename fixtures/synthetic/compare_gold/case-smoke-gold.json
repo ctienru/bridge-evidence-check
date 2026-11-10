@@ -1,0 +1,256 @@
+{
+  "variant_id": "case-smoke",
+  "guideline_version": 1,
+  "facts": [
+    {
+      "field": "glp1_start",
+      "doc_id": "D1-referral",
+      "start": 81,
+      "end": 150,
+      "quote": "Semaglutide (Wegovy) was started on 2025-03-15 for weight management.",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": null,
+      "drug_canonical": "semaglutide",
+      "date": "2025-03-15",
+      "purpose": "weight"
+    },
+    {
+      "field": "anthropometrics",
+      "doc_id": "D1-referral",
+      "start": 166,
+      "end": 180,
+      "quote": "weight 98.0 kg",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "event_date": null,
+      "relative_to_glp1_initiation": "at",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": null,
+      "kind": "weight",
+      "norm_value": 98.0,
+      "norm_unit": "kg"
+    },
+    {
+      "field": "anthropometrics",
+      "doc_id": "D1-referral",
+      "start": 185,
+      "end": 198,
+      "quote": "height 170 cm",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "event_date": null,
+      "relative_to_glp1_initiation": "at",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": null,
+      "kind": "height",
+      "norm_value": 170,
+      "norm_unit": "cm"
+    },
+    {
+      "field": "bp_readings",
+      "doc_id": "D2-clinical",
+      "start": 25,
+      "end": 52,
+      "quote": "Blood pressure 146/92 mmHg.",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "event_date": "2025-03-15",
+      "relative_to_glp1_initiation": "at",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": null,
+      "sbp": 146,
+      "dbp": 90
+    },
+    {
+      "field": "diagnoses",
+      "doc_id": "D2-clinical",
+      "start": 78,
+      "end": 99,
+      "quote": "No history of stroke.",
+      "certainty": "negated",
+      "subject": "patient",
+      "temporality": "historical",
+      "event_date": null,
+      "relative_to_glp1_initiation": "unknown",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": null,
+      "concept": "stroke"
+    },
+    {
+      "field": "patient_identity",
+      "doc_id": "D0-pa-form-draft",
+      "start": 36,
+      "end": 54,
+      "quote": "Patient ID: P-0000",
+      "certainty": "present",
+      "subject": "patient",
+      "temporality": "current",
+      "event_date": null,
+      "relative_to_glp1_initiation": "unknown",
+      "origin": "spec",
+      "review": "human_verified",
+      "guideline_clause": null,
+      "patient_id": "P-0000"
+    }
+  ],
+  "expected_absent": [
+    {
+      "field": "labs",
+      "kind": "a1c"
+    },
+    {
+      "field": "diagnoses",
+      "concept": "t2dm"
+    }
+  ],
+  "conditions": [
+    {
+      "id": "age_18",
+      "status": "review",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "bmi_path_a",
+      "status": "supported",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "bmi_path_b",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "bmi_path_b.bmi",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "bmi_path_b.hfpef",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "bmi_path_b.htn",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "bmi_path_b.ckd",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "bmi_path_c",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "bmi_path_c.bmi",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "bmi_path_c.prediabetes",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "bmi_path_c.mi",
+      "status": "review",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "bmi_path_c.stroke",
+      "status": "not_supported",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "bmi_path_c.pad",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "exclusion.t2dm",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "exclusion.osa",
+      "status": "review",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "exclusion.mash",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "exclusion.part_d_glp1",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "patient_identity",
+      "status": "review",
+      "flags": [
+        "id_missing"
+      ],
+      "reason": "synthetic"
+    },
+    {
+      "id": "lifestyle.nutrition",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "synthetic"
+    },
+    {
+      "id": "lifestyle.activity",
+      "status": "insufficient",
+      "flags": [],
+      "reason": "synthetic"
+    }
+  ],
+  "case_flags": [],
+  "claims": [
+    {
+      "id": "claim.drug",
+      "status": "supported"
+    },
+    {
+      "id": "claim.bmi_bracket",
+      "status": "supported"
+    }
+  ],
+  "gold_version": 1,
+  "changes": []
+}

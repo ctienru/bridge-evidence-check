@@ -1,0 +1,843 @@
+{
+  "case_flags": {
+    "correct": true,
+    "gold": [],
+    "live": []
+  },
+  "claims": {
+    "claim.age_18": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "supported",
+      "status": "supported",
+      "used": [
+        "D0-pa-form-draft[101:128] 5e283b8a"
+      ]
+    },
+    "claim.bmi_bracket": {
+      "correct": false,
+      "excluded": [],
+      "first_error": "extraction_wrong_value",
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "supported",
+      "status": "insufficient",
+      "used": [
+        "D0-pa-form-draft[152:173] 056fe379"
+      ]
+    },
+    "claim.bmi_path_b.htn": {
+      "correct": false,
+      "excluded": [],
+      "first_error": "extraction_wrong_value",
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "review",
+      "status": "insufficient",
+      "used": [
+        "D0-pa-form-draft[174:237] eb8134f1"
+      ]
+    },
+    "claim.drug": {
+      "correct": false,
+      "excluded": [],
+      "first_error": "extraction_wrong_value",
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "supported",
+      "status": "insufficient",
+      "used": [
+        "D0-pa-form-draft[129:151] 144dde34"
+      ]
+    },
+    "claim.exclusion.osa": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "review",
+      "status": "review",
+      "used": [
+        "D0-pa-form-draft[238:264] edb73cea"
+      ]
+    },
+    "claim.lifestyle.nutrition": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": [
+        "D0-pa-form-draft[265:312] 32001dde"
+      ]
+    }
+  },
+  "claims_not_in_gold": [],
+  "compare_version": 1,
+  "conditions": {
+    "age_18": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "supported",
+      "status": "supported",
+      "used": [
+        "D1-referral[74:89] 972269ad"
+      ]
+    },
+    "bmi_path_a": {
+      "correct": false,
+      "excluded": [],
+      "first_error": "extraction_wrong_value",
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "not_supported",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_b": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_b.bmi": {
+      "correct": false,
+      "excluded": [],
+      "first_error": "extraction_wrong_value",
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "supported",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_b.ckd": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_b.hfpef": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_b.htn": {
+      "correct": true,
+      "excluded": [
+        {
+          "reason": "timing_unknown",
+          "ref": "D2-mtsamples-4689[1511:1522] 36206672"
+        }
+      ],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_c": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_c.bmi": {
+      "correct": false,
+      "excluded": [],
+      "first_error": "extraction_wrong_value",
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "supported",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_c.mi": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_c.pad": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_c.prediabetes": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "bmi_path_c.stroke": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "exclusion.mash": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "exclusion.osa": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "review",
+      "status": "review",
+      "used": [
+        "D1-referral[166:242] 345e66ca",
+        "D2-mtsamples-4689[1960:2002] 9a69d8d1"
+      ]
+    },
+    "exclusion.part_d_glp1": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "exclusion.t2dm": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "lifestyle.activity": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": []
+    },
+    "lifestyle.nutrition": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [],
+      "gold_flags": [],
+      "gold_status": "insufficient",
+      "status": "insufficient",
+      "used": [
+        "D1-referral[166:242] 345e66ca",
+        "D2-mtsamples-4689[2164:2187] f8573198"
+      ]
+    },
+    "patient_identity": {
+      "correct": true,
+      "excluded": [],
+      "first_error": null,
+      "flags": [
+        "id_missing"
+      ],
+      "gold_flags": [
+        "id_missing"
+      ],
+      "gold_status": "review",
+      "status": "review",
+      "used": [
+        "D1-referral[74:89] 972269ad"
+      ]
+    }
+  },
+  "excluded_unmatched": [
+    {
+      "evidence_ref": "D0-pa-form-draft[43:64] d93c2cc1",
+      "exclusion_reasons": [
+        "claim_document"
+      ],
+      "field": "patient_identity",
+      "position_status": "verbatim",
+      "selector": null
+    }
+  ],
+  "expected_absent": [
+    {
+      "concept": null,
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "anthropometrics",
+      "kind": "bmi",
+      "status": "not_found_correct"
+    },
+    {
+      "concept": null,
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "prior_glp1",
+      "kind": "payer",
+      "status": "not_found_correct"
+    },
+    {
+      "concept": null,
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "labs",
+      "kind": "a1c",
+      "status": "not_found_correct"
+    },
+    {
+      "concept": null,
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "labs",
+      "kind": "fpg",
+      "status": "not_found_correct"
+    },
+    {
+      "concept": null,
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "labs",
+      "kind": "egfr",
+      "status": "not_found_correct"
+    },
+    {
+      "concept": "t2dm",
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "diagnoses",
+      "kind": null,
+      "status": "not_found_correct"
+    },
+    {
+      "concept": "mash",
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "diagnoses",
+      "kind": null,
+      "status": "not_found_correct"
+    },
+    {
+      "concept": "prediabetes",
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "diagnoses",
+      "kind": null,
+      "status": "not_found_correct"
+    },
+    {
+      "concept": "hfpef",
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "diagnoses",
+      "kind": null,
+      "status": "not_found_correct"
+    },
+    {
+      "concept": "ckd",
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "diagnoses",
+      "kind": null,
+      "status": "not_found_correct"
+    },
+    {
+      "concept": "mi",
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "diagnoses",
+      "kind": null,
+      "status": "not_found_correct"
+    },
+    {
+      "concept": "stroke",
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "diagnoses",
+      "kind": null,
+      "status": "not_found_correct"
+    },
+    {
+      "concept": "pad",
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "diagnoses",
+      "kind": null,
+      "status": "not_found_correct"
+    },
+    {
+      "concept": null,
+      "evidence_refs": [],
+      "excluded_refs": [],
+      "field": "lifestyle",
+      "kind": "activity",
+      "status": "not_found_correct"
+    }
+  ],
+  "facts": [
+    {
+      "assertion_check": "matched",
+      "doc_id": "D0-pa-form-draft",
+      "evidence_ref": "D0-pa-form-draft[65:83] 6311f629",
+      "exclusion_reasons": [
+        "claim_document"
+      ],
+      "field": "patient_identity",
+      "gold_index": 0,
+      "gold_ref": "D0-pa-form-draft[65:83] 6311f629",
+      "mismatched_keys": [],
+      "outcome": "matched_but_excluded",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D0-pa-form-draft",
+      "evidence_ref": "D0-pa-form-draft[84:99] 972269ad",
+      "exclusion_reasons": [
+        "claim_document"
+      ],
+      "field": "patient_identity",
+      "gold_index": 1,
+      "gold_ref": "D0-pa-form-draft[84:99] 972269ad",
+      "mismatched_keys": [],
+      "outcome": "matched_but_excluded",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D0-pa-form-draft",
+      "evidence_ref": "D0-pa-form-draft[101:128] 5e283b8a",
+      "exclusion_reasons": [],
+      "field": "pa_form_claims",
+      "gold_index": 2,
+      "gold_ref": "D0-pa-form-draft[101:128] 5e283b8a",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": "claim.age_18",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D0-pa-form-draft",
+      "evidence_ref": "D0-pa-form-draft[129:151] 144dde34",
+      "exclusion_reasons": [],
+      "field": "pa_form_claims",
+      "gold_index": 3,
+      "gold_ref": "D0-pa-form-draft[129:151] 144dde34",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": "claim.drug",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D0-pa-form-draft",
+      "evidence_ref": "D0-pa-form-draft[152:173] 056fe379",
+      "exclusion_reasons": [],
+      "field": "pa_form_claims",
+      "gold_index": 4,
+      "gold_ref": "D0-pa-form-draft[152:173] 056fe379",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": "claim.bmi_bracket",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D0-pa-form-draft",
+      "evidence_ref": "D0-pa-form-draft[174:237] eb8134f1",
+      "exclusion_reasons": [],
+      "field": "pa_form_claims",
+      "gold_index": 5,
+      "gold_ref": "D0-pa-form-draft[174:237] eb8134f1",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": "claim.bmi_path_b.htn",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D0-pa-form-draft",
+      "evidence_ref": "D0-pa-form-draft[238:264] edb73cea",
+      "exclusion_reasons": [],
+      "field": "pa_form_claims",
+      "gold_index": 6,
+      "gold_ref": "D0-pa-form-draft[238:264] edb73cea",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": "claim.exclusion.osa",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D0-pa-form-draft",
+      "evidence_ref": "D0-pa-form-draft[265:312] 32001dde",
+      "exclusion_reasons": [],
+      "field": "pa_form_claims",
+      "gold_index": 7,
+      "gold_ref": "D0-pa-form-draft[265:312] 32001dde",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": "claim.lifestyle.nutrition",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D1-referral",
+      "evidence_ref": "D1-referral[55:73] 6311f629",
+      "exclusion_reasons": [],
+      "field": "patient_identity",
+      "gold_index": 8,
+      "gold_ref": "D1-referral[55:73] 6311f629",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D1-referral",
+      "evidence_ref": "D1-referral[74:89] 972269ad",
+      "exclusion_reasons": [],
+      "field": "patient_identity",
+      "gold_index": 9,
+      "gold_ref": "D1-referral[74:89] 972269ad",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": false
+    },
+    {
+      "assertion_check": "unrecognized",
+      "doc_id": "D1-referral",
+      "evidence_ref": "D1-referral[110:165] c0ba91e2",
+      "exclusion_reasons": [],
+      "field": "glp1_start",
+      "gold_index": 10,
+      "gold_ref": "D1-referral[110:165] c0ba91e2",
+      "mismatched_keys": [
+        "temporality"
+      ],
+      "outcome": "wrong_value",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D1-referral",
+      "evidence_ref": "D1-referral[166:242] 345e66ca",
+      "exclusion_reasons": [],
+      "field": "doc_dates",
+      "gold_index": 11,
+      "gold_ref": "D1-referral[166:242] 345e66ca",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": false
+    },
+    {
+      "assertion_check": "mismatch",
+      "doc_id": "D2-mtsamples-4689",
+      "evidence_ref": "D2-mtsamples-4689[92:103] c2b516ec",
+      "exclusion_reasons": [
+        "assertion_mismatch"
+      ],
+      "field": "patient_identity",
+      "gold_index": 12,
+      "gold_ref": "D2-mtsamples-4689[92:103] c2b516ec",
+      "mismatched_keys": [
+        "event_date"
+      ],
+      "outcome": "wrong_value",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": true
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D2-mtsamples-4689",
+      "evidence_ref": "D2-mtsamples-4689[821:873] cbb7ba9f",
+      "exclusion_reasons": [],
+      "field": "medication_lists",
+      "gold_index": 13,
+      "gold_ref": "D2-mtsamples-4689[821:834] c4e4879d",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D2-mtsamples-4689",
+      "evidence_ref": "D2-mtsamples-4689[836:842] 1a9bec82",
+      "exclusion_reasons": [],
+      "field": "medications",
+      "gold_index": 14,
+      "gold_ref": "D2-mtsamples-4689[836:842] 1a9bec82",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D2-mtsamples-4689",
+      "evidence_ref": "D2-mtsamples-4689[852:860] 549d3805",
+      "exclusion_reasons": [],
+      "field": "medications",
+      "gold_index": 15,
+      "gold_ref": "D2-mtsamples-4689[852:860] 549d3805",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": false
+    },
+    {
+      "assertion_check": "mismatch",
+      "doc_id": "D2-mtsamples-4689",
+      "evidence_ref": "D2-mtsamples-4689[141:190] 615d86fd",
+      "exclusion_reasons": [
+        "assertion_mismatch"
+      ],
+      "field": "diagnoses",
+      "gold_index": 16,
+      "gold_ref": "D2-mtsamples-4689[893:923] 70915489",
+      "mismatched_keys": [
+        "subject"
+      ],
+      "outcome": "wrong_value",
+      "position_status": "verbatim",
+      "selector": "hypertension",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D2-mtsamples-4689",
+      "evidence_ref": "D2-mtsamples-4689[1511:1522] 36206672",
+      "exclusion_reasons": [],
+      "field": "bp_readings",
+      "gold_index": 17,
+      "gold_ref": "D2-mtsamples-4689[1511:1522] 36206672",
+      "mismatched_keys": [
+        "relative_to_glp1_initiation"
+      ],
+      "outcome": "wrong_value",
+      "position_status": "verbatim",
+      "selector": null,
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D2-mtsamples-4689",
+      "evidence_ref": "D2-mtsamples-4689[1559:1569] 78ebeb37",
+      "exclusion_reasons": [
+        "unparseable_value"
+      ],
+      "field": "anthropometrics",
+      "gold_index": 18,
+      "gold_ref": "D2-mtsamples-4689[1564:1569] 7a22ad88",
+      "mismatched_keys": [
+        "event_date",
+        "norm_value",
+        "relative_to_glp1_initiation"
+      ],
+      "outcome": "wrong_value",
+      "position_status": "verbatim",
+      "selector": "height",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D2-mtsamples-4689",
+      "evidence_ref": "D2-mtsamples-4689[1572:1583] a644c23e",
+      "exclusion_reasons": [],
+      "field": "anthropometrics",
+      "gold_index": 19,
+      "gold_ref": "D2-mtsamples-4689[1577:1583] f31e5624",
+      "mismatched_keys": [
+        "relative_to_glp1_initiation"
+      ],
+      "outcome": "wrong_value",
+      "position_status": "verbatim",
+      "selector": "weight",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D2-mtsamples-4689",
+      "evidence_ref": "D2-mtsamples-4689[1960:2002] 9a69d8d1",
+      "exclusion_reasons": [],
+      "field": "diagnoses",
+      "gold_index": 20,
+      "gold_ref": "D2-mtsamples-4689[1960:1992] 412cd548",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": "osa",
+      "timing_only": false
+    },
+    {
+      "assertion_check": "mismatch",
+      "doc_id": "D2-mtsamples-4689",
+      "evidence_ref": "D2-mtsamples-4689[141:190] 615d86fd",
+      "exclusion_reasons": [
+        "assertion_mismatch"
+      ],
+      "field": "diagnoses",
+      "gold_index": 21,
+      "gold_ref": "D2-mtsamples-4689[2007:2023] 3e935a1c",
+      "mismatched_keys": [
+        "event_date"
+      ],
+      "outcome": "wrong_value",
+      "position_status": "verbatim",
+      "selector": "hypertension",
+      "timing_only": true
+    },
+    {
+      "assertion_check": "matched",
+      "doc_id": "D2-mtsamples-4689",
+      "evidence_ref": "D2-mtsamples-4689[2164:2187] f8573198",
+      "exclusion_reasons": [],
+      "field": "lifestyle",
+      "gold_index": 22,
+      "gold_ref": "D2-mtsamples-4689[2164:2186] 0cf4edcd",
+      "mismatched_keys": [],
+      "outcome": "matched",
+      "position_status": "verbatim",
+      "selector": "nutrition",
+      "timing_only": false
+    }
+  ],
+  "false_positives": [
+    {
+      "evidence_ref": "D1-referral[33:54] d93c2cc1",
+      "exclusion_reasons": [],
+      "field": "patient_identity",
+      "position_status": "verbatim",
+      "selector": null
+    },
+    {
+      "evidence_ref": "D2-mtsamples-4689[844:850] c8754abc",
+      "exclusion_reasons": [],
+      "field": "medications",
+      "position_status": "verbatim",
+      "selector": null
+    },
+    {
+      "evidence_ref": "D2-mtsamples-4689[866:872] 3e67ff66",
+      "exclusion_reasons": [],
+      "field": "medications",
+      "position_status": "verbatim",
+      "selector": null
+    }
+  ],
+  "gold_sha256": "54d41ffa315901ff508f12ae32d81eee2bef537fbfa77b4b6f0a15c90ad4f78a",
+  "gold_version": 1,
+  "run": {
+    "code_sha": "f0bb792476a711f1f9c81971c59ea678ce4b6a7a",
+    "extraction_source": "cache",
+    "input_hash": "7d40a9949aedf10dd061c1127cb4cd809d551398b6c666e6607cb91e0bfbc140",
+    "prompt_version": "extract-v2",
+    "rules_version": "bridge-v1",
+    "run_id": 13,
+    "schema_version": "v2",
+    "status": "completed"
+  },
+  "totals": {
+    "absent_correct": 14,
+    "absent_false_positive": 0,
+    "claims_correct": 3,
+    "claims_false_support": 0,
+    "claims_total": 6,
+    "conditions_correct": 17,
+    "conditions_total": 20,
+    "excluded_unmatched": 1,
+    "false_positives": 3,
+    "false_support": 0,
+    "first_error": {
+      "compute_timepoint": 0,
+      "extraction_missed": 0,
+      "extraction_wrong_value": 6,
+      "gold_question": 0,
+      "rules": 0,
+      "verify_excluded": 0
+    },
+    "gold_facts": 23,
+    "matched": 14,
+    "matched_but_excluded": 2,
+    "missed": 0,
+    "missed_exclusion": 0,
+    "wrong_value": 7
+  },
+  "variant_id": "case-03"
+}

@@ -1,0 +1,847 @@
+{
+  "attempt": {
+    "attempt_no": 1,
+    "cost_usd": 0.08626,
+    "created_at": "2026-11-09T23:57:56.923+00:00",
+    "input_tokens": 14345,
+    "latency_ms": 25585,
+    "output_tokens": 5757,
+    "status": "parsed"
+  },
+  "cache_key_sha8": "655c023b",
+  "doc_sha256": {
+    "D0-pa-form-draft": "bf0751514d01d28025ebef4d3e63223b6a29a09297a6b2a731bdf0f03fcf78d8",
+    "D1-referral": "29bf838174a475554aeb5f813ff463bfb371b449011cd83661f64b5578a17623",
+    "D2-mtsamples-4985": "a3eb773b768baaa6d88d31ddc37be19d9917b041725954ee3e96e794db8bdd45"
+  },
+  "extraction": {
+    "anthropometrics": [
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "doc_id": "D2-mtsamples-4985",
+        "event_date": "",
+        "kind": "height",
+        "quote": {
+          "end": 577,
+          "replay_fidelity": "exact",
+          "sha256": "7016e73cf64dd6107993c15c6c54f5a814a96f8939ee634809850d771e258186",
+          "start": 557
+        },
+        "raw_unit": "",
+        "raw_value": "5 feet 6 inches",
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "doc_id": "D2-mtsamples-4985",
+        "event_date": "",
+        "kind": "weight",
+        "quote": {
+          "end": 607,
+          "replay_fidelity": "exact",
+          "sha256": "7f86a2737f73caa703b46604dc1cd2fbfc7d5da4ec3a9b0dd7addaf0f8ef9b0c",
+          "start": 585
+        },
+        "raw_unit": "pounds",
+        "raw_value": "285.4",
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "doc_id": "D2-mtsamples-4985",
+        "event_date": "",
+        "kind": "bmi",
+        "quote": {
+          "end": 635,
+          "replay_fidelity": "exact",
+          "sha256": "c12c580589ab7535c4d45d3b4a1967bdf9c32854d35982cd7ded7d8989cc0acc",
+          "start": 614
+        },
+        "raw_unit": "",
+        "raw_value": "46",
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "bp_readings": [],
+    "diagnoses": [
+      {
+        "ahi": null,
+        "certainty": "present",
+        "cirrhosis": null,
+        "ckd_stage": "",
+        "concept": "hypertension",
+        "date_precision": "none",
+        "doc_id": "D2-mtsamples-4985",
+        "event_date": "",
+        "fibrosis_stage": "",
+        "osa_severity": "unspecified",
+        "quote": {
+          "end": 729,
+          "replay_fidelity": "exact",
+          "sha256": "ef41095117c99be3c348fd2885324e1ff8e0a6a7441dbc1a21990ce9239579ab",
+          "start": 692
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "symptomatic": "unknown",
+        "temporality": "current"
+      },
+      {
+        "ahi": null,
+        "certainty": "negated",
+        "cirrhosis": null,
+        "ckd_stage": "",
+        "concept": "stroke",
+        "date_precision": "none",
+        "doc_id": "D2-mtsamples-4985",
+        "event_date": "",
+        "fibrosis_stage": "",
+        "osa_severity": "unspecified",
+        "quote": {
+          "end": 2639,
+          "replay_fidelity": "exact",
+          "sha256": "8211b41c7997312d7432d171a6d2ec3525be773555f677535ca3d59aa558b4e7",
+          "start": 2580
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "symptomatic": "unknown",
+        "temporality": "current"
+      },
+      {
+        "ahi": null,
+        "certainty": "negated",
+        "cirrhosis": null,
+        "ckd_stage": "",
+        "concept": "ckd",
+        "date_precision": "none",
+        "doc_id": "D2-mtsamples-4985",
+        "event_date": "",
+        "fibrosis_stage": "",
+        "osa_severity": "unspecified",
+        "quote": {
+          "end": 2577,
+          "replay_fidelity": "exact",
+          "sha256": "ec71fbd3a7e5baca3fe31440eed50cc7ba76eccfc2e19e2fb679a1da7fe24834",
+          "start": 2483
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "symptomatic": "unknown",
+        "temporality": "current"
+      },
+      {
+        "ahi": null,
+        "certainty": "present",
+        "cirrhosis": null,
+        "ckd_stage": "",
+        "concept": "t2dm",
+        "date_precision": "none",
+        "doc_id": "D2-mtsamples-4985",
+        "event_date": "",
+        "fibrosis_stage": "",
+        "osa_severity": "unspecified",
+        "quote": {
+          "end": 1975,
+          "replay_fidelity": "exact",
+          "sha256": "f342d7e1463350e96eaeded095885766298c69628046b82211febc0c90aea2e2",
+          "start": 1889
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "family",
+        "symptomatic": "unknown",
+        "temporality": "current"
+      }
+    ],
+    "doc_dates": [
+      {
+        "certainty": "present",
+        "date": "2026-10-10",
+        "date_precision": "day",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "2026-10-10",
+        "quote": {
+          "end": 227,
+          "replay_fidelity": "exact",
+          "sha256": "7e5a3363167f70d0101a12abf99362540ff3921683b1e99337622acdb22e6cad",
+          "start": 196,
+          "text": "Form signature date: 2026-10-10"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "target_doc_id": "D0-pa-form-draft",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date": "2026-10-08",
+        "date_precision": "day",
+        "doc_id": "D1-referral",
+        "event_date": "2026-10-08",
+        "quote": {
+          "end": 10,
+          "replay_fidelity": "exact",
+          "sha256": "c0bec6f048ee7734e6c1eb093122a2b0a0bcd2862a9b8c7dbf95287ee392df1f",
+          "start": 0,
+          "text": "2026-10-08"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "target_doc_id": "D1-referral",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date": "2025-03-15",
+        "date_precision": "day",
+        "doc_id": "D1-referral",
+        "event_date": "2025-03-15",
+        "quote": {
+          "end": 277,
+          "replay_fidelity": "exact",
+          "sha256": "e30011f8d2b385305192b14d6d68bb6416ea7d5da96692158fb6f2f61fb7d6e8",
+          "start": 208,
+          "text": "The enclosed bariatric surgery consultation note is dated 2025-03-15."
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "target_doc_id": "D2-mtsamples-4985",
+        "temporality": "current"
+      }
+    ],
+    "glp1_start": [
+      {
+        "certainty": "present",
+        "date": "2025-03-15",
+        "date_precision": "day",
+        "doc_id": "D1-referral",
+        "drug": "Wegovy",
+        "event_date": "2025-03-15",
+        "purpose": "weight",
+        "quote": {
+          "end": 207,
+          "replay_fidelity": "exact",
+          "sha256": "a607a58ef4b342d31a0d51c248e4e9ef2cf158be3065b3a13c507776919af01d",
+          "start": 152,
+          "text": "She started Wegovy on 03/15/2025 for weight management."
+        },
+        "relative_to_glp1_initiation": "at",
+        "subject": "patient",
+        "temporality": "historical"
+      }
+    ],
+    "labs": [],
+    "lifestyle": [
+      {
+        "attendance": "unknown",
+        "certainty": "present",
+        "date_precision": "none",
+        "description": {
+          "sha256": "a25c72479d0bb0829a5509dda1ce97e06b37702bb0e8522cb153ee46d07f4029"
+        },
+        "doc_id": "D2-mtsamples-4985",
+        "end": null,
+        "end_kind": "unknown",
+        "event_date": "",
+        "kind": "nutrition",
+        "limitation": "",
+        "program_type": "commercial",
+        "quote": {
+          "end": 358,
+          "replay_fidelity": "exact",
+          "sha256": "16595162cf6796d4eface1bdbe66375f6a6aff08aa6586584a01f5d5351ff402",
+          "start": 251
+        },
+        "relative_to_glp1_initiation": "before",
+        "start": null,
+        "subject": "patient",
+        "temporality": "historical"
+      },
+      {
+        "attendance": "unknown",
+        "certainty": "present",
+        "date_precision": "none",
+        "description": {
+          "sha256": "977392221ae503d50606893dc746eed38073fbee011038e7cfb51ae31154e019"
+        },
+        "doc_id": "D2-mtsamples-4985",
+        "end": null,
+        "end_kind": "unknown",
+        "event_date": "",
+        "kind": "nutrition",
+        "limitation": "",
+        "program_type": "referral_pending",
+        "quote": {
+          "end": 4118,
+          "replay_fidelity": "exact",
+          "sha256": "805f44fb51562e6006d9d0e0d2eaeb3c8998c99adce93438e29bcb4381548a01",
+          "start": 4061
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "start": null,
+        "subject": "patient",
+        "temporality": "hypothetical"
+      },
+      {
+        "attendance": "unknown",
+        "certainty": "present",
+        "date_precision": "none",
+        "description": {
+          "sha256": "4fa4496b594bcb1ae730413422e5d8a5e8d78c9e8b7bcfcfd446f9eb56552e0d"
+        },
+        "doc_id": "D2-mtsamples-4985",
+        "end": null,
+        "end_kind": "unknown",
+        "event_date": "",
+        "kind": "nutrition",
+        "limitation": "",
+        "program_type": "advice_only",
+        "quote": {
+          "end": 4209,
+          "replay_fidelity": "exact",
+          "sha256": "13885c7910843239886555f20f1dd1df7207fef250e2a08e8c2f3e038ec62825",
+          "start": 4146
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "start": null,
+        "subject": "patient",
+        "temporality": "hypothetical"
+      }
+    ],
+    "medication_lists": [
+      {
+        "certainty": "present",
+        "complete": false,
+        "date_precision": "none",
+        "doc_id": "D2-mtsamples-4985",
+        "event_date": "",
+        "list_id": "D2-meds",
+        "quote": {
+          "end": 1367,
+          "replay_fidelity": "exact",
+          "sha256": "5bd26c085883ee14e8179bb1a7925addde64593f42fac3065caff01bf8568cdd",
+          "start": 1328
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "section_title": {
+          "sha256": "60fe94693a0b817f103c8fce10917a2f18ba9a9fa3e5d1505a7acbb70106615b"
+        },
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "medications": [
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "doc_id": "D2-mtsamples-4985",
+        "dose": "10 mg p.o. daily",
+        "end": null,
+        "end_kind": "unknown",
+        "end_precision": null,
+        "event_date": "",
+        "indication": "",
+        "list_id": "D2-meds",
+        "name": "Norvasc",
+        "quote": {
+          "end": 1367,
+          "replay_fidelity": "exact",
+          "sha256": "25317fd5b870b2c028b8c48629784898ab366adaaa464cb57210567f61fd95ef",
+          "start": 1343
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "start": null,
+        "start_precision": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "doc_id": "D2-mtsamples-4985",
+        "dose": "50 mg p.o. b.i.d.",
+        "end": null,
+        "end_kind": "unknown",
+        "end_precision": null,
+        "event_date": "",
+        "indication": "",
+        "list_id": "D2-meds",
+        "name": "Lopressor tartrate",
+        "quote": {
+          "end": 1405,
+          "replay_fidelity": "exact",
+          "sha256": "ae9f1ddcf85a4b585975b7d0c1b26cb07c6228aec0df74123af44db7d336531d",
+          "start": 1369
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "start": null,
+        "start_precision": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "doc_id": "D2-mtsamples-4985",
+        "dose": "10 mg p.o. at bedtime",
+        "end": null,
+        "end_kind": "unknown",
+        "end_precision": null,
+        "event_date": "",
+        "indication": "",
+        "list_id": "D2-meds",
+        "name": "lovastatin",
+        "quote": {
+          "end": 1439,
+          "replay_fidelity": "exact",
+          "sha256": "788131b787a5611d7ca1b5971d66e6a1c174c71bfd2025dcc025fe6b351dcb29",
+          "start": 1407
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "start": null,
+        "start_precision": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "doc_id": "D2-mtsamples-4985",
+        "dose": "10 mg p.o. daily",
+        "end": null,
+        "end_kind": "unknown",
+        "end_precision": null,
+        "event_date": "",
+        "indication": "",
+        "list_id": "D2-meds",
+        "name": "citalopram",
+        "quote": {
+          "end": 1468,
+          "replay_fidelity": "exact",
+          "sha256": "535c97ef0772a437d159a80ad7b9c86504eb927e104c4f8b242079c7809845c9",
+          "start": 1441
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "start": null,
+        "start_precision": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "doc_id": "D2-mtsamples-4985",
+        "dose": "500 mg three times a day",
+        "end": null,
+        "end_kind": "ended",
+        "end_precision": null,
+        "event_date": "",
+        "indication": "",
+        "list_id": "D2-meds",
+        "name": "aspirin",
+        "quote": {
+          "end": 1530,
+          "replay_fidelity": "exact",
+          "sha256": "c1a0782aceebb00c1b06aaecd39f643959d57e6e0ec98cc2c7f0ff7a535c3a71",
+          "start": 1470
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "start": null,
+        "start_precision": null,
+        "subject": "patient",
+        "temporality": "historical"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "doc_id": "D2-mtsamples-4985",
+        "dose": "0.3 mg one tablet p.o. daily",
+        "end": null,
+        "end_kind": "ended",
+        "end_precision": null,
+        "event_date": "",
+        "indication": "",
+        "list_id": "D2-meds",
+        "name": "Premarin",
+        "quote": {
+          "end": 1599,
+          "replay_fidelity": "exact",
+          "sha256": "33a120eed79d3f5a2c2439d246559e5f2dc2f432530ad1036ed04e34e6b5222e",
+          "start": 1543
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "start": null,
+        "start_precision": null,
+        "subject": "patient",
+        "temporality": "historical"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "doc_id": "D2-mtsamples-4985",
+        "dose": "",
+        "end": null,
+        "end_kind": "unknown",
+        "end_precision": null,
+        "event_date": "",
+        "indication": "",
+        "list_id": "D2-meds",
+        "name": "omega-3 fatty acids",
+        "quote": {
+          "end": 1620,
+          "replay_fidelity": "exact",
+          "sha256": "1bd3a99e9dc2b166b2c16538fb5a1e0e3b00f4432b79f117c69a0f9f897032c2",
+          "start": 1601
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "start": null,
+        "start_precision": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "doc_id": "D2-mtsamples-4985",
+        "dose": "50,000 units q. weekly",
+        "end": null,
+        "end_kind": "unknown",
+        "end_precision": null,
+        "event_date": "",
+        "indication": "",
+        "list_id": "D2-meds",
+        "name": "vitamin D",
+        "quote": {
+          "end": 1658,
+          "replay_fidelity": "exact",
+          "sha256": "abd4c2cf131a648b2b6509e2c55defe4c8806087663d31d44697306b1f81e726",
+          "start": 1626
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "start": null,
+        "start_precision": null,
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "pa_form_claims": [
+      {
+        "certainty": "present",
+        "claim_id": "claim.drug",
+        "claimed_value": "Wegovy",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 278,
+          "replay_fidelity": "exact",
+          "sha256": "144dde34ba4a7bdbcd745b23b0aa04b9e3fad86a1c6bca7b294fdd737eb49944",
+          "start": 256,
+          "text": "Requested drug: Wegovy"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.bmi_bracket",
+        "claimed_value": "\u226540",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 336,
+          "replay_fidelity": "exact",
+          "sha256": "5e549f684ed93f74098ab64dcb10bd81a40b8f96fa58c025f9e28c5602a9e709",
+          "start": 329,
+          "text": "[X] \u226540"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.age_18",
+        "claimed_value": "yes",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 255,
+          "replay_fidelity": "exact",
+          "sha256": "5e283b8a4edf155eadef3f641a8ad67c61c6f4c264ceb23985228c19c7353c36",
+          "start": 228,
+          "text": "Patient is 18 or older: Yes"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.exclusion.t2dm",
+        "claimed_value": "no",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 356,
+          "replay_fidelity": "exact",
+          "sha256": "119a2ec1628b8b4c749fb3b2e62054489d1b74d55752639d716a49536bdc2e2b",
+          "start": 337,
+          "text": "Type 2 diabetes: No"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.bmi_path_b.hfpef",
+        "claimed_value": "no",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 407,
+          "replay_fidelity": "exact",
+          "sha256": "bd2e7df417a9e8d0a1cbf5171574dbeab4d62cf0b8c759f242f8ce42023e15fa",
+          "start": 357,
+          "text": "Heart failure with preserved ejection fraction: No"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.bmi_path_c.stroke",
+        "claimed_value": "no",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 427,
+          "replay_fidelity": "exact",
+          "sha256": "72356408d1a6d7e06eb9445fe6b5cb4e49a128bb3071765f5d661206202851a9",
+          "start": 408,
+          "text": "Previous stroke: No"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.exclusion.part_d_glp1",
+        "claimed_value": "no",
+        "date_precision": "year",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "2026",
+        "quote": {
+          "end": 476,
+          "replay_fidelity": "exact",
+          "sha256": "b4d1d7cea4795c323ebc799eccc32e7e7000068edbcf653f2d4a3f3f00b32e1d",
+          "start": 428,
+          "text": "GLP-1 received under Medicare Part D in 2026: No"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.lifestyle.nutrition",
+        "claimed_value": "yes",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 524,
+          "replay_fidelity": "exact",
+          "sha256": "32001dde710e60d0936dae52cd57e67867adf08be551c247289914742be05543",
+          "start": 477,
+          "text": "Enrolled in a structured nutrition program: Yes"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.lifestyle.activity",
+        "claimed_value": "yes",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 555,
+          "replay_fidelity": "exact",
+          "sha256": "ff3a1aa11c40ae5f242fc945242954ccbeef850a9d768ff01747bd4c076facc9",
+          "start": 525,
+          "text": "Regular physical activity: Yes"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "patient_identity": [
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "name": "Dolores Whitfield",
+        "patient_id": "",
+        "quote": {
+          "end": 99,
+          "replay_fidelity": "exact",
+          "sha256": "df7fcba567af8efd6cda832086dca1a385cee7631b449ddbefc94ce6c28fb7ae",
+          "start": 68,
+          "text": "Patient name: Dolores Whitfield"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "name": "",
+        "patient_id": "P-1042",
+        "quote": {
+          "end": 117,
+          "replay_fidelity": "exact",
+          "sha256": "3898560915bfb0e6043568cf3c49633cfb196e4aebf045e239c9c957e603dc4c",
+          "start": 100,
+          "text": "Member ID: P-1042"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": "1961-04-02",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "name": "",
+        "patient_id": "",
+        "quote": {
+          "end": 133,
+          "replay_fidelity": "exact",
+          "sha256": "670eaf61258e3c9beefb45b86e5b0d0cce21dee1afdab29b164683b5f03463a2",
+          "start": 118,
+          "text": "DOB: 1961-04-02"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D1-referral",
+        "event_date": "",
+        "name": "Dolores Whitfield",
+        "patient_id": "P-1042",
+        "quote": {
+          "end": 128,
+          "replay_fidelity": "exact",
+          "sha256": "769e9d6b8be4971efd5a628b12541eed372071656fa5888941b139a5c7f71dc5",
+          "start": 55,
+          "text": "I am referring Dolores Whitfield, MRN P-1042, to your prescribing clinic."
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": "1961-04-02",
+        "doc_id": "D1-referral",
+        "event_date": "",
+        "name": "",
+        "patient_id": "",
+        "quote": {
+          "end": 151,
+          "replay_fidelity": "exact",
+          "sha256": "e3ef7ba8bc3dbd94ae791002c28dff006707909743b371425f34b3f89fa329e0",
+          "start": 129,
+          "text": "Her DOB is 1961-04-02."
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D2-mtsamples-4985",
+        "event_date": "",
+        "name": {
+          "sha256": "7d890ac587199b9a40800e2dc55acddd6c2570ca4896456537ddd116001f30a1"
+        },
+        "patient_id": "",
+        "quote": {
+          "end": 59,
+          "replay_fidelity": "exact",
+          "sha256": "6f9c3489ae72cfe27fb8bd35fb149b63e84046b988878c91cec558912bfe573d",
+          "start": 30
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": 55,
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "prior_glp1": []
+  },
+  "input_hash": "43931e3233b805cc291e8d542a56e56e9693ea3e8e9d977012a635d664bbebe5",
+  "lossy_quote_count": 0,
+  "model_returned": "claude-sonnet-5-5",
+  "mtsamples_doc_ids": [
+    "D2-mtsamples-4985"
+  ],
+  "prompt_version": "extract-v2",
+  "quote_count": 38,
+  "replay_version": 1,
+  "response": {
+    "model": "claude-sonnet-5-5",
+    "role": "assistant",
+    "stop_reason": "tool_use",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "input_tokens": 14345,
+      "output_tokens": 5757
+    }
+  },
+  "schema_version": "v2",
+  "variant_id": "case-01"
+}

@@ -1,0 +1,583 @@
+{
+  "attempt": {
+    "attempt_no": 1,
+    "cost_usd": 0.061636,
+    "created_at": "2026-11-09T23:58:59.643+00:00",
+    "input_tokens": 12598,
+    "latency_ms": 18116,
+    "output_tokens": 3644,
+    "status": "parsed"
+  },
+  "cache_key_sha8": "9f9b6f8f",
+  "doc_sha256": {
+    "D0-pa-form-draft": "96d0d5cabc7c6f078fa43f623e037218f6b55de509c25e3239801803c1a5c1ef",
+    "D1-referral": "9d104eb92fe3090346c51e968f85226ccfbf019d80233825902e9868238f2548",
+    "D2-initiation-note": "62af8725d634a1c47f79eb8ef80806154430c0b5edb455105de5bf0acb70ce8c",
+    "D3-pharmacy-history": "50ec1b9d62f484d5a5c19aed6594f59e7a7acca030a9cc47a74a318bade676c5"
+  },
+  "extraction": {
+    "anthropometrics": [
+      {
+        "certainty": "present",
+        "date_precision": "day",
+        "doc_id": "D2-initiation-note",
+        "event_date": "2026-02-02",
+        "kind": "height",
+        "quote": {
+          "end": 134,
+          "replay_fidelity": "exact",
+          "sha256": "5abae078f42f7c30922a8dcc951d297edbb0fe869792b7a572988eeafbea28d4",
+          "start": 102,
+          "text": "Height on 2026-02-02 was 180 cm."
+        },
+        "raw_unit": "cm",
+        "raw_value": "180",
+        "relative_to_glp1_initiation": "at",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "day",
+        "doc_id": "D2-initiation-note",
+        "event_date": "2026-02-02",
+        "kind": "weight",
+        "quote": {
+          "end": 168,
+          "replay_fidelity": "exact",
+          "sha256": "f504831ab6b56cbd734455c7797b30e788f10e5e5e08a584b2e1d3124066b557",
+          "start": 135,
+          "text": "Weight on 2026-02-02 was 97.2 kg."
+        },
+        "raw_unit": "kg",
+        "raw_value": "97.2",
+        "relative_to_glp1_initiation": "at",
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "bp_readings": [],
+    "diagnoses": [
+      {
+        "ahi": null,
+        "certainty": "present",
+        "cirrhosis": null,
+        "ckd_stage": "",
+        "concept": "hfpef",
+        "date_precision": "day",
+        "doc_id": "D2-initiation-note",
+        "event_date": "2026-02-02",
+        "fibrosis_stage": "",
+        "osa_severity": "unspecified",
+        "quote": {
+          "end": 227,
+          "replay_fidelity": "exact",
+          "sha256": "cc9a4ea56c677e569394b9aa9a85637edb0f4aeee2d7a37c0eb3cc096907b1d2",
+          "start": 169,
+          "text": "The clinician documented HFpEF at the visit on 2026-02-02."
+        },
+        "relative_to_glp1_initiation": "at",
+        "subject": "patient",
+        "symptomatic": "unknown",
+        "temporality": "current"
+      }
+    ],
+    "doc_dates": [
+      {
+        "certainty": "present",
+        "date": "2026-10-15",
+        "date_precision": "day",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "2026-10-15",
+        "quote": {
+          "end": 70,
+          "replay_fidelity": "exact",
+          "sha256": "63aaf278f1227b409a85aeed47b4774c3b69c864275d2b54dff1c04f86803098",
+          "start": 49,
+          "text": "Form date: 2026-10-15"
+        },
+        "relative_to_glp1_initiation": "after",
+        "subject": "patient",
+        "target_doc_id": "D0-pa-form-draft",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date": "2026-10-15",
+        "date_precision": "day",
+        "doc_id": "D1-referral",
+        "event_date": "2026-10-15",
+        "quote": {
+          "end": 33,
+          "replay_fidelity": "exact",
+          "sha256": "6f09346fca4b7ebec676c43bce9a678b9c1218e183505911987f4d01717dc849",
+          "start": 17,
+          "text": "Date: 2026-10-15"
+        },
+        "relative_to_glp1_initiation": "after",
+        "subject": "patient",
+        "target_doc_id": "D1-referral",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date": "2026-02-02",
+        "date_precision": "day",
+        "doc_id": "D2-initiation-note",
+        "event_date": "2026-02-02",
+        "quote": {
+          "end": 34,
+          "replay_fidelity": "exact",
+          "sha256": "4503e54797a9bdcbb2196efba6a11a0be9777907b4e3e9f87c23fe27928e6a68",
+          "start": 12,
+          "text": "Visit date: 2026-02-02"
+        },
+        "relative_to_glp1_initiation": "at",
+        "subject": "patient",
+        "target_doc_id": "D2-initiation-note",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date": "2026-04-30",
+        "date_precision": "day",
+        "doc_id": "D3-pharmacy-history",
+        "event_date": "2026-04-30",
+        "quote": {
+          "end": 41,
+          "replay_fidelity": "exact",
+          "sha256": "be301064ff57c08f92336d1b41517e9448d2c33f6ecfe1579cbbdfcb7942da34",
+          "start": 18,
+          "text": "Record date: 2026-04-30"
+        },
+        "relative_to_glp1_initiation": "after",
+        "subject": "patient",
+        "target_doc_id": "D3-pharmacy-history",
+        "temporality": "current"
+      }
+    ],
+    "glp1_start": [
+      {
+        "certainty": "present",
+        "date": "2026-02-02",
+        "date_precision": "day",
+        "doc_id": "D1-referral",
+        "drug": "Wegovy",
+        "event_date": "2026-02-02",
+        "purpose": "weight",
+        "quote": {
+          "end": 167,
+          "replay_fidelity": "exact",
+          "sha256": "309626bd4d5f025181fca9f4e49ffa24b10a6c592c07d00af30c0abcbc91e8d7",
+          "start": 118,
+          "text": "Wegovy was started on 02/02/2026 for weight loss."
+        },
+        "relative_to_glp1_initiation": "at",
+        "subject": "patient",
+        "temporality": "historical"
+      }
+    ],
+    "labs": [],
+    "lifestyle": [],
+    "medication_lists": [],
+    "medications": [],
+    "pa_form_claims": [
+      {
+        "certainty": "present",
+        "claim_id": "claim.age_18",
+        "claimed_value": "yes",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 165,
+          "replay_fidelity": "exact",
+          "sha256": "5e283b8a4edf155eadef3f641a8ad67c61c6f4c264ceb23985228c19c7353c36",
+          "start": 138,
+          "text": "Patient is 18 or older: Yes"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.drug",
+        "claimed_value": "Wegovy",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 188,
+          "replay_fidelity": "exact",
+          "sha256": "144dde34ba4a7bdbcd745b23b0aa04b9e3fad86a1c6bca7b294fdd737eb49944",
+          "start": 166,
+          "text": "Requested drug: Wegovy"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.bmi_bracket",
+        "claimed_value": "30-34.9",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 210,
+          "replay_fidelity": "exact",
+          "sha256": "056fe379f2dd171878629ca8d88e3ba10ea5320f76b551258150135a5a2d75b0",
+          "start": 189,
+          "text": "BMI category: 30-34.9"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "claim_id": "claim.bmi_path_b.hfpef",
+        "claimed_value": "no",
+        "date_precision": "none",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "quote": {
+          "end": 220,
+          "replay_fidelity": "exact",
+          "sha256": "f0420a44991a0b856383594a402fb29821375547e5a6d34d70f104c0a4f601cd",
+          "start": 211,
+          "text": "HFpEF: No"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "patient_identity": [
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "name": "",
+        "patient_id": "P-2002",
+        "quote": {
+          "end": 110,
+          "replay_fidelity": "exact",
+          "sha256": "fd2cf19300899a4ff49c11ad643f2812d44fab50c25bcf2187303724d009ef90",
+          "start": 92,
+          "text": "Patient ID: P-2002"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "name": "Morgan Reed",
+        "patient_id": "",
+        "quote": {
+          "end": 91,
+          "replay_fidelity": "exact",
+          "sha256": "05c6b41afc6113c8495b5ec664ccc93a4463f47dad2e08aec4635ea6caba84b4",
+          "start": 71,
+          "text": "Patient: Morgan Reed"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": "1958-06-11",
+        "doc_id": "D0-pa-form-draft",
+        "event_date": "",
+        "name": "",
+        "patient_id": "",
+        "quote": {
+          "end": 136,
+          "replay_fidelity": "exact",
+          "sha256": "6a3cbaada5217e7745d2f56cd21a0244df943f2bbbf3fd4390f0f34bddf11e76",
+          "start": 111,
+          "text": "Date of birth: 1958-06-11"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D1-referral",
+        "event_date": "",
+        "name": "",
+        "patient_id": "P-2002",
+        "quote": {
+          "end": 73,
+          "replay_fidelity": "exact",
+          "sha256": "fd2cf19300899a4ff49c11ad643f2812d44fab50c25bcf2187303724d009ef90",
+          "start": 55,
+          "text": "Patient ID: P-2002"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D1-referral",
+        "event_date": "",
+        "name": "Morgan Reed",
+        "patient_id": "",
+        "quote": {
+          "end": 54,
+          "replay_fidelity": "exact",
+          "sha256": "05c6b41afc6113c8495b5ec664ccc93a4463f47dad2e08aec4635ea6caba84b4",
+          "start": 34,
+          "text": "Patient: Morgan Reed"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": "1958-06-11",
+        "doc_id": "D1-referral",
+        "event_date": "",
+        "name": "",
+        "patient_id": "",
+        "quote": {
+          "end": 99,
+          "replay_fidelity": "exact",
+          "sha256": "6a3cbaada5217e7745d2f56cd21a0244df943f2bbbf3fd4390f0f34bddf11e76",
+          "start": 74,
+          "text": "Date of birth: 1958-06-11"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D2-initiation-note",
+        "event_date": "",
+        "name": "",
+        "patient_id": "P-2002",
+        "quote": {
+          "end": 74,
+          "replay_fidelity": "exact",
+          "sha256": "fd2cf19300899a4ff49c11ad643f2812d44fab50c25bcf2187303724d009ef90",
+          "start": 56,
+          "text": "Patient ID: P-2002"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D2-initiation-note",
+        "event_date": "",
+        "name": "Morgan Reed",
+        "patient_id": "",
+        "quote": {
+          "end": 55,
+          "replay_fidelity": "exact",
+          "sha256": "05c6b41afc6113c8495b5ec664ccc93a4463f47dad2e08aec4635ea6caba84b4",
+          "start": 35,
+          "text": "Patient: Morgan Reed"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": "1958-06-11",
+        "doc_id": "D2-initiation-note",
+        "event_date": "",
+        "name": "",
+        "patient_id": "",
+        "quote": {
+          "end": 100,
+          "replay_fidelity": "exact",
+          "sha256": "6a3cbaada5217e7745d2f56cd21a0244df943f2bbbf3fd4390f0f34bddf11e76",
+          "start": 75,
+          "text": "Date of birth: 1958-06-11"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D3-pharmacy-history",
+        "event_date": "",
+        "name": "",
+        "patient_id": "P-2002",
+        "quote": {
+          "end": 81,
+          "replay_fidelity": "exact",
+          "sha256": "fd2cf19300899a4ff49c11ad643f2812d44fab50c25bcf2187303724d009ef90",
+          "start": 63,
+          "text": "Patient ID: P-2002"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": null,
+        "doc_id": "D3-pharmacy-history",
+        "event_date": "",
+        "name": "Morgan Reed",
+        "patient_id": "",
+        "quote": {
+          "end": 62,
+          "replay_fidelity": "exact",
+          "sha256": "05c6b41afc6113c8495b5ec664ccc93a4463f47dad2e08aec4635ea6caba84b4",
+          "start": 42,
+          "text": "Patient: Morgan Reed"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      },
+      {
+        "certainty": "present",
+        "date_precision": "none",
+        "dob": "1958-06-11",
+        "doc_id": "D3-pharmacy-history",
+        "event_date": "",
+        "name": "",
+        "patient_id": "",
+        "quote": {
+          "end": 107,
+          "replay_fidelity": "exact",
+          "sha256": "6a3cbaada5217e7745d2f56cd21a0244df943f2bbbf3fd4390f0f34bddf11e76",
+          "start": 82,
+          "text": "Date of birth: 1958-06-11"
+        },
+        "relative_to_glp1_initiation": "unknown",
+        "stated_age": null,
+        "subject": "patient",
+        "temporality": "current"
+      }
+    ],
+    "prior_glp1": [
+      {
+        "certainty": "present",
+        "compounded": null,
+        "date": "2026-02-02",
+        "date_precision": "day",
+        "doc_id": "D3-pharmacy-history",
+        "drug": "Wegovy",
+        "event_date": "2026-02-02",
+        "payer": "part_d",
+        "quote": {
+          "end": 164,
+          "replay_fidelity": "exact",
+          "sha256": "b1de0426152e8f02ce27e64b57a3f7e797112823cec1f8f6532bd560cd9c855f",
+          "start": 109,
+          "text": "Medicare Part D paid for the Wegovy fill on 2026-02-02."
+        },
+        "relative_to_glp1_initiation": "at",
+        "subject": "patient",
+        "temporality": "historical"
+      },
+      {
+        "certainty": "present",
+        "compounded": null,
+        "date": "2026-03-02",
+        "date_precision": "day",
+        "doc_id": "D3-pharmacy-history",
+        "drug": "Wegovy",
+        "event_date": "2026-03-02",
+        "payer": "part_d",
+        "quote": {
+          "end": 220,
+          "replay_fidelity": "exact",
+          "sha256": "944f09afa186241f09d87163f01eac145654af8a0e1355aaa612cd669b83ddd4",
+          "start": 165,
+          "text": "Medicare Part D paid for the Wegovy fill on 2026-03-02."
+        },
+        "relative_to_glp1_initiation": "after",
+        "subject": "patient",
+        "temporality": "historical"
+      },
+      {
+        "certainty": "present",
+        "compounded": null,
+        "date": "2026-04-02",
+        "date_precision": "day",
+        "doc_id": "D3-pharmacy-history",
+        "drug": "Wegovy",
+        "event_date": "2026-04-02",
+        "payer": "part_d",
+        "quote": {
+          "end": 276,
+          "replay_fidelity": "exact",
+          "sha256": "1eb49fd6062fa7329331ca348dcc3bc69cf22e9f0d1143917f5534e513552420",
+          "start": 221,
+          "text": "Medicare Part D paid for the Wegovy fill on 2026-04-02."
+        },
+        "relative_to_glp1_initiation": "after",
+        "subject": "patient",
+        "temporality": "historical"
+      }
+    ]
+  },
+  "input_hash": "3934e23a9ca78bee80aaf57224ad3fa22b09c0507b27dfeeccc095954015d97f",
+  "lossy_quote_count": 0,
+  "model_returned": "claude-sonnet-5-5",
+  "mtsamples_doc_ids": [],
+  "prompt_version": "extract-v2",
+  "quote_count": 27,
+  "replay_version": 1,
+  "response": {
+    "model": "claude-sonnet-5-5",
+    "role": "assistant",
+    "stop_reason": "tool_use",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "input_tokens": 12598,
+      "output_tokens": 3644
+    }
+  },
+  "schema_version": "v2",
+  "variant_id": "case-02"
+}
