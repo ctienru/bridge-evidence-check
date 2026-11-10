@@ -518,6 +518,28 @@ def test_age_stated_after_initiation_uses_interval() -> None:
     assert stated(13, "2015-03-15", "before").status == "supported"
 
 
+@pytest.mark.parametrize("stated_age", [17, 16])
+def test_age_conflict_when_verified_intervals_fall_on_opposite_sides(stated_age: int) -> None:
+    rows = BASE + [
+        checked("patient_identity", stated_age=stated_age),
+        checked("patient_identity", dob="2007-03-15", patient_id="P-1"),
+    ]
+    d = decide(rows)["age_18"]
+    assert d.status == "conflict"
+    assert d.flags == ()
+    assert d.used_evidence == (0, 1, 2, 3)
+
+
+def test_age_review_with_clear_and_straddling_intervals() -> None:
+    rows = BASE + [
+        checked("patient_identity", dob="2007-03-15", patient_id="P-1"),
+        checked("patient_identity", stated_age=19, event_date="2027", relative_llm="after"),
+    ]
+    d = decide(rows)["age_18"]
+    assert d.status == "review"
+    assert [interval[:2] for interval in d.computed["intervals"]] == [[18, 18], [16, 18]]
+
+
 def test_age_from_dob_with_inconsistent_stated_age() -> None:
     rows = BASE + [
         checked("patient_identity", dob="1961-04-02", patient_id="P-1"),
@@ -537,6 +559,14 @@ def test_age_without_initiation_date() -> None:
     )
     straddle = decide([checked("patient_identity", stated_age=18, event_date="2025")])["age_18"]
     assert straddle.status == "insufficient"
+    mixed = decide(
+        [
+            DOC_DATE_D1,
+            checked("patient_identity", stated_age=17),
+            checked("patient_identity", stated_age=18),
+        ]
+    )["age_18"]
+    assert mixed.status == "insufficient"
     assert decide([])["age_18"].status == "insufficient"
 
 

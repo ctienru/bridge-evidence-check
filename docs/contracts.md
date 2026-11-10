@@ -147,6 +147,7 @@ Tests: `test_htn_boundary_reading_with_ambiguous_diuretics_is_insufficient` (cas
 **Age** `age_18`: a stated age `a` (document date `d`) means the age on that day is in `[a, a+1)`; shift it to the initiation date `s` to get the age interval at initiation. With a date of birth, compute the exact value directly.
 
 - Whole interval ≥ 18 → `supported`; whole interval < 18 → `not_supported`; interval straddles 18 → `review`.
+- With an initiation date, one verified interval wholly below 18 and another wholly at or above 18 → `conflict` (§4, threshold first), with both intervals in `used_evidence`; the rules above, including `review` for a straddling interval and `inconsistent_values`, apply only when no such pair exists. Test: `test_age_conflict_when_verified_intervals_fall_on_opposite_sides`.
 - Neither date of birth nor age, or no initiation date and the interval straddles 18 → `insufficient`.
 - Examples: age 85 written three years after initiation → ≥ 81 at initiation → `supported`; age 19 written three years after initiation (day-precision document date) → 16 at initiation → `not_supported`; the same sentence with a year-precision document date → the interval straddles 18 → `review`; age 13 written ten years before initiation → about 23 at initiation → `supported`.
 - Test: `test_age_stated_after_initiation_uses_interval`.
