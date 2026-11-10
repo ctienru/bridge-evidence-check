@@ -11,7 +11,7 @@
   "eval_version": 1,
   "exit_code": 0,
   "generated_from": {
-    "code_sha": "90ae6089be091c08bfefa47557fe03d65c861853-dirty",
+    "code_sha": "860b40e1e66145ed3cb3dd4f5f630fd3a993dd0c-dirty",
     "model_returned": "claude-sonnet-5-5",
     "prompt_version": "extract-v4",
     "rules_version": "bridge-v1",
@@ -19,7 +19,7 @@
     "splitter_version": "sentences-v1"
   },
   "incomplete": false,
-  "manifest_sha256": "09743208f74b7bf26335b9dce5af471f6f1a9ee083e22135e148c41d86da174f",
+  "manifest_sha256": "361616b955d4a6464dc7cf50c060be19ba568b5011a0e1a5c4d841cdd28776b4",
   "mode": "offline",
   "regression": {
     "detected": false,
@@ -4493,7 +4493,7 @@
         }
       ]
     },
-    "manifest_sha256": "09743208f74b7bf26335b9dce5af471f6f1a9ee083e22135e148c41d86da174f",
+    "manifest_sha256": "361616b955d4a6464dc7cf50c060be19ba568b5011a0e1a5c4d841cdd28776b4",
     "micro": {
       "case_families": 6,
       "citations": {
@@ -5399,6 +5399,23 @@
       }
     ]
   },
-  "skipped": [],
+  "skipped": [
+    {
+      "reason": "hash_only",
+      "variant_id": "case-15-L0"
+    },
+    {
+      "reason": "holdout_never_read",
+      "variant_id": "case-14"
+    },
+    {
+      "reason": "holdout_never_read",
+      "variant_id": "case-16"
+    },
+    {
+      "reason": "holdout_never_read",
+      "variant_id": "case-11"
+    }
+  ],
   "split": "dev"
 }

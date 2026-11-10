@@ -70,16 +70,24 @@ There is no real patient data from any EHR in this repository. Every GLP-1 scena
 | Source of the main document | In this release | Planned | Public form |
 |---|---|---|---|
 | MTSamples transcriptions | 2 (cases 01, 03) | 6 | fetched at run time, never committed |
-| Published case reports (CC BY) | 1 public (case 17) + 0 hash-only rows | 6 | excerpt committed with attribution, or hash only |
+| Published case reports (CC BY) | 1 public (case 17) + 3 hash-only rows (cases 11, 14, 16) | 6 | excerpt committed with attribution, or hash only |
 | Authored synthetic documents | 4 variants (cases 02, 04, 07, 07b) | 6 (2 partly adapted from published cases, DOI cited as context, original text not used) | committed |
 
-The remaining cases are planned, not present: this release holds the 7 dev variants in `cases/` and nothing else. Holdout variants and the private ladder level `case-15-L0` will be listed in `splits.yaml` by sha256 only; `splits.yaml` has 0 hash-only rows today, and the holdout rows land with the holdout gold. Their text stays outside the public repository. Referral letters, PA form drafts and other supporting documents are authored.
+The remaining cases are planned, not present: this release holds the 7 dev variants in `cases/` and nothing else. Holdout variants and the private ladder level `case-15-L0` are listed in `splits.yaml` by sha256 only; `splits.yaml` has 4 hash-only rows (1 dev, `case-15-L0`; 3 holdout, cases 11, 14 and 16), which `bridge eval` skips. Their text stays outside the public repository. Referral letters, PA form drafts and other supporting documents are authored.
 
 **CC BY passages.** Each passage is reproduced unmodified except that figures, videos and captions are omitted.
 
 | Authors | Title | Journal | DOI | Licence | Excerpt | Modified |
 |---|---|---|---|---|---|---|
 | Abhinav Karan, Julien Feghaly, Anamarys Blanco, Calvin Choi | Dual Culprit ST-Elevation Myocardial Infarction: A Rare but Complex Clinical Entity | Cureus, 2025, 17(8), e90478 | [10.7759/cureus.90478](https://doi.org/10.7759/cureus.90478) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | Case 1 heading and narrative prose (case-17) | no |
+
+**Holdout main documents** (text not in this repository; listed by sha256 in `splits.yaml`). The private repository keeps the selected passages unmodified, with the selected table rows rendered as plain text; the holdout is run once after freezing.
+
+| Case | Authors | Title | Journal | DOI | Licence | Excerpt |
+|---|---|---|---|---|---|---|
+| case-11 | Angela-Tu Nguyen and Jessica L. Binkley | Access Barriers and Variable Response to Semaglutide in Severe Adolescent Obesity: A Case Series | Case Reports in Pediatrics 2026;2026:5562574 | [10.1155/crpe/5562574](https://doi.org/10.1155/crpe/5562574) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | Patient 3 paragraph |
+| case-14 | Sara Mounsif, Omar Bahlaoui, Hanane Delsa, Wafaa Khannoussi, Imane Ben El Barhdadi | Metabolic Dysfunction-Associated Steatohepatitis With Positive Antimitochondrial M2 Antibodies: Diagnostic Pitfall and Importance of Follow-Up | Cureus 2025;17(12):e99347 | [10.7759/cureus.99347](https://doi.org/10.7759/cureus.99347) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | Initial presentation and Table 1 |
+| case-16 | Andrijana Koceva, Katarina Mlekuš Kozamernik, Andrej Janež, Rok Herman, Simona Ferjan, Mojca Jensterle | Case report: Long-term efficacy and safety of semaglutide in the treatment of syndromic obesity in Prader Willi syndrome - case series and literature review | Front Endocrinol (Lausanne) 2024;15:1528457 | [10.3389/fendo.2024.1528457](https://doi.org/10.3389/fendo.2024.1528457) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | Patient 3 excerpt and Table 1 baseline rows |
 
 **MTSamples.** The main document of the MTSamples cases is downloaded at run time by `scripts/fetch_mtsamples.py` from the mirror named in the case metadata, checked by whole-file and per-transcription sha256, and written byte-exact to a git-ignored path. MTSamples publishes its samples for educational use (print, share, link); they are not CC BY, they are not covered by this repository's licence, and commercial use would need separate handling. No MTSamples text is committed: gold, replays and public reports refer to it by `doc_id`, offset and sha256 only, and tests fail if any public file shares a 40-character window with a fetched document.
 

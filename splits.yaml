@@ -86,3 +86,47 @@ variants:
       docs/D1-referral.txt: 4aef345f1fa5578e03fe917c2091bc171d6b5d307ed43785e17e163d12adcbb2
       docs/D2-case-report-cureus-2025.txt: 014429c1eb55f7751a1105f83ddfd404127550ede745d3cde151eed60ea5df41
       expected.json: 770b1f281bd0d91fe6c0aea1643a36461393dbee6ddd12e8506dad5dc21b90bd
+  - case_id: case-15
+    variant_id: case-15-L0
+    split: dev
+    frozen_at: 2026-11-09
+    gold_version: 2
+    files:
+      input.yaml: dc402096c2b96b0c3d0172d504f20c2be4237a389bf30c1c11950015c3666d75
+      docs/D0-pa-form-draft.txt: 8dfac27bb34a71cc916a621bf7b93b75694352e68e2188f9f296f9560c1f30b6
+      docs/D1-referral.txt: 7c519e8fc57f357413efabffec21829a2d3bb5bd81cc9438bd45cc639191df3f
+      docs/D2-case-report-fcvm-2023.txt: 0673513786c94c6ea1b4f30ae98c254017d1458ea732fe7696220aa7e4a62b30
+      expected.json: 798f53349bf0dba0f57440ae5aa8cc97344fb47c980487b396c0a8cdc99ca622
+  - case_id: case-14
+    variant_id: case-14
+    split: holdout
+    frozen_at: 2026-11-09
+    gold_version: 1
+    files:
+      input.yaml: 2dc312bbfbc4f90fe3bcefb80de6dfc7d9d8cf2de6b4a4d33c2772b802e153d4
+      docs/D0-pa-form-draft.txt: 77685635cc5e0602cf2d0810004bc3045ebb79705fce9970f3365910786e4241
+      docs/D1-referral.txt: 03d0beb5746401be5ae0fdc4e95e785ea76c86f4954affeb968e1acf4a626025
+      docs/D2-case-report-cureus-2025.txt: 1e01d5783db7739a9cf6d28728a17a6dc21b6a55b09fdd692c0e17d0628eac9a
+      expected.json: fa5b8c88d58d18694c35c6a44120192fd4f9b06ab1d8491482f0f8a68ac9eae3
+  - case_id: case-16
+    variant_id: case-16
+    split: holdout
+    frozen_at: 2026-11-10
+    gold_version: 1
+    files:
+      input.yaml: 38a9178630bdf3290ab98d6673c07de21af0f92740d75f7cf1e7a38ea7cb8703
+      docs/D0-pa-form-draft.txt: 657c193e8fb5cca822b4dd6b8b508b0fb61cfd7088cd607a70cdaa211b12fdc4
+      docs/D1-referral.txt: 713344fc1059add686c158de22c530d077f14ea22ee6f55572e0f6e4a8949a5a
+      docs/D2-case-report-fendo-2025.txt: 90df50f2c706185dacde6663b1d6cdddefc9826b4764afe9d33292f66092a252
+      expected.json: f355cc57568f2385cfaf3ee46857587a5ecbab6ac96985898a1824619b4a0e43
+  - case_id: case-11
+    variant_id: case-11
+    split: holdout
+    frozen_at: 2026-11-10
+    gold_version: 1
+    files:
+      input.yaml: 270f9d8ce4512c4b0e6c32bc10d5f4d74c4c1091adcf9ce885be95c24d7c75e3
+      docs/D0-pa-form-draft.txt: 7a7c250a0330a8b3d2388fbd895a7bac196590a4fe9199fa94c8e95447db0f43
+      docs/D1-referral.txt: 06e946ccbd040a3eeb5a0168bf01bf3aca3cc891d7bbb8d86e59218f4bcbafcf
+      docs/D2-case-report-crpe-2026.txt: 37011da6d85355d41a67932058ae281891a303531f4e01cd922b0b909860a6c4
+      expected.json: 483070efddd2439bc4e297c6974862a38a38fa300ba37249d31fa791cd5043cf

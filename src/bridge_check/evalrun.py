@@ -7,10 +7,15 @@ the PR base (`bridge_check.baseline`) and exits 0 (no regression), 1 (regression
 failed or the evaluation could not run) or 4 (another run holds the lock).
 
 Holdout: a manifest row whose `split` is not `dev` is skipped with a logged reason and
-nothing under its directory is resolved or opened. A dev row whose directory, any file
-beneath it or its replay resolves into a holdout variant (a link) is refused before any
-read (`manifest.read_problem`) and the evaluation exits 3. The evaluation never reads a
-holdout file and never scores one. Only `--split dev` exists in this checkout.
+nothing under its directory is resolved or opened. A dev row whose `cases/<variant_id>/`
+directory is absent from the data root is a hash-only row (its files live in the private
+repo): it is skipped with reason `hash_only`, listed under `skipped`, never opened and never
+scored, and it does not make the report incomplete; with `--data-root` pointing at a
+checkout that holds the directory it is evaluated like any other dev row. A dev row whose
+directory, any file beneath it or its replay resolves into a holdout variant (a link) is
+refused before any read (`manifest.read_problem`) and the evaluation exits 3. The
+evaluation never reads a holdout file and never scores one. Only `--split dev` exists in
+this checkout.
 
 `--offline`: no API call. Each variant's extraction is the committed replay
 `replays/<variant_id>/<input_hash>-<prompt_version>-<schema_version>.json`, restored and
@@ -103,6 +108,9 @@ REPORT_STEM = "eval-dev"
 SKIP_HOLDOUT = "holdout_never_read"
 SKIP_MTSAMPLES = "mtsamples_unavailable"
 SKIP_REFUSED = "holdout_path_refused"
+SKIP_HASH_ONLY = "hash_only"
+"""A dev row without a `cases/<variant_id>/` directory in the data root (contract §11):
+skipped, never opened, never scored; the report stays complete."""
 """A dev row whose directory, or a file under it, resolves into a holdout variant (a link).
 Nothing of it is opened; the evaluation fails (exit 3) because a dev variant went unscored."""
 MTSAMPLES_DOC = "docs/D2-mtsamples-"
@@ -433,6 +441,11 @@ def run_eval(opts: EvalOptions) -> tuple[int, dict[str, Any], str]:
                         log_event("eval_refused", case_id=vid, stage="input")
                         refused += 1
                         continue
+                    if not case_dir.is_dir():
+                        # a hash-only row: the files are not in this checkout
+                        skipped.append({"variant_id": vid, "reason": SKIP_HASH_ONLY})
+                        log_event("eval_skipped", case_id=vid, stage="input")
+                        continue
                     if _mtsamples_missing(row, case_dir):
                         skipped.append({"variant_id": vid, "reason": SKIP_MTSAMPLES})
                         log_event("eval_skipped", case_id=vid, stage="input")
@@ -475,7 +488,7 @@ def run_eval(opts: EvalOptions) -> tuple[int, dict[str, Any], str]:
                     failed_runs == 0
                     and refused == 0
                     and not any(s["reason"] == SKIP_MTSAMPLES for s in skipped)
-                )  # holdout rows are always skipped and never block the write
+                )  # holdout and hash-only rows are always skipped and never block the write
                 if opts.write_baseline and complete:
                     baseline_data = build(store, {s.variant_id: s.run_id for s in scored}, root)
             finally:

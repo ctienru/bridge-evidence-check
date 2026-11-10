@@ -1,9 +1,11 @@
 """`reports/baseline-dev.json`: the regression baseline of the dev split (contract §11).
 
-For every dev variant of `splits.yaml`: the gold hash (from the manifest), the replay file
-and its hash, the input hash, the status and flags of every condition and claim next to
-gold, whether each is correct, and the false-support and missed-exclusion counts. The eval
-job compares a new run against this file; `scripts/build_baseline.py` writes it.
+For every dev variant of `splits.yaml` that has a directory in the checkout: the gold hash
+(from the manifest), the replay file and its hash, the input hash, the status and flags of
+every condition and claim next to gold, whether each is correct, and the false-support and
+missed-exclusion counts. The eval job compares a new run against this file;
+`scripts/build_baseline.py` writes it. Hash-only dev rows (no directory) are listed by id
+under `hash_only`.
 
 Definitions (planning section 3.1, contract §11):
 - correct: same status, and for conditions the same sorted flags (gold claims carry none);
@@ -103,6 +105,9 @@ class Baseline(_Strict):
     split: Literal["dev"]
     manifest_sha256: str = Field(pattern=_SHA256)
     generated_from: GeneratedFrom
+    hash_only: list[str] = Field(default_factory=list)
+    """Dev variants of the manifest whose directory is absent from the checkout (hash-only
+    rows, contract §11): recorded by id, never scored, no case entry."""
     cases: dict[str, CaseBaseline]
     totals: Totals
 

@@ -1,6 +1,7 @@
 """`bridge eval --split dev --offline` on a synthetic data root (contract §1, §11): the
 public report files, exit codes 0 / 1 / 3 / 4, replay seeding without an API call, the
-temporary database, holdout rows never opened, MTSamples-unavailable rows skipped."""
+temporary database, holdout rows never opened, MTSamples-unavailable rows skipped, hash-only
+dev rows skipped and evaluated only when the data root holds their directory."""
 
 from __future__ import annotations
 
@@ -55,6 +56,19 @@ MTS_ROW = f"""  - case_id: case-mts
       docs/D2-mtsamples-9999.txt: {"0" * 64}
       expected.json: {"0" * 64}
 """
+HASH_ONLY_ROWS = f"""  - case_id: case-hashonly
+    variant_id: case-hashonly
+    split: dev
+    frozen_at: 2026-11-10
+    gold_version: 1
+    files: {{input.yaml: {"1" * 64}, expected.json: {"1" * 64}}}
+  - case_id: case-hold2
+    variant_id: case-hold2
+    split: holdout
+    frozen_at: 2026-11-10
+    gold_version: 1
+    files: {{input.yaml: {"2" * 64}, expected.json: {"2" * 64}}}
+"""
 
 
 def _data_root(tmp_path: Path, *, with_replay: bool = True, extra_rows: str = "") -> Path:
@@ -103,6 +117,47 @@ def _data_root(tmp_path: Path, *, with_replay: bool = True, extra_rows: str = ""
         path.parent.mkdir(parents=True)
         path.write_text(dump_replay(payload), encoding="utf-8")
     return root
+
+
+def _add_dev_variant(root: Path, tmp_path: Path, vid: str) -> None:
+    """Give the data root a directory and a replay for dev variant `vid`: a copy of the
+    smoke case under that id, recorded once through the fake client."""
+    case_dir = root / "cases" / vid
+    shutil.copytree(SMOKE, case_dir)
+    shutil.copy(GOLD, case_dir / "expected.json")
+    inp = case_dir / "input.yaml"
+    inp.write_text(
+        inp.read_text(encoding="utf-8").replace("variant_id: case-smoke", f"variant_id: {vid}"),
+        encoding="utf-8",
+    )
+    (case_dir / "case.yaml").write_text(
+        f"case_id: {vid}\nsplit: dev\nsource: synthetic\ndocuments:\n"
+        "  - {doc_id: D1-referral, doc_origin: authored}\ntraps: []\ntests: [claim.drug]\n",
+        encoding="utf-8",
+    )
+    db = tmp_path / f"record-{vid}.db"
+    os.environ["BRIDGE_FAKE_CLIENT"] = "1"
+    try:
+        assert bridge_main(["check", str(case_dir), "--db", str(db)]) == 0
+    finally:
+        del os.environ["BRIDGE_FAKE_CLIENT"]
+    store = open_store(db)
+    try:
+        run_id = store.latest_completed_run(vid)
+        assert run_id is not None
+        case = load_case(case_dir, root)
+        payload = export_public_run(store, run_id, case.texts)
+    finally:
+        store.close()
+    path = replay_path(
+        root / "replays",
+        vid,
+        payload["input_hash"],
+        payload["prompt_version"],
+        payload["schema_version"],
+    )
+    path.parent.mkdir(parents=True)
+    path.write_text(dump_replay(payload), encoding="utf-8")
 
 
 @pytest.fixture
@@ -232,6 +287,8 @@ def test_lock_held_exits_4(tmp_path: Path) -> None:
 
 def test_mtsamples_unavailable_variant_is_skipped_and_report_incomplete(tmp_path: Path) -> None:
     root = _data_root(tmp_path, extra_rows=MTS_ROW)
+    # the variant has its directory (as every MTSamples case does); only the document is absent
+    (root / "cases" / "case-mts").mkdir()
     assert _eval(root, tmp_path / "out") == EXIT_OK
     report = json.loads((tmp_path / "out" / "eval-dev.json").read_text(encoding="utf-8"))
     assert {s["variant_id"]: s["reason"] for s in report["skipped"]} == {
@@ -239,6 +296,62 @@ def test_mtsamples_unavailable_variant_is_skipped_and_report_incomplete(tmp_path
         "case-mts": "mtsamples_unavailable",
     }
     assert report["incomplete"] and "case-mts" not in report["score"]["cases"]
+
+
+def test_hash_only_dev_row_is_skipped_never_opened_and_not_incomplete(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A dev row without a `cases/<variant_id>/` directory (contract §11) is skipped with
+    reason `hash_only`, listed under `skipped`, never named on disk, never scored, and the
+    report stays complete; a holdout row without a directory keeps its own reason."""
+    root = _data_root(tmp_path, extra_rows=HASH_ONLY_ROWS)
+    opened = _record_opens(monkeypatch, root / "cases" / "case-hashonly")
+    out = tmp_path / "out"
+    assert _eval(root, out, "--db", str(tmp_path / "eval.db")) == EXIT_OK
+    assert opened == []
+    report = json.loads((out / "eval-dev.json").read_text(encoding="utf-8"))
+    assert {s["variant_id"]: s["reason"] for s in report["skipped"]} == {
+        "case-hold": "holdout_never_read",
+        "case-hashonly": "hash_only",
+        "case-hold2": "holdout_never_read",
+    }
+    assert not report["incomplete"]
+    assert set(report["score"]["cases"]) == {"case-smoke"}
+    md = (out / "eval-dev.md").read_text(encoding="utf-8")
+    assert "`case-hashonly`: hash_only" in md
+
+
+def test_hash_only_dev_row_is_evaluated_when_the_data_root_has_its_directory(
+    tmp_path: Path,
+) -> None:
+    """The same manifest against a data root that holds the directory (`--data-root`): the
+    row is a normal dev variant, scored from its replay and absent from `skipped`."""
+    root = _data_root(tmp_path, extra_rows=HASH_ONLY_ROWS)
+    _add_dev_variant(root, tmp_path, "case-hashonly")
+    out = tmp_path / "out"
+    assert _eval(root, out, "--db", str(tmp_path / "eval.db")) == EXIT_OK
+    report = json.loads((out / "eval-dev.json").read_text(encoding="utf-8"))
+    assert {s["variant_id"]: s["reason"] for s in report["skipped"]} == {
+        "case-hold": "holdout_never_read",
+        "case-hold2": "holdout_never_read",
+    }
+    assert set(report["score"]["cases"]) == {"case-smoke", "case-hashonly"}
+    assert report["score"]["cases"]["case-hashonly"]["extraction_source"] == "replay"
+    assert not report["incomplete"]
+
+
+def test_baseline_builder_records_hash_only_dev_rows_by_id(tmp_path: Path) -> None:
+    from bridge_check.baseline import build
+
+    root = _data_root(tmp_path, extra_rows=HASH_ONLY_ROWS)
+    store = open_store(tmp_path / "record.db")  # the run `_data_root` recorded
+    try:
+        data = build(store, {}, root)
+    finally:
+        store.close()
+    assert data["hash_only"] == ["case-hashonly"] and set(data["cases"]) == {"case-smoke"}
+    assert data["totals"]["cases"] == 1
+    Baseline.model_validate(data)
 
 
 def _baseline_from(report: dict[str, Any], vid: str) -> Baseline:

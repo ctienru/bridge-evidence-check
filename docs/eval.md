@@ -103,7 +103,13 @@ MTSamples, real text from a published case report, authored cases, and dirty-lad
 (empty until a final ladder level is public). Each section carries its own totals and its own
 false-support count; sections are never summed into one number. Dev and holdout are never in
 one report: `bridge eval` accepts `--split dev` only, and every manifest row whose split is
-not `dev` is skipped before its directory is named. A dev row whose directory, any path
+not `dev` is skipped before its directory is named (`holdout_never_read`). A dev row whose
+`cases/<variant_id>/` directory is absent from the data root is a hash-only row (its files
+are kept in the private repo, contract §11): it is skipped with reason `hash_only`, listed
+under `skipped`, never opened and never scored, and it does not make the report
+incomplete; against a data root that holds the directory (`--data-root`) it is evaluated
+like any other dev row, and the baseline records it by id under `hash_only` with no case
+entry. A dev row whose directory, any path
 beneath it, or its replay resolves into a holdout variant (a link) is refused before any
 read (`holdout_path_refused`) and the evaluation exits 3; the exact path of every file
 (`input.yaml`, each document, `expected.json`, `case.yaml`, the replay) is checked again
@@ -135,8 +141,10 @@ scope" in every report until they exist.
 ## 2. How to read `eval-dev.md`
 
 1. The header names the prompt, schema, rules, splitter and model versions, the code sha,
-   skipped variants with their reasons, and whether the report is incomplete (an MTSamples
-   document could not be fetched, so that variant is missing from every count).
+   skipped variants with their reasons (`holdout_never_read`, `hash_only`,
+   `mtsamples_unavailable`, `holdout_path_refused`), and whether the report is incomplete
+   (an MTSamples document could not be fetched, so that variant is missing from every
+   count; a hash-only skip does not make it incomplete).
 2. Totals: the micro counts above, with the false-support table.
 3. Regression against the baseline: the ref, its sha256, and the items (section 3).
 4. Sections by text origin, each with the same totals.
