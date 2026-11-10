@@ -5,7 +5,7 @@ from __future__ import annotations
 import ast
 
 import pytest
-from conftest import ROOT, fact, run_verify
+from conftest import ROOT, decide, fact, run_verify
 
 from bridge_check.cues import load_cues
 from bridge_check.enums import CONCEPTS, EXTRACTION_DATE_PRECISIONS
@@ -256,3 +256,228 @@ def test_every_concept_except_other_has_a_term() -> None:
     terms = load_terms()
     assert set(terms.concept_terms) == set(CONCEPTS) - {"other"}
     assert all(terms.concept_terms[c] for c in terms.concept_terms)
+
+
+# --- Dated event facts: the temporality axis is recorded, never decides (contract §5) -------
+
+START = "Wegovy was started on 2025-03-15."
+PRIOR_START = "Prior Wegovy, started on 2025-03-15."
+EVENT_TEMPORALITIES = ("historical", "resolved")
+
+
+def _start(doc: str, **axes: str) -> CheckedEvidence:
+    f = fact(
+        "glp1_start",
+        doc,
+        drug="Wegovy",
+        date="2025-03-15",
+        event_date="2025-03-15",
+        date_precision="day",
+        **axes,
+    )
+    return run_verify({"D1": doc}, {"glp1_start": [f]}).evidence[0]
+
+
+@pytest.mark.parametrize("temporality", EVENT_TEMPORALITIES)
+def test_event_fact_temporality_without_a_cue_is_flagged_not_unrecognized(
+    temporality: str,
+) -> None:
+    ev = _start(START, temporality=temporality)
+    assert ev.assertion_check == "matched"
+    assert ev.flags == ("temporality_unverified",)
+    assert ev.exclusion_reasons == ()
+    assert ev.temporality_checked == "current"
+
+
+def test_event_fact_temporality_cue_contradicting_the_claim_is_not_an_exclusion() -> None:
+    ev = _start(PRIOR_START, temporality="current")
+    assert ev.temporality_checked == "historical"
+    assert ev.assertion_check == "matched"
+    assert ev.flags == ("temporality_unverified",)
+    assert ev.exclusion_reasons == ()
+
+
+def test_event_fact_with_the_temporality_the_cues_give_carries_no_flag() -> None:
+    assert _start(START, temporality="current").flags == ()
+    assert _start(PRIOR_START, temporality="historical").flags == ()
+
+
+DOC_DATE = "The attached D3 consult is dated 2025-03-15."
+
+
+@pytest.mark.parametrize(
+    ("field", "docs", "quote", "extra"),
+    [
+        ("prior_glp1", {"D1": START}, START, {"date": "2025-03-15"}),
+        (
+            "doc_dates",
+            {"D1": DOC_DATE, "D3": "y"},
+            DOC_DATE,
+            {"target_doc_id": "D3", "date": "2025-03-15"},
+        ),
+    ],
+)
+def test_other_event_fields_ignore_the_temporality_axis(
+    field: str, docs: dict[str, str | tuple[str, str]], quote: str, extra: dict[str, str]
+) -> None:
+    f = fact(
+        field,
+        quote,
+        temporality="historical",
+        event_date="2025-03-15",
+        date_precision="day",
+        **extra,
+    )
+    ev = run_verify(docs, {field: [f]}).evidence[0]
+    assert ev.assertion_check == "matched"
+    assert ev.flags == ("temporality_unverified",)
+    assert ev.exclusion_reasons == ()
+
+
+def test_event_fact_certainty_and_subject_still_decide() -> None:
+    negated = _start(START, certainty="negated")
+    assert negated.assertion_check == "unrecognized" and "unrecognized" in negated.flags
+    family = _start(START, subject="family")
+    assert family.assertion_check == "unrecognized" and "unrecognized" in family.flags
+    denied = _start("Denies starting Wegovy on 2025-03-15.", temporality="historical")
+    assert denied.assertion_check == "mismatch"
+    assert "assertion_mismatch" in denied.exclusion_reasons
+
+
+def test_non_event_fact_keeps_the_temporality_axis() -> None:
+    ev = _check("HFpEF on echo.", "hfpef", ("present", "patient", "historical"))
+    assert ev.assertion_check == "unrecognized"
+    assert "unrecognized" in ev.flags and "temporality_unverified" not in ev.flags
+    ev = _check("History of MI in 2019", "mi", DEFAULTS)
+    assert "assertion_mismatch" in ev.exclusion_reasons
+
+
+# An explicit hypothetical cue still decides on an event fact: a conditional date or fill is
+# not an event and must neither anchor nor trigger an exclusion (review, P1).
+
+COND_DOC_DATE = "If the attached D2 consult is dated 2025-03-15, recheck."
+COND_FILL = "If Wegovy was filled on 2024-06-01 under Part D, the claim is denied."
+
+
+def _cond_doc_date(**axes: str) -> dict[str, object]:
+    return fact(
+        "doc_dates",
+        COND_DOC_DATE,
+        target_doc_id="D2",
+        date="2025-03-15",
+        event_date="2025-03-15",
+        date_precision="day",
+        **axes,
+    )
+
+
+def _cond_fill(**axes: str) -> dict[str, object]:
+    return fact(
+        "prior_glp1",
+        COND_FILL,
+        drug="Wegovy",
+        date="2024-06-01",
+        event_date="2024-06-01",
+        date_precision="day",
+        payer="part_d",
+        **axes,
+    )
+
+
+def test_event_fact_in_a_hypothetical_cue_claimed_current_is_excluded() -> None:
+    docs: dict[str, str | tuple[str, str]] = {"D1": COND_DOC_DATE + " " + COND_FILL, "D2": "x"}
+    ev = run_verify(docs, {"doc_dates": [_cond_doc_date()], "prior_glp1": [_cond_fill()]})
+    for row in ev.evidence:
+        assert row.temporality_checked == "hypothetical", row.field
+        assert row.assertion_check == "mismatch", row.field
+        assert "assertion_mismatch" in row.exclusion_reasons, row.field
+
+
+def test_event_fact_in_a_hypothetical_cue_claimed_hypothetical_is_no_patient_fact() -> None:
+    docs: dict[str, str | tuple[str, str]] = {"D1": COND_DOC_DATE, "D2": "BMI 36.5."}
+    ev = run_verify(docs, {"doc_dates": [_cond_doc_date(temporality="hypothetical")]}).evidence[0]
+    assert ev.assertion_check == "matched" and ev.flags == ()
+    facts = decide([ev])
+    assert facts["bmi_path_a"].status == "insufficient"
+
+
+def test_conditional_doc_date_does_not_date_an_undated_bmi() -> None:
+    start_q = "Wegovy was started on 2025-03-15."
+    docs: dict[str, str | tuple[str, str]] = {
+        "D1": start_q + " " + COND_DOC_DATE,
+        "D2": "BMI 36.5.",
+    }
+    start = fact(
+        "glp1_start",
+        start_q,
+        drug="Wegovy",
+        date="2025-03-15",
+        event_date="2025-03-15",
+        date_precision="day",
+    )
+    bmi = fact("anthropometrics", "BMI 36.5.", doc_id="D2", kind="bmi", raw_value="36.5")
+    base = {"glp1_start": [start], "anthropometrics": [bmi]}
+    without = decide(run_verify(docs, base).evidence)
+    with_cond = decide(run_verify(docs, {**base, "doc_dates": [_cond_doc_date()]}).evidence)
+    assert without["bmi_path_a"].status == "insufficient"
+    for cid in ("bmi_path_a", "bmi_path_b.bmi", "bmi_path_c.bmi", "bmi_path_b", "bmi_path_c"):
+        assert with_cond[cid].status == without[cid].status, cid
+
+
+def test_conditional_part_d_fill_does_not_trigger_the_exclusion() -> None:
+    start_q = "Wegovy was started on 2025-03-15."
+    docs: dict[str, str | tuple[str, str]] = {"D1": start_q + " " + COND_FILL}
+    start = fact(
+        "glp1_start",
+        start_q,
+        drug="Wegovy",
+        date="2025-03-15",
+        event_date="2025-03-15",
+        date_precision="day",
+    )
+    without = decide(run_verify(docs, {"glp1_start": [start]}).evidence)
+    with_cond = decide(
+        run_verify(docs, {"glp1_start": [start], "prior_glp1": [_cond_fill()]}).evidence
+    )
+    assert without["exclusion.part_d_glp1"].status == "insufficient"
+    assert with_cond["exclusion.part_d_glp1"].status == "insufficient"
+
+
+def test_event_fact_with_undecidable_temporality_stays_unrecognized() -> None:
+    quote = "If prior Wegovy was started on 2025-03-15, recheck."
+    ev = _start(quote, temporality="current")
+    assert ev.temporality_checked is None
+    assert ev.assertion_check == "unrecognized" and "unrecognized" in ev.flags
+
+
+@pytest.mark.parametrize("fill_date", ["2024-06-01", "2026-06-01"])
+def test_mixed_cue_part_d_fill_is_kept_as_evidence_but_never_decides(fill_date: str) -> None:
+    # `if` (hypothetical) and `previously` (historical) both in scope: the temporality scope
+    # cannot be decided, so the fill stays `unrecognized` evidence and does not reach the
+    # Part D rule (contract §5: prior_glp1 uses the same gate as initiation and doc_dates).
+    start_q = "Wegovy was started on 2025-03-15."
+    fill_q = f"If previously Wegovy was filled on {fill_date} under Part D, the claim is denied."
+    docs: dict[str, str | tuple[str, str]] = {"D1": start_q + " " + fill_q}
+    start = fact(
+        "glp1_start",
+        start_q,
+        drug="Wegovy",
+        date="2025-03-15",
+        event_date="2025-03-15",
+        date_precision="day",
+    )
+    fill = fact(
+        "prior_glp1",
+        fill_q,
+        drug="Wegovy",
+        date=fill_date,
+        event_date=fill_date,
+        date_precision="day",
+        payer="part_d",
+    )
+    ev = run_verify(docs, {"glp1_start": [start], "prior_glp1": [fill]}).evidence
+    row = next(e for e in ev if e.field == "prior_glp1")
+    assert row.temporality_checked is None
+    assert row.assertion_check == "unrecognized" and "unrecognized" in row.flags
+    assert row.exclusion_reasons == ()
+    assert decide(ev)["exclusion.part_d_glp1"].status == "insufficient"

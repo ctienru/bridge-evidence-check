@@ -79,7 +79,7 @@ from bridge_check.store import Store
 from bridge_check.text import read_doc
 
 MODEL = "claude-sonnet-5-5"
-PROMPT_VERSION = "extract-v2"
+PROMPT_VERSION = "extract-v3"
 PROMPT_PATH = CHECKOUT_ROOT / "prompts" / f"{PROMPT_VERSION}.md"
 THINKING: dict[str, str] = {"type": "adaptive"}
 

@@ -17,10 +17,12 @@
         },
         "claim.bmi_bracket": {
           "correct": false,
-          "flags": [],
+          "flags": [
+            "timing_disagreement"
+          ],
           "gold_flags": [],
           "gold_status": "supported",
-          "status": "insufficient"
+          "status": "review"
         },
         "claim.bmi_path_b.hfpef": {
           "correct": true,
@@ -37,11 +39,11 @@
           "status": "supported"
         },
         "claim.drug": {
-          "correct": false,
+          "correct": true,
           "flags": [],
           "gold_flags": [],
           "gold_status": "supported",
-          "status": "insufficient"
+          "status": "supported"
         },
         "claim.exclusion.part_d_glp1": {
           "correct": true,
@@ -65,14 +67,14 @@
           "status": "insufficient"
         },
         "claim.lifestyle.nutrition": {
-          "correct": false,
+          "correct": true,
           "flags": [],
           "gold_flags": [],
           "gold_status": "insufficient",
-          "status": "review"
+          "status": "insufficient"
         }
       },
-      "claims_correct": 6,
+      "claims_correct": 8,
       "claims_false_support_count": 0,
       "conditions": {
         "age_18": {
@@ -88,24 +90,28 @@
         },
         "bmi_path_a": {
           "correct": false,
-          "flags": [],
+          "flags": [
+            "timing_disagreement"
+          ],
           "gold_flags": [],
           "gold_status": "supported",
-          "status": "insufficient"
+          "status": "review"
         },
         "bmi_path_b": {
-          "correct": true,
-          "flags": [],
-          "gold_flags": [],
-          "gold_status": "insufficient",
-          "status": "insufficient"
-        },
-        "bmi_path_b.bmi": {
           "correct": false,
           "flags": [],
           "gold_flags": [],
+          "gold_status": "insufficient",
+          "status": "review"
+        },
+        "bmi_path_b.bmi": {
+          "correct": false,
+          "flags": [
+            "timing_disagreement"
+          ],
+          "gold_flags": [],
           "gold_status": "supported",
-          "status": "insufficient"
+          "status": "review"
         },
         "bmi_path_b.ckd": {
           "correct": true,
@@ -129,18 +135,20 @@
           "status": "insufficient"
         },
         "bmi_path_c": {
-          "correct": true,
-          "flags": [],
-          "gold_flags": [],
-          "gold_status": "insufficient",
-          "status": "insufficient"
-        },
-        "bmi_path_c.bmi": {
           "correct": false,
           "flags": [],
           "gold_flags": [],
+          "gold_status": "insufficient",
+          "status": "review"
+        },
+        "bmi_path_c.bmi": {
+          "correct": false,
+          "flags": [
+            "timing_disagreement"
+          ],
+          "gold_flags": [],
           "gold_status": "supported",
-          "status": "insufficient"
+          "status": "review"
         },
         "bmi_path_c.mi": {
           "correct": true,
@@ -206,11 +214,11 @@
           "status": "insufficient"
         },
         "lifestyle.nutrition": {
-          "correct": false,
+          "correct": true,
           "flags": [],
           "gold_flags": [],
           "gold_status": "insufficient",
-          "status": "review"
+          "status": "insufficient"
         },
         "patient_identity": {
           "correct": true,
@@ -224,14 +232,14 @@
           "status": "review"
         }
       },
-      "conditions_correct": 16,
+      "conditions_correct": 15,
       "false_support_count": 0,
       "gold_sha256": "bb5391b3276f2df2a472bc2c0a305b9d7b6fc47abfb0918b2b87dbbb8b9f0c64",
       "input_hash": "43931e3233b805cc291e8d542a56e56e9693ea3e8e9d977012a635d664bbebe5",
       "missed_exclusion_count": 0,
       "replay": {
-        "path": "replays/case-01/43931e3233b805cc291e8d542a56e56e9693ea3e8e9d977012a635d664bbebe5-extract-v2-v2.json",
-        "sha256": "daa514bb79cc4734912fb2aa2635014e2482ec89e092b8332074965b024e1010"
+        "path": "replays/case-01/43931e3233b805cc291e8d542a56e56e9693ea3e8e9d977012a635d664bbebe5-extract-v3-v2.json",
+        "sha256": "be0ae432fc88aa24771fd0b71cd157a13f941b7812679202ca5d267d133d82eb"
       }
     },
     "case-02": {
@@ -250,10 +258,12 @@
         },
         "claim.bmi_bracket": {
           "correct": false,
-          "flags": [],
+          "flags": [
+            "timing_disagreement"
+          ],
           "gold_flags": [],
           "gold_status": "supported",
-          "status": "insufficient"
+          "status": "review"
         },
         "claim.bmi_path_b.hfpef": {
           "correct": true,
@@ -263,14 +273,14 @@
           "status": "conflict"
         },
         "claim.drug": {
-          "correct": false,
+          "correct": true,
           "flags": [],
           "gold_flags": [],
           "gold_status": "supported",
-          "status": "insufficient"
+          "status": "supported"
         }
       },
-      "claims_correct": 2,
+      "claims_correct": 3,
       "claims_false_support_count": 0,
       "conditions": {
         "age_18": {
@@ -281,25 +291,27 @@
           "status": "supported"
         },
         "bmi_path_a": {
-          "correct": false,
+          "correct": true,
           "flags": [],
           "gold_flags": [],
           "gold_status": "not_supported",
-          "status": "insufficient"
+          "status": "not_supported"
         },
         "bmi_path_b": {
           "correct": false,
           "flags": [],
           "gold_flags": [],
           "gold_status": "supported",
-          "status": "insufficient"
+          "status": "review"
         },
         "bmi_path_b.bmi": {
           "correct": false,
-          "flags": [],
+          "flags": [
+            "timing_disagreement"
+          ],
           "gold_flags": [],
           "gold_status": "supported",
-          "status": "insufficient"
+          "status": "review"
         },
         "bmi_path_b.ckd": {
           "correct": true,
@@ -323,18 +335,20 @@
           "status": "insufficient"
         },
         "bmi_path_c": {
-          "correct": true,
-          "flags": [],
-          "gold_flags": [],
-          "gold_status": "insufficient",
-          "status": "insufficient"
-        },
-        "bmi_path_c.bmi": {
           "correct": false,
           "flags": [],
           "gold_flags": [],
+          "gold_status": "insufficient",
+          "status": "review"
+        },
+        "bmi_path_c.bmi": {
+          "correct": false,
+          "flags": [
+            "timing_disagreement"
+          ],
+          "gold_flags": [],
           "gold_status": "supported",
-          "status": "insufficient"
+          "status": "review"
         },
         "bmi_path_c.mi": {
           "correct": true,
@@ -420,8 +434,8 @@
       "input_hash": "3934e23a9ca78bee80aaf57224ad3fa22b09c0507b27dfeeccc095954015d97f",
       "missed_exclusion_count": 0,
       "replay": {
-        "path": "replays/case-02/3934e23a9ca78bee80aaf57224ad3fa22b09c0507b27dfeeccc095954015d97f-extract-v2-v2.json",
-        "sha256": "2050118a0a3bba06ebfbdb46be20c8fbbb337c0481df59586710c1d119a890c5"
+        "path": "replays/case-02/3934e23a9ca78bee80aaf57224ad3fa22b09c0507b27dfeeccc095954015d97f-extract-v3-v2.json",
+        "sha256": "f3f7759cec20db9e0ef0eabbaa7867af9c241ac256ddbfb2c86bc96c17517153"
       }
     },
     "case-03": {
@@ -453,11 +467,11 @@
           "status": "insufficient"
         },
         "claim.drug": {
-          "correct": false,
+          "correct": true,
           "flags": [],
           "gold_flags": [],
           "gold_status": "supported",
-          "status": "insufficient"
+          "status": "supported"
         },
         "claim.exclusion.osa": {
           "correct": true,
@@ -474,7 +488,7 @@
           "status": "insufficient"
         }
       },
-      "claims_correct": 3,
+      "claims_correct": 4,
       "claims_false_support_count": 0,
       "conditions": {
         "age_18": {
@@ -628,8 +642,8 @@
       "input_hash": "7d40a9949aedf10dd061c1127cb4cd809d551398b6c666e6607cb91e0bfbc140",
       "missed_exclusion_count": 0,
       "replay": {
-        "path": "replays/case-03/7d40a9949aedf10dd061c1127cb4cd809d551398b6c666e6607cb91e0bfbc140-extract-v2-v2.json",
-        "sha256": "efe61853821b5f1f6f141e07d8d7cd78e19b2f016b2c797bfa5b51d1e0f15aca"
+        "path": "replays/case-03/7d40a9949aedf10dd061c1127cb4cd809d551398b6c666e6607cb91e0bfbc140-extract-v3-v2.json",
+        "sha256": "d41699a569e20cad76cd1c0f8a79009f95187828422283e215ed21107152c97c"
       }
     },
     "case-04": {
@@ -640,25 +654,25 @@
       },
       "claims": {
         "claim.age_18": {
+          "correct": false,
+          "flags": [],
+          "gold_flags": [],
+          "gold_status": "supported",
+          "status": "insufficient"
+        },
+        "claim.bmi_bracket": {
           "correct": true,
           "flags": [],
           "gold_flags": [],
           "gold_status": "supported",
           "status": "supported"
         },
-        "claim.bmi_bracket": {
-          "correct": false,
-          "flags": [],
-          "gold_flags": [],
-          "gold_status": "supported",
-          "status": "insufficient"
-        },
         "claim.drug": {
-          "correct": false,
+          "correct": true,
           "flags": [],
           "gold_flags": [],
           "gold_status": "supported",
-          "status": "insufficient"
+          "status": "supported"
         },
         "claim.exclusion.osa": {
           "correct": true,
@@ -668,22 +682,22 @@
           "status": "conflict"
         }
       },
-      "claims_correct": 2,
+      "claims_correct": 3,
       "claims_false_support_count": 0,
       "conditions": {
         "age_18": {
-          "correct": true,
-          "flags": [],
-          "gold_flags": [],
-          "gold_status": "supported",
-          "status": "supported"
-        },
-        "bmi_path_a": {
           "correct": false,
           "flags": [],
           "gold_flags": [],
-          "gold_status": "not_supported",
+          "gold_status": "supported",
           "status": "insufficient"
+        },
+        "bmi_path_a": {
+          "correct": true,
+          "flags": [],
+          "gold_flags": [],
+          "gold_status": "not_supported",
+          "status": "not_supported"
         },
         "bmi_path_b": {
           "correct": false,
@@ -693,11 +707,11 @@
           "status": "insufficient"
         },
         "bmi_path_b.bmi": {
-          "correct": false,
+          "correct": true,
           "flags": [],
           "gold_flags": [],
           "gold_status": "supported",
-          "status": "insufficient"
+          "status": "supported"
         },
         "bmi_path_b.ckd": {
           "correct": true,
@@ -721,18 +735,18 @@
           "status": "insufficient"
         },
         "bmi_path_c": {
-          "correct": false,
+          "correct": true,
           "flags": [],
           "gold_flags": [],
           "gold_status": "supported",
-          "status": "insufficient"
+          "status": "supported"
         },
         "bmi_path_c.bmi": {
-          "correct": false,
+          "correct": true,
           "flags": [],
           "gold_flags": [],
           "gold_status": "supported",
-          "status": "insufficient"
+          "status": "supported"
         },
         "bmi_path_c.mi": {
           "correct": true,
@@ -812,14 +826,14 @@
           "status": "supported"
         }
       },
-      "conditions_correct": 13,
+      "conditions_correct": 16,
       "false_support_count": 0,
       "gold_sha256": "b898654beb0fe7aa77172582b3ae7751b99bfeca4686df929ea007f1e02500f5",
       "input_hash": "98db44ca3e6075fd9382db59c4f8e0e049c6cd4d0f557bde334b1788b1922d45",
       "missed_exclusion_count": 0,
       "replay": {
-        "path": "replays/case-04/98db44ca3e6075fd9382db59c4f8e0e049c6cd4d0f557bde334b1788b1922d45-extract-v2-v2.json",
-        "sha256": "b38210ab1a14a90e8acf958668f034d962458aa7275367b7341e746240930536"
+        "path": "replays/case-04/98db44ca3e6075fd9382db59c4f8e0e049c6cd4d0f557bde334b1788b1922d45-extract-v3-v2.json",
+        "sha256": "aabb1bcc3f48d8c4c40d3cfb7d09f9423ac4d502d4fd6c48e8e2669c71c185fd"
       }
     },
     "case-07": {
@@ -1019,8 +1033,8 @@
       "input_hash": "8a5bd980fcd13ad45fa88b64089896d45c037cc1593f592178d339a0ed6fa96f",
       "missed_exclusion_count": 0,
       "replay": {
-        "path": "replays/case-07/8a5bd980fcd13ad45fa88b64089896d45c037cc1593f592178d339a0ed6fa96f-extract-v2-v2.json",
-        "sha256": "07d9cd19373bc6ac1c2f844c2eb95648e7f32536e5ac77e31151ad52db2e6712"
+        "path": "replays/case-07/8a5bd980fcd13ad45fa88b64089896d45c037cc1593f592178d339a0ed6fa96f-extract-v3-v2.json",
+        "sha256": "2a008decafab61b24266334f1e8cece1606dc61c4140f044818a61e472d9f4fb"
       }
     },
     "case-07b": {
@@ -1031,11 +1045,11 @@
       },
       "claims": {
         "claim.age_18": {
-          "correct": true,
+          "correct": false,
           "flags": [],
           "gold_flags": [],
           "gold_status": "supported",
-          "status": "supported"
+          "status": "insufficient"
         },
         "claim.bmi_bracket": {
           "correct": true,
@@ -1066,15 +1080,15 @@
           "status": "insufficient"
         }
       },
-      "claims_correct": 5,
+      "claims_correct": 4,
       "claims_false_support_count": 0,
       "conditions": {
         "age_18": {
-          "correct": true,
+          "correct": false,
           "flags": [],
           "gold_flags": [],
           "gold_status": "supported",
-          "status": "supported"
+          "status": "insufficient"
         },
         "bmi_path_a": {
           "correct": true,
@@ -1214,14 +1228,14 @@
           "status": "conflict"
         }
       },
-      "conditions_correct": 20,
+      "conditions_correct": 19,
       "false_support_count": 0,
       "gold_sha256": "022e80bef19e7075c9e7c8b116919a6a958c75c8699c7be7a712373bf252aba8",
       "input_hash": "2b7dc575d40b4b24079bb0dec95cf0333b6036b5dc13962048276124aa3fe181",
       "missed_exclusion_count": 0,
       "replay": {
-        "path": "replays/case-07b/2b7dc575d40b4b24079bb0dec95cf0333b6036b5dc13962048276124aa3fe181-extract-v2-v2.json",
-        "sha256": "648f794ca4839b8153e4ee19ff600593b27fdc85775161d39c6f9b8283ade36d"
+        "path": "replays/case-07b/2b7dc575d40b4b24079bb0dec95cf0333b6036b5dc13962048276124aa3fe181-extract-v3-v2.json",
+        "sha256": "64743002f7dc4bfaad91d3060af4361a8d6602167dc51b47cbb2feb5be9f26cc"
       }
     },
     "case-17": {
@@ -1267,14 +1281,14 @@
           "status": "supported"
         },
         "claim.drug": {
-          "correct": false,
+          "correct": true,
           "flags": [],
           "gold_flags": [],
           "gold_status": "supported",
-          "status": "insufficient"
+          "status": "supported"
         }
       },
-      "claims_correct": 5,
+      "claims_correct": 6,
       "claims_false_support_count": 0,
       "conditions": {
         "age_18": {
@@ -1428,15 +1442,15 @@
       "input_hash": "24dd49910d64ebe88129867a6810796768b882d7eee52f985abced6b5c6f0cd6",
       "missed_exclusion_count": 0,
       "replay": {
-        "path": "replays/case-17/24dd49910d64ebe88129867a6810796768b882d7eee52f985abced6b5c6f0cd6-extract-v2-v2.json",
-        "sha256": "3cc9ad3c5570bec1b241c99097aa8d379297251699e1007429c0f71aa1906e7c"
+        "path": "replays/case-17/24dd49910d64ebe88129867a6810796768b882d7eee52f985abced6b5c6f0cd6-extract-v3-v2.json",
+        "sha256": "35bfc32d556373c357896dd89c37e101134a5eaf98f19fd946e0e52fac6e696d"
       }
     }
   },
   "generated_from": {
-    "code_sha": "f0bb792476a711f1f9c81971c59ea678ce4b6a7a",
+    "code_sha": "68b1c8698631ca45565b78be7314dae9f9eb4f72-dirty",
     "model_returned": "claude-sonnet-5-5",
-    "prompt_version": "extract-v2",
+    "prompt_version": "extract-v3",
     "rules_version": "bridge-v1",
     "schema_version": "v2"
   },
@@ -1444,10 +1458,10 @@
   "split": "dev",
   "totals": {
     "cases": 7,
-    "claims_correct": 28,
+    "claims_correct": 33,
     "claims_false_support_count": 0,
     "claims_total": 39,
-    "conditions_correct": 122,
+    "conditions_correct": 123,
     "conditions_total": 140,
     "false_support_count": 0,
     "missed_exclusion_count": 0

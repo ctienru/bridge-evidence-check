@@ -340,6 +340,15 @@
       "field": "doc_dates",
       "position_status": "verbatim",
       "selector": null
+    },
+    {
+      "evidence_ref": "D1-referral[262:299] 5c21063a",
+      "exclusion_reasons": [
+        "value_not_in_quote"
+      ],
+      "field": "prior_glp1",
+      "position_status": "verbatim",
+      "selector": null
     }
   ],
   "expected_absent": [
@@ -638,17 +647,15 @@
       "timing_only": false
     },
     {
-      "assertion_check": "unrecognized",
+      "assertion_check": "matched",
       "doc_id": "D1-referral",
       "evidence_ref": "D1-referral[423:456] aff55bad",
       "exclusion_reasons": [],
       "field": "bp_readings",
       "gold_index": 12,
       "gold_ref": "D1-referral[423:456] aff55bad",
-      "mismatched_keys": [
-        "temporality"
-      ],
-      "outcome": "wrong_value",
+      "mismatched_keys": [],
+      "outcome": "matched",
       "position_status": "verbatim",
       "selector": null,
       "timing_only": false
@@ -749,12 +756,12 @@
   "gold_sha256": "edca99045d8d9916b3c452b1705fe7fcbd863f0fbe4959ba3600ce11ed027d32",
   "gold_version": 1,
   "run": {
-    "code_sha": "f0bb792476a711f1f9c81971c59ea678ce4b6a7a",
+    "code_sha": "68b1c8698631ca45565b78be7314dae9f9eb4f72-dirty",
     "extraction_source": "cache",
     "input_hash": "8a5bd980fcd13ad45fa88b64089896d45c037cc1593f592178d339a0ed6fa96f",
-    "prompt_version": "extract-v2",
+    "prompt_version": "extract-v3",
     "rules_version": "bridge-v1",
-    "run_id": 9,
+    "run_id": 26,
     "schema_version": "v2",
     "status": "completed"
   },
@@ -766,7 +773,7 @@
     "claims_total": 5,
     "conditions_correct": 20,
     "conditions_total": 20,
-    "excluded_unmatched": 4,
+    "excluded_unmatched": 5,
     "false_positives": 2,
     "false_support": 0,
     "first_error": {
@@ -778,11 +785,11 @@
       "verify_excluded": 0
     },
     "gold_facts": 18,
-    "matched": 12,
+    "matched": 13,
     "matched_but_excluded": 5,
     "missed": 0,
     "missed_exclusion": 0,
-    "wrong_value": 1
+    "wrong_value": 0
   },
   "variant_id": "case-07"
 }

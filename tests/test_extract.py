@@ -135,7 +135,7 @@ def test_request_carries_exactly_one_non_strict_tool_and_single_call_choice(
     assert "strict" not in tool
     assert req["tool_choice"] == TOOL_CHOICE == {"type": "auto", "disable_parallel_tool_use": True}
     assert f"`{TOOL_NAME}`" in load_system_prompt()
-    assert PROMPT_VERSION == "extract-v2" and SCHEMA_VERSION == "v2"
+    assert PROMPT_VERSION == "extract-v3" and SCHEMA_VERSION == "v2"
 
 
 def test_request_sends_documents_with_doc_id_and_role_only(case: LoadedCase) -> None:

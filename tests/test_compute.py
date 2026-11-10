@@ -576,6 +576,84 @@ def test_unrecognized_start_or_date_row_anchors_nothing() -> None:
     assert facts.bmi_candidates[0].tp.relative == "unknown"
 
 
+@pytest.mark.parametrize("temporality", ["current", "historical", "resolved"])
+def test_event_rows_anchor_whatever_their_temporality(temporality: str) -> None:
+    # Contract §5: for glp1_start, prior_glp1 and doc_dates the temporality axis is recorded
+    # (`temporality_unverified`) and never blocks anchoring or date use.
+    flags = () if temporality == "current" else ("temporality_unverified",)
+    start = checked(
+        "glp1_start",
+        drug="Wegovy",
+        date="2025-03-15",
+        event_date="2025-03-15",
+        temporality=temporality,
+        flags=flags,
+    )
+    doc_date = checked(
+        "doc_dates",
+        target_doc_id="D1",
+        date="2025-03-15",
+        event_date="2025-03-15",
+        temporality=temporality,
+        flags=flags,
+    )
+    facts = compute([start, doc_date], ctx())
+    assert facts.initiation is not None
+    assert facts.initiation_date == DateInterval.day(date(2025, 3, 15))
+    assert facts.doc_facts["D1"].doc_date is not None
+
+
+@pytest.mark.parametrize(
+    ("certainty", "subject", "temporality"),
+    [
+        ("negated", "patient", "current"),
+        ("uncertain", "patient", "current"),
+        ("present", "family", "current"),
+        ("present", "other", "current"),
+        ("present", "patient", "hypothetical"),
+    ],
+    ids=["negated", "uncertain", "family", "other", "hypothetical"],
+)
+def test_event_rows_still_need_present_patient_actual_assertion(
+    certainty: str, subject: str, temporality: str
+) -> None:
+    start = checked(
+        "glp1_start",
+        drug="Wegovy",
+        date="2025-03-15",
+        event_date="2025-03-15",
+        certainty=certainty,
+        subject=subject,
+        temporality=temporality,
+    )
+    doc_date = checked(
+        "doc_dates",
+        target_doc_id="D1",
+        date="2025-03-15",
+        event_date="2025-03-15",
+        certainty=certainty,
+        subject=subject,
+        temporality=temporality,
+    )
+    facts = compute([start, doc_date], ctx())
+    assert facts.initiation is None
+    assert facts.doc_facts["D1"].doc_date is None
+
+
+def test_historical_start_whose_date_is_not_in_the_quote_anchors_nothing() -> None:
+    # Contract §3.1 invariant: the start day must be bound inside the verified quote.
+    start = checked(
+        "glp1_start",
+        drug="Wegovy",
+        date="2025-03-15",
+        event_date="2025-03-15",
+        temporality="historical",
+        exclusion_reasons=("value_not_in_quote",),
+        flags=("temporality_unverified",),
+    )
+    assert compute([start], ctx()).initiation is None
+
+
 @pytest.mark.parametrize("mace_first", [True, False])
 def test_mace_purpose_is_resolved_across_matching_starts(mace_first: bool) -> None:
     weight = checked("glp1_start", drug="Wegovy", date="2025-03-15", event_date="2025-03-15")

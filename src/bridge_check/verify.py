@@ -65,10 +65,12 @@ from bridge_check.enums import (
     CONCEPTS,
     DOC_ROLES,
     END_KINDS,
+    EVENT_FIELDS,
     EXTRACTION_FIELDS,
     GLP1_NAMES,
     PROGRAM_TYPES,
     PURPOSES,
+    TEMPORALITY,
 )
 from bridge_check.input import PrimaryPatient
 from bridge_check.rules_schema import load_drugs
@@ -1858,6 +1860,29 @@ def _unrecognized() -> AssertionCheck:
     return AssertionCheck("unrecognized", dict.fromkeys(AXES), dict.fromkeys(AXES, "unrecognized"))
 
 
+_EVENT_TEMPORALITIES = frozenset(TEMPORALITY) - {"hypothetical"}
+"""Cue readings of the temporality axis an event fact may disagree with (contract §5)."""
+
+
+def _event_assertion(check: AssertionCheck) -> AssertionCheck:
+    """An event fact's assertion (contract §5): when the cues read the temporality axis as
+    an actual event (current, historical, resolved), the result is decided by certainty and
+    subject only and a disagreement becomes the `temporality_unverified` flag. An explicit
+    hypothetical cue, or a temporality scope that cannot be decided, still decides: a
+    conditional date or fill is not an event."""
+    if check.checked.get("temporality") not in _EVENT_TEMPORALITIES:
+        return check
+    outcomes = {check.per_axis[a] for a in AXES if a != "temporality"}
+    result = (
+        "mismatch"
+        if "mismatch" in outcomes
+        else "unrecognized"
+        if "unrecognized" in outcomes
+        else "matched"
+    )
+    return AssertionCheck(result, check.checked, check.per_axis)
+
+
 def _assert_at(
     idx: _DocIndex,
     start: int,
@@ -2006,6 +2031,8 @@ def verify_fact(
             check, detail = _claim_assertion(fact), [{"start": s, "end": e, "result": None}]
         else:
             check, detail = _assert_at(idx, s, e, vc, fact, concept, ctx)
+            if fact_field in EVENT_FIELDS:
+                check = _event_assertion(check)
         results.append((s, e, vc, check, detail))
 
     flags: list[str] = []
@@ -2032,6 +2059,12 @@ def verify_fact(
         reasons.append("assertion_mismatch")
     if check.result == "unrecognized" or "unrecognized" in vc.flags:
         flags.append("unrecognized")
+    if (
+        fact_field in EVENT_FIELDS
+        and check.checked.get("temporality") in _EVENT_TEMPORALITIES
+        and check.per_axis.get("temporality") != "matched"
+    ):
+        flags.append("temporality_unverified")
     if is_table_line(text, start, end):
         flags.append("table_source")
     return CheckedEvidence(
