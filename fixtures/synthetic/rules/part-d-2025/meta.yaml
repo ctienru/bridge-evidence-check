@@ -1,0 +1,3 @@
+# Trap ids this single-factor fixture covers in isolation (coverage matrix, docs/eval.md).
+# Ids only; the trap pool itself is private. Not read by `bridge check`.
+trap_ids: [T-part-d-2026]

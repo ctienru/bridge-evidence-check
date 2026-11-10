@@ -30,4 +30,6 @@ These files are never used by `eval` and are not recorded model responses.
   A1c in the diabetes range without a diagnosis, mild OSA, a 2025 Part D fill, a MACE purpose,
   pathway C through cardiovascular history only, an age interval straddling 18, a wrong-patient
   clinic note and a commercial nutrition program. The first line of each `input.yaml` says what
-  it demonstrates; `tests/test_rules_fixtures.py` holds the expected decisions.
+  it demonstrates; `tests/test_rules_fixtures.py` holds the expected decisions. Each fixture
+  also carries a `meta.yaml` with `trap_ids:` (ids only): the traps it covers in isolation,
+  read by `bridge eval` for the coverage matrix (`docs/eval.md`) and by nothing else.

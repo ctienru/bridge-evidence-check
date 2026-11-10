@@ -6,28 +6,27 @@ Before a prescriber signs the Bridge attestation, someone has to check the patie
 
 ## Current state
 
-`bridge check` runs end to end on the seven dev variants of `splits.yaml`: one extraction call, quote verification, compute and rules, with every attempt stored. The first real-extractor run (`docs/checkpoint-a.md`) gave:
+`bridge check` runs end to end on the seven dev variants of `splits.yaml`: one extraction call, quote verification, compute and rules, with every attempt stored. `bridge eval --split dev --offline` replays the recorded extractions through the same pipeline and scores them (`docs/eval.md`). The current dev result (`reports/eval-dev.md`, after the fixes recorded in `docs/checkpoint-a.md`):
 
 | Measure | Result |
 |---|---|
-| Conditions matching gold | 122 / 140 |
-| PA-claim checks matching gold | 28 / 39 |
-| False supports | 0 |
-| Missed exclusions | 0 of 2 |
-| Cost, 7 calls | $0.47 |
+| Conditions matching gold (status and flags) | 133 / 140 |
+| PA-claim checks matching gold | 36 / 39 |
+| False supports | 0 (of 112 gold non-supported condition rows) |
+| Missed exclusion evidence | 0 of 2 |
+| Cost of the recorded run, 7 calls | $0.47 |
 
-This is one run of one model on seven dev cases. It is not a holdout result and not an evaluation yet. Most misses come from one cause: the model labels the GLP-1 start `historical`, so no initiation date is anchored.
+This is one run of one model on seven dev cases. It is not a holdout result, and the numbers are counts over a deliberately chosen functional test set, not clinic performance.
 
-Reproduce offline, without a key:
+Reproduce offline, without a key (the two MTSamples cases need `scripts/fetch_mtsamples.py` first; otherwise they are skipped and the report is marked incomplete):
 
 ```
-BRIDGE_FAKE_CLIENT=1 uv run bridge check fixtures/synthetic/case-smoke --db /tmp/bridge.db
-uv run python scripts/compare_gold.py --db /tmp/bridge.db --case fixtures/synthetic/case-smoke \
-    --gold fixtures/synthetic/compare_gold/case-smoke-gold.json --out /tmp/compare.json
-uv run pytest -q tests/test_public_outputs.py tests/test_baseline.py
+uv run python scripts/fetch_mtsamples.py
+uv run bridge eval --split dev --offline --baseline-from origin/main
+uv run pytest -q tests/test_eval_dev_replays.py
 ```
 
-The recorded dev extractions are in `replays/` (MTSamples quotes as offset and hash only); `reports/baseline-dev.json` is the regression baseline and `reports/checkpoint-a/` holds the per-case comparisons. `bridge eval --split dev --offline`, which will re-run the replays, is not implemented yet.
+`bridge eval` writes `reports/eval-dev.json` and `reports/eval-dev.md` through an allow-list that admits ids, enum values and counts only, compares the result with `reports/baseline-dev.json` at the given git ref and exits 0 (no regression), 1 (regression), 3 (a run failed) or 4 (another run holds the lock). The recorded dev extractions are in `replays/` (MTSamples quotes as offset and hash only); `reports/checkpoint-a/` holds the historical per-case comparisons.
 
 Run live (needs `ANTHROPIC_API_KEY` in `.env`; keep the database outside the checkout):
 
@@ -36,10 +35,19 @@ uv run python scripts/fetch_mtsamples.py
 BRIDGE_DB=/path/outside/checkout/live.db uv run --env-file .env bridge check cases/case-07 --json
 uv run python scripts/compare_gold.py --db /path/outside/checkout/live.db --case case-07 --out compare.json
 uv run python scripts/export_replay.py --db /path/outside/checkout/live.db --case case-07
-uv run python scripts/build_baseline.py --db /path/outside/checkout/live.db
+uv run bridge eval --split dev --offline --write-baseline   # after committing the new replays
 ```
 
-A run stops before any call that would pass $1.00 per run or $5.00 per evaluation (ADR 0001).
+A run stops before any call that would pass $1.00 per run or $5.00 per evaluation (ADR 0001). A pull request that changes `reports/baseline-dev.json` needs `[update baseline]` in its title (`docs/eval.md` §4).
+
+## CI
+
+| Job | What it runs | Blocks merge |
+|---|---|---|
+| `quality` | `ruff check`, `ruff format --check`, `mypy --strict`, `pytest -m "not live"`; `pip-audit` reported, never blocking | yes |
+| `tests` | MTSamples fetch (unavailable mirror is reported, not fatal), then `pytest -m "not live"` | yes |
+| `data-integrity` | MTSamples fetch, `freeze_splits.py --check` against the PR base, `check_rules.py` | yes |
+| `eval` | `bridge eval --split dev --offline` against the base baseline, the baseline title guard, `pytest tests/eval` (DeepEval shell); the sanitized report is uploaded as the `eval-dev` artifact even when the job fails | after its first run it is added to the ruleset |
 
 ## Data sources
 

@@ -276,7 +276,8 @@ _TIMING_REASON: dict[str, str] = {
 }
 
 
-def _kind_of(condition: str) -> DecisionKind:
+def kind_of(condition: str) -> DecisionKind:
+    """The `decisions.kind` of a condition, sub-result, exclusion, lifestyle or claim id."""
     if condition.startswith(CLAIM_PREFIX):
         return "claim"
     if condition.startswith("exclusion."):
@@ -322,7 +323,7 @@ def _decision(
             seen.setdefault(src.evidence_id, why)
     return Decision(
         condition=condition,
-        kind=_kind_of(condition),
+        kind=kind_of(condition),
         status=status,
         reason=reason,
         rule_id=f"{condition}:{step}",

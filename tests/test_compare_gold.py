@@ -166,13 +166,14 @@ def test_classification_order() -> None:
     assert _classify([matched], system_rows=rows) == "rules"
     spurious = Assignment([matched], [9], [])
     rows9 = {**rows, 9: {"field": "bp_readings"}}
-    assert _classify([], assignment=spurious, system_rows=rows9) == "extraction_wrong_value"
+    assert _classify([], assignment=spurious, system_rows=rows9) == "extraction_extra"
     assert set(ERROR_CLASSES) == {
         "gold_question",
         "extraction_missed",
         "extraction_wrong_value",
         "verify_excluded",
         "compute_timepoint",
+        "extraction_extra",
         "rules",
     }
 

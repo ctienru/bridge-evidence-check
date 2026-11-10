@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import sqlite3
 from dataclasses import replace
@@ -451,3 +452,36 @@ def test_save_decisions_and_complete_is_one_transaction(store: Store) -> None:
     # rerunning rules within the same run upserts instead of failing on the primary key
     store.save_decisions_and_complete(run_id, decisions, case_flags=())
     assert store.count("decisions") == len(decisions)
+
+
+@pytest.mark.parametrize("suffix", ["-wal", "-shm", "-journal"])
+def test_open_store_refuses_linked_sidecars(tmp_path: Path, suffix: str) -> None:
+    other = tmp_path / "other.bin"
+    other.write_bytes(b"x")
+    db = tmp_path / "s.db"
+    sidecar = db.with_name(db.name + suffix)
+    os.link(other, sidecar)
+    with pytest.raises(DatabaseHasLinks) as info:
+        open_store(db)
+    assert str(tmp_path) not in str(info.value) and not db.exists()
+    sidecar.unlink()
+    sidecar.symlink_to(other)
+    with pytest.raises(DatabaseHasLinks):
+        open_store(db)
+    sidecar.unlink()
+    open_store(db).close()
+    assert db.exists()
+
+
+def test_open_store_checks_sidecars_at_the_resolved_path(tmp_path: Path) -> None:
+    other = tmp_path / "other.bin"
+    other.write_bytes(b"x")
+    real = tmp_path / "real"
+    real.mkdir()
+    actual = real / "actual.db"
+    alias = tmp_path / "alias.db"
+    alias.symlink_to(actual)
+    os.link(other, real / "actual.db-wal")
+    with pytest.raises(DatabaseHasLinks):
+        open_store(alias)
+    assert not actual.exists()
