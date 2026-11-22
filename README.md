@@ -91,7 +91,7 @@ The remaining cases are planned, not present: this release holds the 7 dev varia
 
 **MTSamples.** The main document of the MTSamples cases is downloaded at run time by `scripts/fetch_mtsamples.py` from the mirror named in the case metadata, checked by whole-file and per-transcription sha256, and written byte-exact to a git-ignored path. MTSamples publishes its samples for educational use (print, share, link); they are not CC BY, they are not covered by this repository's licence, and commercial use would need separate handling. No MTSamples text is committed: gold, replays and public reports refer to it by `doc_id`, offset and sha256 only, and tests fail if any public file shares a 40-character window with a fetched document.
 
-**Gold.** Gold is written by one human and frozen before the pipeline runs on a case. The extractor's output never becomes gold. Authored documents are drafted from a human-written spec by the data-side model and checked deterministically; candidate facts on real text are proposed by the same model and by a keyword scan, after a blind human draft. Every scored gold fact carries its `origin` (dev gold: 127 from spec, 31 from model candidates) and `review: human_verified`. The annotator has pharmacy and nutrition training and is not a physician. Thirteen clinical-judgement clauses in the annotation guide apply to gold items; the count decided by them is not yet reported, and none was reviewed by a physician.
+**Gold.** Gold is written by one human and frozen before the pipeline runs on a case. The extractor's output never becomes gold. Authored documents are drafted from a human-written spec by the data-side model and checked deterministically; candidate facts on real text are proposed by the same model and by a keyword scan, after a blind human draft. Every scored gold fact carries its `origin` (dev gold: 127 from spec, 31 from model candidates) and `review: human_verified`. The annotator is not a physician. Thirteen clinical-judgement clauses in the annotation guide apply to gold items; the count decided by them is not yet reported, and none was reviewed by a physician.
 
 ## 5. Evaluation
 
@@ -115,7 +115,7 @@ Recovery is at-least-once, not exactly-once: scenario 2 may call the API and pay
 
 ## 7. Limits, honestly
 
-- One annotator, with pharmacy and nutrition training, not a physician. No second annotator and no physician review of any gold item.
+- One annotator, who is not a physician. No second annotator and no physician review of any gold item.
 - The context is synthetic. In this release 3 of the 7 dev variants have a third-party main document (2 MTSamples, 1 case report) and 4 are authored; the plan is 18 cases with 12 real main documents. Every referral, PA draft, GLP-1 start and timeline around real text is authored. This is not validation on real records.
 - Not a clinical tool and not a CMS tool. It supports the attestation and does not replace the prescriber's judgement. It does not check plan type, dosage form or prescriber eligibility, and does not judge the purpose of use.
 - The verifier cannot catch what its frozen lexicon does not name: unknown wording sends a fact to `review`, it does not parse tables, and a cue in one paragraph does not reach the next.
