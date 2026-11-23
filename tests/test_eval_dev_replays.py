@@ -40,7 +40,7 @@ def test_reproduces_the_committed_baseline(offline: tuple[int, dict, str]) -> No
     assert m["false_supports"]["count"] == t.false_support_count == 0
     assert m["claims_false_supports"]["count"] == t.claims_false_support_count == 0
     assert m["missed_exclusions"]["n"] == t.missed_exclusion_count == 0
-    assert (m["conditions_correct"]["n"], m["claims_correct"]["n"]) == (133, 36)
+    assert (m["conditions_correct"]["n"], m["claims_correct"]["n"]) == (134, 38)
     for vid, case in baseline.cases.items():
         scored = report["score"]["cases"][vid]
         assert scored["extraction_source"] == "replay"
