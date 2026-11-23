@@ -96,3 +96,37 @@ Every miss on the two completed runs is charged to extraction. On case 14 the ex
 ## After this run
 
 Added 2026-11-23. After this run, and using the failure classes reported above (`run_failed` on one badly shaped date, `extraction_wrong_value` on the dates and timepoints of baseline values, `extraction_missed` and the missed exclusion evidence), three things were changed: the retry budget (one more parse-class attempt per run, contract §11), the extraction prompt (`extract-v5`) and the binding of a date to its value in the verifier (contract §6). Cases 11, 14 and 16 are therefore no longer untouched test cases for any later configuration: a later result on them is a result on cases that informed the configuration. Nothing above this section was changed, and none of the three cases was run again for these changes.
+
+## Second holdout batch: frozen 2026-11-23, not yet run
+
+Four more holdout cases were frozen on 2026-11-23 under guide version 3, after the changes merged that day and before any pipeline run on them: cases 09, 10, 12 and 18. They are hash-only rows in `splits.yaml`. The batch will be run once; this section will then be followed by its results. Nothing in this section is a result.
+
+| Case | Main document | Gold version | Gold facts (from spec, from model candidates) |
+|---|---|---|---|
+| case-09 | MTSamples transcription | 2 | 25 (14, 11) |
+| case-10 | authored documents only | 1 | 29 (29, 0) |
+| case-12 | MTSamples transcription | 2 | 26 (14, 12) |
+| case-18 | passage of a published case report (CC BY 4.0) | 1 | 26 (10, 16) |
+
+Cases 09 and 12 are at gold version 2 because their main document was given a neutral document id on the day of the freeze, before any run and before the manifest listed them; no fact, position, value or status changed.
+
+**Salted hashes.** For the two MTSamples main documents the manifest carries a salted sha256 (sha256 over a private 32-byte salt followed by the file bytes) instead of the plain hash, because the plain hash of a public transcription would identify it. The salt is kept in the private repository and can be disclosed to verify the commitment. Which transcriptions they are is not stated in this repository. Every other hash in the four rows is a plain sha256 of the file.
+
+### How the gold was made, and how that differs from cases 11, 14 and 16
+
+- **No blind draft.** Cases 11, 14 and 16 followed the route in `docs/dataside.md`, in which the annotator blind-labels the statuses and the inventory before seeing any model output. These four cases did not. The inventory of each case was proposed with AI assistance (Codex, `gpt-6.2-sol`) and confirmed by the annotator; it is stored privately as `assisted_review.json`, which has the format of `blind_draft.json`. No blind agreement count is reported for these four cases.
+- **Statuses.** The 20 condition statuses were carried over from an expected-status table the annotator wrote before the documents were drafted, with one status, in one of the four cases, changed after reading the final documents.
+- **Candidates.** Candidate facts were proposed by `gpt-6.1-sol`. It and the model that assisted the inventory are both OpenAI models; the extractor's model family was not involved.
+- **Whose decisions.** Every verdict on a candidate, every gold fact and every status is the annotator's.
+- **Read before the freeze.** The annotator read the real-text facts against the documents before the freeze. For cases 11, 14 and 16 the final read had not been completed before their run (gold disclosure above).
+
+### Gaps these cases are expected to meet
+
+Written down before the run. Each is a place where the contract and the code are known to differ, or where a table does not yet cover what the documents say:
+
+- An undated baseline value named as the pre-treatment baseline is `at` in gold and stays `unknown` in the code (Known gaps, baseline wording).
+- Diabetes written without a type has no rule yet.
+- Two antihypertensives named in the documents are outside the drug table.
+- Contract §5 ("Undated medication lists", `same_note_list`) treats a list in the same document as the blood-pressure reading, labelled as current medications, as in use on that document's date. Gold applies the same-note rule to a medication section whose heading does not say "current"; the verifier recognises a current list by its heading (`medication_list_status` in `rules/verify-terms-v1.yaml`, where a bare "Medications" heading is `unknown`) and may leave such a list unknown.
+- The claim rule against a chart that documents type 2 diabetes in remission.
+- The verifier's support terms for a stated absence of activity include "sedentary" and "no exercise", which gold does not read as a statement of no activity at all.

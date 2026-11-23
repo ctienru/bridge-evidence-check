@@ -1,7 +1,9 @@
 # Frozen input variants. Each entry is added before the pipeline first runs on it.
 # One entry per (case_id, variant_id); `files` maps paths relative to cases/<variant_id>/
 # to their sha256 (input.yaml, docs/*, expected.json). MTSamples documents are listed
-# by hash but never committed. Changing a frozen entry requires a higher gold_version
+# by hash but never committed; a hash-only row may carry a salted sha256 for a document
+# whose plain hash would identify a public source text, marked by a comment on the entry.
+# Changing a frozen entry requires a higher gold_version
 # and may only change the expected.json hash; `split` never changes.
 # Checked by scripts/freeze_splits.py --check (format: that script's docstring).
 version: 1
@@ -130,3 +132,50 @@ variants:
       docs/D1-referral.txt: 06e946ccbd040a3eeb5a0168bf01bf3aca3cc891d7bbb8d86e59218f4bcbafcf
       docs/D2-case-report-crpe-2026.txt: 37011da6d85355d41a67932058ae281891a303531f4e01cd922b0b909860a6c4
       expected.json: 483070efddd2439bc4e297c6974862a38a38fa300ba37249d31fa791cd5043cf
+  - case_id: case-09
+    variant_id: case-09
+    split: holdout
+    frozen_at: 2026-11-23
+    gold_version: 2
+    files:
+      input.yaml: 732f7508dfe860543c9145ca8d814927d4b047f342354bbb36793a598aad40f4
+      docs/D0-pa-form-draft.txt: ac97e9a3975c613b6bbef6bb8308c827f9e931ed8f5f705b21c923203274d521
+      docs/D1-referral.txt: 517396ec1f885b91f1ca4bd5545ad06c387727307466603960c682a87c5b0c1a
+      # salted sha256 (salt held privately); the plain hash would identify a public transcription
+      docs/D2-mtsamples-doc.txt: eba548c137b7d2a1ac0793620ba01b51891155966341e5856ebd2049fddff5f9
+      expected.json: f60b9ea80a1e58e539a1a1227e7bfef42fcf5ae16ebc727bb493f704e81b7bde
+  - case_id: case-10
+    variant_id: case-10
+    split: holdout
+    frozen_at: 2026-11-23
+    gold_version: 1
+    files:
+      input.yaml: 84b033e65533569e53ab5d9702c5393653eaebd993a0c03ccba5a1a2eab6089a
+      docs/D0-pa-form-draft.txt: 5ad2cde39e2271a800b489af9113e32284a9e66111cdf429c5ccb3ac363a59f2
+      docs/D1-referral.txt: 8a71deb122256714075f0794812394850757c4c1b36fc97ef14daa89f67757bc
+      docs/D2-visit-note.txt: 1e14f943f6f396161e881befcfa328fcc54fa1986e46c36091100777d5b85b95
+      docs/D3-follow-up-note.txt: f15830c329673c0868465437bae823476e77e53199e188a0f43fc5985bd216ca
+      expected.json: c6070a69afbc8ccf169b57ee4c8f917b2f157021368fe89aa2f627909fd8b3a8
+  - case_id: case-12
+    variant_id: case-12
+    split: holdout
+    frozen_at: 2026-11-23
+    gold_version: 2
+    files:
+      input.yaml: 2ec230b9cf1f1ae71f5c11c378365082c81d37be289a1d8d5cd784ca952141f3
+      docs/D0-pa-form-draft.txt: 081247c0f8938e52ed0e7ee91e2b16abb4f5b734c6949dcb5b53fc6d61fc5796
+      docs/D1-referral.txt: 8da2ed9f14b5ee1129e022ab47a5efc98c60428eca4d82f7f3d97b32809aedbd
+      # salted sha256 (salt held privately); the plain hash would identify a public transcription
+      docs/D2-mtsamples-doc.txt: 0a102afe588a43d75573de66b63bcd877c8f7e7b0a1f87ec25d24537ab17e66f
+      expected.json: 5f5e88847cf680fc7877e9b9dc0ddd956b81a78246acaeb13cdfc0f59badca85
+  - case_id: case-18
+    variant_id: case-18
+    split: holdout
+    frozen_at: 2026-11-23
+    gold_version: 1
+    files:
+      input.yaml: 26a19f8ae2a4f40f812c8ca1c307d31eb09ced849fc38294385bf6a0bed2394d
+      docs/D0-pa-form-draft.txt: 6de381b5285c50892ceb60c63e7d619e7c833c49dcd90ecd129d8521ccb6b7b1
+      docs/D1-referral.txt: ac46b91dead1668e72355239aa6859b996c7b841895c0669520576a702cf956d
+      docs/D2-case-report-scsc-2025.txt: 9732c010be0fa7e5b9573e4ee792fb5ee2ae18506decd871d3f0c7cb2d26ddd6
+      expected.json: c83302a3cde96e009ddaa4b2a3382f9555e412a223c40460d4e981ad1cd1c313
