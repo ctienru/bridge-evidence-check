@@ -65,14 +65,14 @@
           "status": "insufficient"
         },
         "claim.lifestyle.nutrition": {
-          "correct": false,
+          "correct": true,
           "flags": [],
           "gold_flags": [],
           "gold_status": "insufficient",
-          "status": "review"
+          "status": "insufficient"
         }
       },
-      "claims_correct": 8,
+      "claims_correct": 9,
       "claims_false_support_count": 0,
       "conditions": {
         "age_18": {
@@ -206,11 +206,11 @@
           "status": "insufficient"
         },
         "lifestyle.nutrition": {
-          "correct": false,
+          "correct": true,
           "flags": [],
           "gold_flags": [],
           "gold_status": "insufficient",
-          "status": "review"
+          "status": "insufficient"
         },
         "patient_identity": {
           "correct": true,
@@ -224,7 +224,7 @@
           "status": "review"
         }
       },
-      "conditions_correct": 19,
+      "conditions_correct": 20,
       "false_support_count": 0,
       "gold_sha256": "b1bece92204f7e5b378cb698306458658508e49fe99139f4c9989c3d5faccae6",
       "input_hash": "43931e3233b805cc291e8d542a56e56e9693ea3e8e9d977012a635d664bbebe5",
@@ -446,11 +446,11 @@
           "status": "insufficient"
         },
         "claim.bmi_path_b.htn": {
-          "correct": false,
+          "correct": true,
           "flags": [],
           "gold_flags": [],
           "gold_status": "review",
-          "status": "insufficient"
+          "status": "review"
         },
         "claim.drug": {
           "correct": true,
@@ -474,7 +474,7 @@
           "status": "insufficient"
         }
       },
-      "claims_correct": 4,
+      "claims_correct": 5,
       "claims_false_support_count": 0,
       "conditions": {
         "age_18": {
@@ -624,7 +624,7 @@
       },
       "conditions_correct": 17,
       "false_support_count": 0,
-      "gold_sha256": "ba1b352639818f1fa2e6198a531ddedfe62e0d9efe319431d56f1112d6fda642",
+      "gold_sha256": "fce717096d7aee0c99293ad3f34eca9a603c54bc6d0f1d5318ff7d1e1d37deee",
       "input_hash": "7d40a9949aedf10dd061c1127cb4cd809d551398b6c666e6607cb91e0bfbc140",
       "missed_exclusion_count": 0,
       "replay": {
@@ -1258,8 +1258,8 @@
           "correct": true,
           "flags": [],
           "gold_flags": [],
-          "gold_status": "insufficient",
-          "status": "insufficient"
+          "gold_status": "review",
+          "status": "review"
         },
         "claim.bmi_path_c.mi": {
           "correct": true,
@@ -1426,7 +1426,7 @@
       },
       "conditions_correct": 20,
       "false_support_count": 0,
-      "gold_sha256": "770b1f281bd0d91fe6c0aea1643a36461393dbee6ddd12e8506dad5dc21b90bd",
+      "gold_sha256": "f6b65473e6af36663679d3af6fd052ed613e9d2125d0ecdd509bb69afdfbcd71",
       "input_hash": "24dd49910d64ebe88129867a6810796768b882d7eee52f985abced6b5c6f0cd6",
       "missed_exclusion_count": 0,
       "replay": {
@@ -1436,7 +1436,7 @@
     }
   },
   "generated_from": {
-    "code_sha": "dca4e7b8ff0ecec682add908db9d660b579eb0f7",
+    "code_sha": "068b735a37320c99e33fd960bf607503a7701485",
     "model_returned": "claude-sonnet-5-5",
     "prompt_version": "extract-v4",
     "rules_version": "bridge-v1",
@@ -1445,14 +1445,14 @@
   "hash_only": [
     "case-15-L0"
   ],
-  "manifest_sha256": "361616b955d4a6464dc7cf50c060be19ba568b5011a0e1a5c4d841cdd28776b4",
+  "manifest_sha256": "d9287ae2b585444b2af24d8c76815711f15d1dc0988019f7f60d939b3e556a6e",
   "split": "dev",
   "totals": {
     "cases": 7,
-    "claims_correct": 36,
+    "claims_correct": 38,
     "claims_false_support_count": 0,
     "claims_total": 39,
-    "conditions_correct": 133,
+    "conditions_correct": 134,
     "conditions_total": 140,
     "false_support_count": 0,
     "missed_exclusion_count": 0
