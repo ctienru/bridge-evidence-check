@@ -230,11 +230,11 @@
       "subject": "patient",
       "temporality": "historical",
       "concept": "hypertension",
-      "relative_to_glp1_initiation": "unknown",
+      "relative_to_glp1_initiation": "before",
       "doc_id": "D2-case-report-cureus-2025",
       "start": 8,
       "end": 366,
-      "event_date": null,
+      "event_date": "2025-07-15",
       "quote": "A 63-year-old male with a prior history of hypertension, hyperlipidemia, tobacco use disorder, and a prior non-ST-segment elevation myocardial infarction (NSTEMI) with percutaneous coronary intervention (PCI) to the mid-right coronary artery (RCA) presented to the emergency room with the acute onset of chest pain for the past two hours before presentation.",
       "origin": "model_candidate",
       "review": "human_verified",
@@ -246,11 +246,11 @@
       "subject": "patient",
       "temporality": "historical",
       "concept": "mi",
-      "relative_to_glp1_initiation": "unknown",
+      "relative_to_glp1_initiation": "before",
       "doc_id": "D2-case-report-cureus-2025",
       "start": 8,
       "end": 366,
-      "event_date": null,
+      "event_date": "2025-07-15",
       "quote": "A 63-year-old male with a prior history of hypertension, hyperlipidemia, tobacco use disorder, and a prior non-ST-segment elevation myocardial infarction (NSTEMI) with percutaneous coronary intervention (PCI) to the mid-right coronary artery (RCA) presented to the emergency room with the acute onset of chest pain for the past two hours before presentation.",
       "origin": "model_candidate",
       "review": "human_verified",
@@ -488,7 +488,7 @@
     },
     {
       "id": "claim.bmi_path_b.htn",
-      "status": "insufficient"
+      "status": "review"
     },
     {
       "id": "claim.bmi_path_b.hfpef",
@@ -499,8 +499,10 @@
       "status": "supported"
     }
   ],
-  "gold_version": 2,
+  "gold_version": 3,
   "changes": [
-    "2026-11-09 (guide v2, R02-03, T-04, C-17). Set event_date to null and relative_to_glp1_initiation to unknown on the patient_identity fact at facts[12]. Identity facts are undated under the guide."
+    "2026-11-09 (guide v2, R02-03, T-04, C-17). Set event_date to null and relative_to_glp1_initiation to unknown on the patient_identity fact at facts[12]. Identity facts are undated under the guide.",
+    "2026-11-23 (guide v3, R03-08, K-03). Changed claim.bmi_path_b.htn from insufficient to review. The chart names hypertension and gives a reading before initiation; that is related material which cannot answer the claim. The condition bmi_path_b.htn stays insufficient.",
+    "2026-11-23 (guide v3, R03-13, T-05). Set event_date to the verified document date and relative_to_glp1_initiation to before on the two history diagnosis facts at facts[13] and facts[14]. The date is the day the history was recorded, not an onset date."
   ]
 }

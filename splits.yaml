@@ -68,24 +68,24 @@ variants:
     variant_id: case-03
     split: dev
     frozen_at: 2026-11-09
-    gold_version: 2
+    gold_version: 3
     files:
       input.yaml: 24d8bb9b0cb7030fa54ff52ab88d0ca9e2917e6f8ffd752bd87660a1d1ea3f91
       docs/D0-pa-form-draft.txt: 9118d6a49ac0668d3b05d464c9a0228a927ee9646f1626ccd4bef2cd76cd909a
       docs/D1-referral.txt: 09e7b1a16e23647877ec8858cfebb0549cf43221b78b0d5baae4c7f64ba39786
       docs/D2-mtsamples-4689.txt: 388aeee7a34b67a70d5f1df67ba87c374e805c2521c156671256b7c57a8b79b4
-      expected.json: ba1b352639818f1fa2e6198a531ddedfe62e0d9efe319431d56f1112d6fda642
+      expected.json: fce717096d7aee0c99293ad3f34eca9a603c54bc6d0f1d5318ff7d1e1d37deee
   - case_id: case-17
     variant_id: case-17
     split: dev
     frozen_at: 2026-11-09
-    gold_version: 2
+    gold_version: 3
     files:
       input.yaml: 01d4f6d707ddb89bbd5e94cc708582dcafaab69ccaeb006b32db5edeec3845ec
       docs/D0-pa-form-draft.txt: b1629def703d0b584d9ea10a75b717dc5070039689c52728911aadc220b485df
       docs/D1-referral.txt: 4aef345f1fa5578e03fe917c2091bc171d6b5d307ed43785e17e163d12adcbb2
       docs/D2-case-report-cureus-2025.txt: 014429c1eb55f7751a1105f83ddfd404127550ede745d3cde151eed60ea5df41
-      expected.json: 770b1f281bd0d91fe6c0aea1643a36461393dbee6ddd12e8506dad5dc21b90bd
+      expected.json: f6b65473e6af36663679d3af6fd052ed613e9d2125d0ecdd509bb69afdfbcd71
   - case_id: case-15
     variant_id: case-15-L0
     split: dev

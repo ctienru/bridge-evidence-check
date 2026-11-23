@@ -16,6 +16,7 @@ from conftest import FIXTURES, ROOT, load_script
 
 from bridge_check.baseline import (
     BASELINE_PATH,
+    DIRTY_TREE_MESSAGE,
     UPDATE_MARKER,
     ZERO_SHA,
     baseline_change_problem,
@@ -142,6 +143,26 @@ def test_build_baseline_script_still_builds(
     # a completed run, so the build is refused with exit 1 and nothing is written
     assert script.main(["--db", str(db), "--out", str(out)]) == 1
     assert not out.exists()
+
+
+def test_build_baseline_script_refuses_a_dirty_working_tree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Same check, message and exit code as `bridge eval --write-baseline`."""
+    script = load_script("build_baseline")
+    # The script's committed path is a temporary file here, so a missing or wrong guard
+    # can never write `reports/baseline-dev.json` of this checkout.
+    committed = tmp_path / "committed" / "baseline-dev.json"
+    monkeypatch.setattr(script, "COMMITTED", committed)
+    monkeypatch.setattr(script, "code_sha", lambda: "0" * 40 + "-dirty")
+    db = tmp_path / "bridge.db"
+    db.write_bytes(b"")
+    assert script.main(["--db", str(db)]) == 3
+    err = capsys.readouterr().err.strip().splitlines()
+    assert err == [f"build_baseline: {DIRTY_TREE_MESSAGE}"]
+    assert not committed.exists()
+    # another output path is not the committed baseline: the check does not apply
+    assert script.main(["--db", str(tmp_path / "none.db"), "--out", str(tmp_path / "b.json")]) == 1
 
 
 def _record_opens(monkeypatch: pytest.MonkeyPatch, inside: Path) -> list[str]:

@@ -572,6 +572,49 @@ def test_write_baseline_writes_a_plain_file(tmp_path: Path) -> None:
     assert data.cases["case-smoke"].conditions_correct == 15
 
 
+def test_write_baseline_refuses_a_dirty_working_tree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The committed baseline is never stamped from uncommitted code (docs/eval.md section 4)."""
+    monkeypatch.setattr("bridge_check.cli.code_sha", lambda: "0" * 40 + "-dirty")
+    # The "committed path" the code under test sees is a temporary file: an absolute
+    # `BASELINE_PATH` replaces the checkout's own, so a missing or wrong guard writes there
+    # and never to `reports/baseline-dev.json` of this checkout.
+    committed = tmp_path / "committed" / "baseline-dev.json"
+    monkeypatch.setattr(evalrun, "BASELINE_PATH", committed)
+    root = _data_root(tmp_path)
+    out = tmp_path / "out"
+    capsys.readouterr()  # building the data root logs a run of its own
+    code = bridge_main(
+        ["eval", "--split", "dev", "--offline", "--write-baseline"]
+        + ["--data-root", str(root), "--out", str(out)]
+    )
+    assert code == EXIT_FAILED
+    err = capsys.readouterr().err.strip().splitlines()
+    assert len(err) == 1 and "working tree has uncommitted changes" in err[0]
+    assert not committed.exists() and not out.exists()
+
+
+def test_write_baseline_to_another_path_ignores_the_working_tree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("bridge_check.cli.code_sha", lambda: "0" * 40 + "-dirty")
+    target = tmp_path / "reports" / "baseline-dev.json"
+    code, _, _ = run_eval(
+        EvalOptions(
+            offline=True,
+            data_root=_data_root(tmp_path),
+            out=tmp_path / "out",
+            write_baseline=True,
+            baseline_out=target,
+        )
+    )
+    assert code == EXIT_OK and target.is_file()
+    assert Baseline.model_validate_json(target.read_bytes()).generated_from.code_sha.endswith(
+        "-dirty"
+    )
+
+
 def test_malformed_case_yaml_exits_3_without_the_text(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

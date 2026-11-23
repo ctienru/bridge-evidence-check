@@ -1,6 +1,6 @@
 # Eval report, split=dev, mode=offline
 
-prompt extract-v4 · schema v2 · rules bridge-v1 · splitter sentences-v1 · model returned claude-sonnet-5-5 · code dca4e7b8ff0ecec682add908db9d660b579eb0f7
+prompt extract-v4 · schema v2 · rules bridge-v1 · splitter sentences-v1 · model returned claude-sonnet-5-5 · code 068b735a37320c99e33fd960bf607503a7701485
 
 One run of one model on 7 dev variants. Not a holdout result; not a validation on real records. Scoring rules: docs/eval.md. Every number is a count.
 
@@ -17,8 +17,8 @@ Skipped variants (never read, never scored):
 |---|---|
 | Input variants (case families) | 7 (6) |
 | Runs failed (kept in every denominator) | 0 |
-| Conditions correct (status and flags) | 133/140 |
-| Claims correct (status) | 36/39 |
+| Conditions correct (status and flags) | 134/140 |
+| Claims correct (status) | 38/39 |
 | Missed exclusion evidence / gold review exclusion rows | 0/2 |
 | Exclusion evidence found | 2 |
 | Human workload (top-level review + conflict + insufficient) | 47 |
@@ -31,7 +31,7 @@ False supports next to their denominators (target 0; the columns are not combine
 | conditions | 0 | 112 | 24 | 16/18 |
 | claims | 0 | 19 | 19 | – |
 
-First upstream error of every miss: compute_timepoint 2 · extraction_wrong_value 7 · rules 1.
+First upstream error of every miss: compute_timepoint 2 · extraction_wrong_value 4 · rules 1.
 
 ## Regression against the baseline
 
@@ -49,8 +49,8 @@ Variants: `case-01`, `case-03`
 |---|---|
 | Input variants (case families) | 2 (2) |
 | Runs failed (kept in every denominator) | 0 |
-| Conditions correct (status and flags) | 36/40 |
-| Claims correct (status) | 12/15 |
+| Conditions correct (status and flags) | 37/40 |
+| Claims correct (status) | 14/15 |
 | Missed exclusion evidence / gold review exclusion rows | 0/1 |
 | Exclusion evidence found | 1 |
 | Human workload (top-level review + conflict + insufficient) | 15 |
@@ -63,7 +63,7 @@ False supports next to their denominators (target 0; the columns are not combine
 | conditions | 0 | 33 | 5 | 3/4 |
 | claims | 0 | 8 | 6 | – |
 
-First upstream error of every miss: extraction_wrong_value 7.
+First upstream error of every miss: extraction_wrong_value 4.
 
 ### Real text: published case reports (limited test on external text)
 
@@ -141,7 +141,7 @@ Live status per variant; a bold cell differs from gold and names the gold status
 | `exclusion.part_d_glp1` | ins | rev | ins | ins | ins | ins | ins | 7/7 | 0 | partd |
 | `exclusion.t2dm` | ins | ins | ins | ins | ins | ins | ins | 7/7 | 0 | form |
 | `lifestyle.activity` | ins | ins | ins | **rev** (gold rev) | ins | ins | ins | 6/7 | 0 |  |
-| `lifestyle.nutrition` | **rev** (gold ins) | ins | ins | ins | ins | ins | ins | 6/7 | 0 |  |
+| `lifestyle.nutrition` | ins | ins | ins | ins | ins | ins | ins | 7/7 | 0 |  |
 | `patient_identity` | rev | sup | rev | sup | con | con | rev | 7/7 | 0 | form |
 
 ### Claims
@@ -151,7 +151,7 @@ Live status per variant; a bold cell differs from gold and names the gold status
 | `claim.age_18` | sup | sup | sup | sup | sup | sup | sup | 7/7 | 0 |  |
 | `claim.bmi_bracket` | sup | sup | **ins** (gold sup) | sup | ins | con | ins | 6/7 | 0 |  |
 | `claim.bmi_path_b.hfpef` | ins | con |  |  |  |  | ins | 3/3 | 0 |  |
-| `claim.bmi_path_b.htn` |  |  | **ins** (gold rev) |  | con | con | ins | 3/4 | 0 |  |
+| `claim.bmi_path_b.htn` |  |  | rev |  | con | con | rev | 4/4 | 0 |  |
 | `claim.bmi_path_c.mi` |  |  |  |  |  |  | sup | 1/1 | 0 |  |
 | `claim.bmi_path_c.stroke` | sup |  |  |  |  |  |  | 1/1 | 0 |  |
 | `claim.drug` | sup | sup | sup | sup | sup | sup | sup | 7/7 | 0 |  |
@@ -159,15 +159,15 @@ Live status per variant; a bold cell differs from gold and names the gold status
 | `claim.exclusion.part_d_glp1` | ins |  |  |  |  |  |  | 1/1 | 0 |  |
 | `claim.exclusion.t2dm` | ins |  |  |  |  |  |  | 1/1 | 0 |  |
 | `claim.lifestyle.activity` | ins |  |  |  |  |  |  | 1/1 | 0 |  |
-| `claim.lifestyle.nutrition` | **rev** (gold ins) |  | ins |  | ins | ins |  | 3/4 | 0 |  |
+| `claim.lifestyle.nutrition` | ins |  | ins |  | ins | ins |  | 4/4 | 0 |  |
 
 ## Per case
 
 | Variant | Section | Run | Conditions | Claims | False sup. | Workload | First errors | Cost USD |
 |---|---|---|---|---|---|---|---|---|
-| `case-01` | mtsamples | completed | 19/20 | 8/9 | 0 | 7 | extraction_wrong_value 2 | 0.0000 |
+| `case-01` | mtsamples | completed | 20/20 | 9/9 | 0 | 7 | none | 0.0000 |
 | `case-02` | authored | completed | 20/20 | 4/4 | 0 | 5 | none | 0.0000 |
-| `case-03` | mtsamples | completed | 17/20 | 4/6 | 0 | 8 | extraction_wrong_value 5 | 0.0000 |
+| `case-03` | mtsamples | completed | 17/20 | 5/6 | 0 | 8 | extraction_wrong_value 4 | 0.0000 |
 | `case-04` | authored | completed | 17/20 | 4/4 | 0 | 4 | compute_timepoint 2 · rules 1 | 0.0000 |
 | `case-07` | authored | completed | 20/20 | 5/5 | 0 | 8 | none | 0.0000 |
 | `case-07b` | authored | completed | 20/20 | 5/5 | 0 | 7 | none | 0.0000 |
@@ -177,12 +177,12 @@ Live status per variant; a bold cell differs from gold and names the gold status
 
 | Gold facts | Matched | Matched, excluded by verify | Wrong value (timing only) | Missed | False positives | Expected-absent correct | Expected-absent FP |
 |---|---|---|---|---|---|---|---|
-| 158 | 116 | 21 | 17 (6) | 4 | 26 | 99 | 0 |
+| 158 | 114 | 21 | 19 (8) | 4 | 26 | 99 | 0 |
 
 | Citation measure | Count |
 |---|---|
 | Quote located (verbatim or normalized) / evidence rows | 204/204 |
-| Fact semantically correct (every key) / gold facts | 116/158 |
+| Fact semantically correct (every key) / gold facts | 114/158 |
 | Gold evidence recalled (span overlapped by a located row) / gold facts | 152/158 |
 
 Position status: verbatim 204 · normalized 0 · candidate 0 · not_found 0.

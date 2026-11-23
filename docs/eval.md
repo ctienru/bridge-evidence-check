@@ -226,6 +226,11 @@ the committed replays:
 uv run bridge eval --split dev --offline --write-baseline
 ```
 
+Generate the baseline after the code is committed: `--write-baseline` refuses (exit 3) to
+write `reports/baseline-dev.json` of this checkout while the working tree has uncommitted
+changes, because the code sha it would record ends in `-dirty`. `scripts/build_baseline.py`
+applies the same check.
+
 The file is written only when every dev run completed and no dev variant was refused or
 left out for a missing MTSamples document; the write goes through the same output guard as
 every other tool (a holdout path, an annotator-owned name or a link that resolves to one is

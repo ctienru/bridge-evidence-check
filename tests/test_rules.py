@@ -743,8 +743,15 @@ def test_lifestyle_table() -> None:
         ].status
         == "supported"
     )
+    # a statement of no program at all decides only when it is placed on the assessment date
     assert (
-        decide([life(program_type="none_stated")])["lifestyle.nutrition"].status == "not_supported"
+        decide([life(program_type="none_stated", event_date="2026-10-15")])[
+            "lifestyle.nutrition"
+        ].status
+        == "not_supported"
+    )
+    assert (
+        decide([life(program_type="none_stated")])["lifestyle.nutrition"].status == "insufficient"
     )
     assert (
         decide([life(program_type="commercial", end_kind="ongoing")])["lifestyle.nutrition"].status
@@ -767,6 +774,27 @@ def test_lifestyle_table() -> None:
     ]
     assert later.status == "insufficient" and later.excluded_evidence[0].reason == "timing_unknown"
     assert decide([])["lifestyle.activity"].status == "insufficient"
+
+
+def test_lifestyle_dated_before_with_unknown_end_is_insufficient() -> None:
+    # contract §3.5: nothing places the record on the assessment date (2026-10-15)
+    row = checked(
+        "lifestyle",
+        kind="nutrition",
+        program_type="structured_clinical",
+        end_kind="unknown",
+        event_date="2026-09-01",
+    )
+    d = decide([row])["lifestyle.nutrition"]
+    assert d.status == "insufficient" and d.used_evidence == ()
+    on_the_day = checked(
+        "lifestyle",
+        kind="nutrition",
+        program_type="structured_clinical",
+        end_kind="unknown",
+        event_date="2026-10-15",
+    )
+    assert decide([on_the_day])["lifestyle.nutrition"].status == "supported"
 
 
 # --- claims (contract §2; guide K-03, K-04)  ------------------------------------------------------
@@ -827,6 +855,72 @@ def test_claim_conflicts_and_review() -> None:
     assert d["claim.exclusion.t2dm"].status == "review"  # positive exclusion evidence stays review
     assert d["claim.bmi_path_b.hfpef"].status == "review"
     assert d["claim.drug"].status == "conflict"
+
+
+def test_claim_is_review_when_related_material_cannot_answer_it() -> None:
+    """Guide K-03: the chart names hypertension and has no reading at initiation."""
+    claim = [_claim("claim.bmi_path_b.htn", "yes")]
+    named = checked("diagnoses", concept="hypertension", temporality="historical")
+    d = _decide_claims(BASE + [named], claim)
+    assert d["bmi_path_b.htn"].status == "insufficient"  # the sub-result keeps its own status
+    assert d["bmi_path_b.htn"].rule_id == "bmi_path_b.htn:1"
+    assert d["claim.bmi_path_b.htn"].status == "review"
+    assert d["claim.bmi_path_b.htn"].reason.startswith("related chart material")
+    # a relative's, a denied or a hypothetical hypertension is not a diagnosis of the patient
+    for other in (
+        checked("diagnoses", concept="hypertension", subject="family"),
+        checked("diagnoses", concept="hypertension", certainty="negated"),
+        checked("diagnoses", concept="hypertension", temporality="hypothetical"),
+    ):
+        assert _decide_claims(BASE + [other], claim)["claim.bmi_path_b.htn"].status == (
+            "insufficient"
+        )
+
+
+def test_claim_is_insufficient_when_the_chart_holds_nothing_related() -> None:
+    claims = [_claim("claim.bmi_path_b.htn", "yes"), _claim("claim.bmi_path_c.prediabetes", "yes")]
+    # a lab below the range that defines prediabetes is not related material
+    below = _decide_claims(
+        BASE + [checked("labs", kind="a1c", raw_value="5.2", raw_unit="%")], claims
+    )
+    assert below["bmi_path_c.prediabetes"].status == "insufficient"
+    assert below["claim.bmi_path_c.prediabetes"].status == "insufficient"
+    # nothing about either condition anywhere in the chart
+    empty = _decide_claims(BASE, claims)
+    assert empty["claim.bmi_path_b.htn"].status == "insufficient"
+    assert empty["claim.bmi_path_c.prediabetes"].status == "insufficient"
+
+
+def test_claim_is_review_for_a_lab_in_the_defining_range_without_a_diagnosis() -> None:
+    claim = [_claim("claim.bmi_path_c.prediabetes", "yes")]
+    in_range = checked("labs", kind="a1c", raw_value="6.0", raw_unit="%")
+    d = _decide_claims(BASE + [in_range], claim)
+    assert d["bmi_path_c.prediabetes"].status == "review"
+    assert d["claim.bmi_path_c.prediabetes"].status == "review"
+    # the claim's own check finds the lab even if the sub-result were `insufficient`
+    facts = compute(
+        BASE + [in_range, *claim],
+        ctx(
+            doc_roles={"D0": "pa_draft", "D1": "clinical", "D2": "clinical"},
+            doc_identity={"D0": "match", "D1": "match", "D2": "match"},
+        ),
+    )
+    ri = rules_module.RuleInput(facts=facts, policy=policy(), decided={})
+    related = rules_module._claim_related_material(ri, "bmi_path_c.prediabetes")
+    assert [s.field for s in related] == ["labs"]
+    sub = decide(BASE)["bmi_path_c.prediabetes"]
+    assert rules_module._claim_vs_condition(True, sub, None, related)[0] == "review"
+
+
+def test_a_source_flag_alone_does_not_make_a_claim_review() -> None:
+    sub = decide(BASE)["bmi_path_b.htn"]
+    assert sub.status == "insufficient"
+    for flag in ("table_source", "unrecognized", "imprecise_source"):
+        flagged = sub.model_copy(update={"flags": (flag,)})
+        assert rules_module._claim_vs_condition(True, flagged)[0] == "insufficient"
+    # a boundary reading is still an unclear mention
+    boundary = sub.model_copy(update={"flags": ("boundary_value",)})
+    assert rules_module._claim_vs_condition(True, boundary)[0] == "review"
 
 
 def test_human_workload_counts_top_level_rows_only() -> None:

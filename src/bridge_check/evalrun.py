@@ -57,6 +57,7 @@ from bridge_check.baseline import (
     BASELINE_PATH,
     RegressionItem,
     build,
+    dirty_tree_refusal,
     dump,
     load_baseline_at,
     regressions,
@@ -464,6 +465,12 @@ def run_eval(opts: EvalOptions) -> tuple[int, dict[str, Any], str]:
     replays_root = opts.replays_root or root / "replays"
     out_dir = opts.out or CHECKOUT_ROOT / "reports"
     baseline_target = opts.baseline_out or CHECKOUT_ROOT / BASELINE_PATH
+    if opts.write_baseline:
+        # The committed baseline records the code sha it was generated from; a sha stamped
+        # `-dirty` names no commit (docs/eval.md section 4). Refused before any run or write.
+        refusal = dirty_tree_refusal(baseline_target, CHECKOUT_ROOT / BASELINE_PATH, cli.code_sha())
+        if refusal is not None:
+            raise ExportError(refusal)
     # Every destination is checked against the checkout and the selected data root before
     # a directory is created, a lock taken or a database opened: a report, a baseline, the
     # database, its lock file or a SQLite sidecar (`-wal`, `-shm`, `-journal`, which SQLite

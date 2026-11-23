@@ -89,6 +89,21 @@ def _rows(report_rows: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+DIRTY_TREE_MESSAGE = (
+    "the working tree has uncommitted changes; commit the code first, then generate the baseline"
+)
+
+
+def dirty_tree_refusal(target: Path, committed: Path, code_sha: str) -> str | None:
+    """Why a baseline may not be written to `target` (docs/eval.md section 4): `target` is the
+    committed baseline path `committed` and `code_sha`, the sha the file would record, ends in
+    `-dirty` and so names no commit. None for any other path or a clean tree. Shared by
+    `bridge eval --write-baseline` and `scripts/build_baseline.py`; both exit 3 on it."""
+    if target.resolve() == committed.resolve() and code_sha.endswith("-dirty"):
+        return DIRTY_TREE_MESSAGE
+    return None
+
+
 def build(
     store: Store,
     runs: Mapping[str, int],

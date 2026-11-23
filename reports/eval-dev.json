@@ -11,7 +11,7 @@
   "eval_version": 1,
   "exit_code": 0,
   "generated_from": {
-    "code_sha": "dca4e7b8ff0ecec682add908db9d660b579eb0f7",
+    "code_sha": "068b735a37320c99e33fd960bf607503a7701485",
     "model_returned": "claude-sonnet-5-5",
     "prompt_version": "extract-v4",
     "rules_version": "bridge-v1",
@@ -19,7 +19,7 @@
     "splitter_version": "sentences-v1"
   },
   "incomplete": false,
-  "manifest_sha256": "361616b955d4a6464dc7cf50c060be19ba568b5011a0e1a5c4d841cdd28776b4",
+  "manifest_sha256": "d9287ae2b585444b2af24d8c76815711f15d1dc0988019f7f60d939b3e556a6e",
   "mode": "offline",
   "regression": {
     "detected": false,
@@ -154,9 +154,9 @@
             "status": "insufficient"
           },
           "claim.lifestyle.nutrition": {
-            "correct": false,
+            "correct": true,
             "false_support": false,
-            "first_error": "extraction_wrong_value",
+            "first_error": null,
             "flags": [],
             "gold_flags": [],
             "gold_status": "insufficient",
@@ -164,11 +164,11 @@
             "kind": "claim",
             "missed_exclusion": false,
             "policy_source": null,
-            "status": "review"
+            "status": "insufficient"
           }
         },
         "claims_correct": {
-          "n": 8,
+          "n": 9,
           "of": 9
         },
         "claims_false_supports": {
@@ -420,9 +420,9 @@
             "status": "insufficient"
           },
           "lifestyle.nutrition": {
-            "correct": false,
+            "correct": true,
             "false_support": false,
-            "first_error": "extraction_wrong_value",
+            "first_error": null,
             "flags": [],
             "gold_flags": [],
             "gold_status": "insufficient",
@@ -430,7 +430,7 @@
             "kind": "lifestyle",
             "missed_exclusion": false,
             "policy_source": null,
-            "status": "review"
+            "status": "insufficient"
           },
           "patient_identity": {
             "correct": true,
@@ -451,7 +451,7 @@
           }
         },
         "conditions_correct": {
-          "n": 19,
+          "n": 20,
           "of": 20
         },
         "cost_usd": 0.0,
@@ -489,7 +489,7 @@
           "compute_timepoint": 0,
           "extraction_extra": 0,
           "extraction_missed": 0,
-          "extraction_wrong_value": 2,
+          "extraction_wrong_value": 0,
           "gold_question": 0,
           "rules": 0,
           "run_failed": 0,
@@ -1022,9 +1022,9 @@
             "status": "insufficient"
           },
           "claim.bmi_path_b.htn": {
-            "correct": false,
+            "correct": true,
             "false_support": false,
-            "first_error": "extraction_wrong_value",
+            "first_error": null,
             "flags": [],
             "gold_flags": [],
             "gold_status": "review",
@@ -1032,7 +1032,7 @@
             "kind": "claim",
             "missed_exclusion": false,
             "policy_source": null,
-            "status": "insufficient"
+            "status": "review"
           },
           "claim.drug": {
             "correct": true,
@@ -1075,7 +1075,7 @@
           }
         },
         "claims_correct": {
-          "n": 4,
+          "n": 5,
           "of": 6
         },
         "claims_false_supports": {
@@ -1391,7 +1391,7 @@
           "compute_timepoint": 0,
           "extraction_extra": 0,
           "extraction_missed": 0,
-          "extraction_wrong_value": 5,
+          "extraction_wrong_value": 4,
           "gold_question": 0,
           "rules": 0,
           "run_failed": 0,
@@ -1401,7 +1401,7 @@
           "model_candidate": 11,
           "spec": 12
         },
-        "gold_sha256": "ba1b352639818f1fa2e6198a531ddedfe62e0d9efe319431d56f1112d6fda642",
+        "gold_sha256": "fce717096d7aee0c99293ad3f34eca9a603c54bc6d0f1d5318ff7d1e1d37deee",
         "gold_with_clause": {
           "n": 23,
           "of": 23
@@ -1427,8 +1427,7 @@
               "bmi_path_a",
               "bmi_path_b.bmi",
               "bmi_path_c.bmi",
-              "claim.bmi_bracket",
-              "claim.bmi_path_b.htn"
+              "claim.bmi_bracket"
             ],
             "first_error": "extraction_wrong_value",
             "passed": false,
@@ -1441,8 +1440,7 @@
               "bmi_path_a",
               "bmi_path_b.bmi",
               "bmi_path_c.bmi",
-              "claim.bmi_bracket",
-              "claim.bmi_path_b.htn"
+              "claim.bmi_bracket"
             ],
             "first_error": "extraction_wrong_value",
             "passed": false,
@@ -1455,8 +1453,7 @@
               "bmi_path_a",
               "bmi_path_b.bmi",
               "bmi_path_c.bmi",
-              "claim.bmi_bracket",
-              "claim.bmi_path_b.htn"
+              "claim.bmi_bracket"
             ],
             "first_error": "extraction_wrong_value",
             "passed": false,
@@ -1469,8 +1466,7 @@
               "bmi_path_a",
               "bmi_path_b.bmi",
               "bmi_path_c.bmi",
-              "claim.bmi_bracket",
-              "claim.bmi_path_b.htn"
+              "claim.bmi_bracket"
             ],
             "first_error": "extraction_wrong_value",
             "passed": false,
@@ -2922,7 +2918,7 @@
         "case_id": "case-17",
         "citations": {
           "facts_correct": {
-            "n": 12,
+            "n": 10,
             "of": 16
           },
           "gold_evidence_recalled": {
@@ -2980,12 +2976,12 @@
             "first_error": null,
             "flags": [],
             "gold_flags": [],
-            "gold_status": "insufficient",
+            "gold_status": "review",
             "id": "claim.bmi_path_b.htn",
             "kind": "claim",
             "missed_exclusion": false,
             "policy_source": null,
-            "status": "insufficient"
+            "status": "review"
           },
           "claim.bmi_path_c.mi": {
             "correct": true,
@@ -3310,11 +3306,11 @@
           "excluded_unmatched": 1,
           "false_positives": 3,
           "gold_facts": 16,
-          "matched": 12,
+          "matched": 10,
           "matched_but_excluded": 2,
           "missed": 0,
-          "wrong_value": 2,
-          "wrong_value_timing_only": 0
+          "wrong_value": 4,
+          "wrong_value_timing_only": 2
         },
         "failed_stage": null,
         "false_supports": {
@@ -3340,7 +3336,7 @@
           "model_candidate": 4,
           "spec": 12
         },
-        "gold_sha256": "770b1f281bd0d91fe6c0aea1643a36461393dbee6ddd12e8506dad5dc21b90bd",
+        "gold_sha256": "f6b65473e6af36663679d3af6fd052ed613e9d2125d0ecdd509bb69afdfbcd71",
         "gold_with_clause": {
           "n": 16,
           "of": 16
@@ -3983,13 +3979,13 @@
         },
         {
           "by_variant": {
-            "case-03": "insufficient",
+            "case-03": "review",
             "case-07": "conflict",
             "case-07b": "conflict",
-            "case-17": "insufficient"
+            "case-17": "review"
           },
           "correct": {
-            "n": 3,
+            "n": 4,
             "of": 4
           },
           "false_supports": 0,
@@ -4097,13 +4093,13 @@
         },
         {
           "by_variant": {
-            "case-01": "review",
+            "case-01": "insufficient",
             "case-03": "insufficient",
             "case-07": "insufficient",
             "case-07b": "insufficient"
           },
           "correct": {
-            "n": 3,
+            "n": 4,
             "of": 4
           },
           "false_supports": 0,
@@ -4457,7 +4453,7 @@
         },
         {
           "by_variant": {
-            "case-01": "review",
+            "case-01": "insufficient",
             "case-02": "insufficient",
             "case-03": "insufficient",
             "case-04": "insufficient",
@@ -4466,7 +4462,7 @@
             "case-17": "insufficient"
           },
           "correct": {
-            "n": 6,
+            "n": 7,
             "of": 7
           },
           "false_supports": 0,
@@ -4495,12 +4491,12 @@
         }
       ]
     },
-    "manifest_sha256": "361616b955d4a6464dc7cf50c060be19ba568b5011a0e1a5c4d841cdd28776b4",
+    "manifest_sha256": "d9287ae2b585444b2af24d8c76815711f15d1dc0988019f7f60d939b3e556a6e",
     "micro": {
       "case_families": 6,
       "citations": {
         "facts_correct": {
-          "n": 116,
+          "n": 114,
           "of": 158
         },
         "gold_evidence_recalled": {
@@ -4513,7 +4509,7 @@
         }
       },
       "claims_correct": {
-        "n": 36,
+        "n": 38,
         "of": 39
       },
       "claims_false_supports": {
@@ -4526,7 +4522,7 @@
         "system_supported": 19
       },
       "conditions_correct": {
-        "n": 133,
+        "n": 134,
         "of": 140
       },
       "exclusion_evidence_found": 2,
@@ -4543,11 +4539,11 @@
         "excluded_unmatched": 26,
         "false_positives": 26,
         "gold_facts": 158,
-        "matched": 116,
+        "matched": 114,
         "matched_but_excluded": 21,
         "missed": 4,
-        "wrong_value": 17,
-        "wrong_value_timing_only": 6
+        "wrong_value": 19,
+        "wrong_value_timing_only": 8
       },
       "false_supports": {
         "correctly_automated": {
@@ -4562,7 +4558,7 @@
         "compute_timepoint": 2,
         "extraction_extra": 0,
         "extraction_missed": 0,
-        "extraction_wrong_value": 7,
+        "extraction_wrong_value": 4,
         "gold_question": 0,
         "rules": 1,
         "run_failed": 0,
@@ -4713,7 +4709,7 @@
           "case_families": 1,
           "citations": {
             "facts_correct": {
-              "n": 12,
+              "n": 10,
               "of": 16
             },
             "gold_evidence_recalled": {
@@ -4753,11 +4749,11 @@
             "excluded_unmatched": 1,
             "false_positives": 3,
             "gold_facts": 16,
-            "matched": 12,
+            "matched": 10,
             "matched_but_excluded": 2,
             "missed": 0,
-            "wrong_value": 2,
-            "wrong_value_timing_only": 0
+            "wrong_value": 4,
+            "wrong_value_timing_only": 2
           },
           "false_supports": {
             "correctly_automated": {
@@ -4898,7 +4894,7 @@
             }
           },
           "claims_correct": {
-            "n": 12,
+            "n": 14,
             "of": 15
           },
           "claims_false_supports": {
@@ -4911,7 +4907,7 @@
             "system_supported": 6
           },
           "conditions_correct": {
-            "n": 36,
+            "n": 37,
             "of": 40
           },
           "exclusion_evidence_found": 1,
@@ -4946,7 +4942,7 @@
             "compute_timepoint": 0,
             "extraction_extra": 0,
             "extraction_missed": 0,
-            "extraction_wrong_value": 7,
+            "extraction_wrong_value": 4,
             "gold_question": 0,
             "rules": 0,
             "run_failed": 0,
@@ -5053,8 +5049,7 @@
               "bmi_path_a",
               "bmi_path_b.bmi",
               "bmi_path_c.bmi",
-              "claim.bmi_bracket",
-              "claim.bmi_path_b.htn"
+              "claim.bmi_bracket"
             ],
             "first_error": "extraction_wrong_value",
             "passed": false,
@@ -5077,8 +5072,7 @@
               "bmi_path_a",
               "bmi_path_b.bmi",
               "bmi_path_c.bmi",
-              "claim.bmi_bracket",
-              "claim.bmi_path_b.htn"
+              "claim.bmi_bracket"
             ],
             "first_error": "extraction_wrong_value",
             "passed": false,
@@ -5141,8 +5135,7 @@
               "bmi_path_a",
               "bmi_path_b.bmi",
               "bmi_path_c.bmi",
-              "claim.bmi_bracket",
-              "claim.bmi_path_b.htn"
+              "claim.bmi_bracket"
             ],
             "first_error": "extraction_wrong_value",
             "passed": false,
@@ -5235,8 +5228,7 @@
               "bmi_path_a",
               "bmi_path_b.bmi",
               "bmi_path_c.bmi",
-              "claim.bmi_bracket",
-              "claim.bmi_path_b.htn"
+              "claim.bmi_bracket"
             ],
             "first_error": "extraction_wrong_value",
             "passed": false,
