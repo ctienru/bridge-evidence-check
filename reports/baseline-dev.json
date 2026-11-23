@@ -792,10 +792,12 @@
         },
         "lifestyle.activity": {
           "correct": false,
-          "flags": [],
+          "flags": [
+            "unrecognized"
+          ],
           "gold_flags": [],
           "gold_status": "review",
-          "status": "not_supported"
+          "status": "review"
         },
         "lifestyle.nutrition": {
           "correct": true,
@@ -1434,7 +1436,7 @@
     }
   },
   "generated_from": {
-    "code_sha": "860b40e1e66145ed3cb3dd4f5f630fd3a993dd0c-dirty",
+    "code_sha": "dca4e7b8ff0ecec682add908db9d660b579eb0f7",
     "model_returned": "claude-sonnet-5-5",
     "prompt_version": "extract-v4",
     "rules_version": "bridge-v1",

@@ -1,6 +1,6 @@
 # Eval report, split=dev, mode=offline
 
-prompt extract-v4 · schema v2 · rules bridge-v1 · splitter sentences-v1 · model returned claude-sonnet-5-5 · code 860b40e1e66145ed3cb3dd4f5f630fd3a993dd0c-dirty
+prompt extract-v4 · schema v2 · rules bridge-v1 · splitter sentences-v1 · model returned claude-sonnet-5-5 · code dca4e7b8ff0ecec682add908db9d660b579eb0f7
 
 One run of one model on 7 dev variants. Not a holdout result; not a validation on real records. Scoring rules: docs/eval.md. Every number is a count.
 
@@ -140,7 +140,7 @@ Live status per variant; a bold cell differs from gold and names the gold status
 | `exclusion.osa` | ins | ins | rev | not | ins | ins | ins | 7/7 | 0 | form |
 | `exclusion.part_d_glp1` | ins | rev | ins | ins | ins | ins | ins | 7/7 | 0 | partd |
 | `exclusion.t2dm` | ins | ins | ins | ins | ins | ins | ins | 7/7 | 0 | form |
-| `lifestyle.activity` | ins | ins | ins | **not** (gold rev) | ins | ins | ins | 6/7 | 0 |  |
+| `lifestyle.activity` | ins | ins | ins | **rev** (gold rev) | ins | ins | ins | 6/7 | 0 |  |
 | `lifestyle.nutrition` | **rev** (gold ins) | ins | ins | ins | ins | ins | ins | 6/7 | 0 |  |
 | `patient_identity` | rev | sup | rev | sup | con | con | rev | 7/7 | 0 | form |
 
