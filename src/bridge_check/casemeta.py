@@ -29,7 +29,7 @@ CASE_META_NAME = "case.yaml"
 FIXTURE_META_NAME = "meta.yaml"
 
 SECTIONS: tuple[str, ...] = ("mtsamples", "case_report", "authored", "dirty")
-"""Report sections (planning section 3.1): real text from MTSamples, real text from a
+"""Report sections (`docs/eval.md` §1): real text from MTSamples, real text from a
 published case report, authored documents, and dirty-ladder variants (none public yet)."""
 
 DOC_ORIGINS: tuple[str, ...] = ("mtsamples", "case_report", "authored")

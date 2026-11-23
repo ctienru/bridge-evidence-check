@@ -1,4 +1,4 @@
-"""Route 2: propose candidate facts on real documents (planning 05 §5.2 step 2).
+"""Route 2: propose candidate facts on real documents (`docs/dataside.md`).
 
 Documents come from `--case <variant_id>` (`cases/<id>/input.yaml` `documents[]`, texts
 under `cases/<id>/docs/`) or from `--doc <path> --doc-id <id>` pairs. The annotation guide

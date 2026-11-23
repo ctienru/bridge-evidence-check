@@ -1,7 +1,7 @@
 """The regression baseline (`reports/baseline-dev.json`, contract §11): building it,
 reading it from the PR base, guarding changes to it, and detecting regressions.
 
-Regression (contract §11, planning section 3.1), judged row by row against the baseline
+Regression (contract §11, `docs/eval.md` §3), judged row by row against the baseline
 rows of the same variant, conditions and claims alike:
 
 1. `false_support`: a row the system now calls `supported` where gold does not, and the

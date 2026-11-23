@@ -226,6 +226,9 @@ def _check_exclusion_status(condition_id: str, status: str) -> None:
 
 
 class BlindCondition(_Strict):
+    """One blind-labelled condition status of `blind_draft.json` (contract §8); an exclusion is
+    never `supported`."""
+
     id: str
     status: Status
 
@@ -238,6 +241,9 @@ class BlindCondition(_Strict):
 
 
 class InventoryRow(_Strict):
+    """One row of the blind inventory table: a field with its kind or concept, its presence, and an
+    approximate location (contract §8)."""
+
     field: str = Field(min_length=1)
     kind: str | None = None
     concept: str | None = None
@@ -246,6 +252,9 @@ class InventoryRow(_Strict):
 
 
 class BlindDraft(_Strict):
+    """The whole of `blind_draft.json`: statuses and inventory written before any model output is
+    seen, never changed afterwards (contract §8)."""
+
     variant_id: str = Field(min_length=1)
     drafted_at: str
     conditions: list[BlindCondition]
@@ -259,6 +268,9 @@ class BlindDraft(_Strict):
 
 
 class ScanHit(_Strict):
+    """A keyword-scan hit by position and hash only: `doc_id`, `start` and `end` (0-based, `end`
+    exclusive, contract §8), `sha8`, and the matched term."""
+
     doc_id: str = Field(min_length=1)
     start: int = Field(ge=0)
     end: int = Field(ge=1)
@@ -276,6 +288,9 @@ assert tuple(ScanHit.model_fields) == SCAN_HIT_KEYS
 
 
 class AdjudicationLine(_Strict):
+    """One line of `adjudication.jsonl`: the annotator's decision on one item; `candidate` and
+    `final` hold only the allow-listed keys (guide L-01)."""
+
     variant_id: str = Field(min_length=1)
     item: AdjudicationItem
     field: str | None = None
@@ -413,6 +428,9 @@ assert set(POSITION_KEYS) - {"sha8"} <= set(GoldFact.model_fields)
 
 
 class ExpectedAbsent(_Strict):
+    """A fact the system must not extract: a field plus exactly one of `kind` or `concept` (contract
+    §8)."""
+
     field: str
     kind: str | None = None
     concept: str | None = None
@@ -427,6 +445,9 @@ class ExpectedAbsent(_Strict):
 
 
 class GoldCondition(_Strict):
+    """A gold condition status with its flags and written reason (contract §8); an exclusion is
+    never `supported`."""
+
     id: str
     status: Status
     flags: list[str] = Field(default_factory=list)
@@ -449,11 +470,15 @@ class GoldCondition(_Strict):
 
 
 class GoldClaim(_Strict):
+    """The gold status of one `claim.<id>` (contract §8)."""
+
     id: str = Field(pattern=rf"^{re.escape(CLAIM_PREFIX)}[a-z0-9_.]+$")
     status: Status
 
 
 class Gold(_Strict):
+    """The whole of `expected.json` (contract §8); condition ids are unique."""
+
     variant_id: str = Field(min_length=1)
     guideline_version: int = Field(ge=0)
     facts: list[GoldFact]

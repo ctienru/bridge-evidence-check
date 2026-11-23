@@ -3,7 +3,7 @@
 `rules/bridge-v1.yaml` holds the policy snapshot, thresholds, one entry per condition
 and the project-specific policies; `rules/drugs-v2.yaml` holds the antihypertensive
 drug table. Machine names (condition IDs, status codes) follow `docs/contracts.md`
-(planning doc 13 §1–§2). The `rule` field of a condition is human-readable only; the
+(§1–§2). The `rule` field of a condition is human-readable only; the
 real decision functions live in `rules.py` (later item).
 """
 
@@ -34,15 +34,15 @@ __all__ = [
     "load_rules",
 ]
 
-# String values allowed in `project_policies`: a machine status code (13 §1) or one of the
-# non-status enum values used by 06 §3.7.
+# String values allowed in `project_policies`: a machine status code (contract §1) or one of the
+# non-status option values of the rules table (`unrounded`, `not_ongoing`, `unknown`).
 POLICY_STRING_VALUES: frozenset[str] = frozenset(STATUS_CODES) | {
     "unrounded",
     "not_ongoing",
     "unknown",
 }
 
-# Names a condition may list in `requires` (13 §7.3, middle column).
+# Names a condition may list in `requires` (contract §7.3, middle column).
 COMPUTE_NAMES: tuple[str, ...] = (
     "doc_facts.identity_status",
     "wrong_patient",
@@ -64,7 +64,7 @@ COMPUTE_NAMES: tuple[str, ...] = (
 )
 
 # Antihypertensive drug classes used in `rules/drugs-v2.yaml`. `class` only decides
-# whether a drug is an antihypertensive; de-duplication uses `drug_canonical` (13 §3.2).
+# whether a drug is an antihypertensive; de-duplication uses `drug_canonical` (contract §3.2).
 DrugClass = Literal[
     "ace_inhibitor",
     "arb",
@@ -117,6 +117,8 @@ class _Strict(BaseModel):
 
 
 class PolicySource(_Strict):
+    """One source document of the policy snapshot; conditions cite it by `id` (contract §10)."""
+
     id: str = Field(min_length=1)
     doc: str = Field(min_length=1)
     url: str = Field(pattern=r"^https://")
@@ -124,6 +126,9 @@ class PolicySource(_Strict):
 
 
 class PolicySnapshot(_Strict):
+    """The policy documents the rules table was written from and the day they were accessed
+    (contract §10)."""
+
     accessed: date
     sources: list[PolicySource] = Field(min_length=1)
 
@@ -137,22 +142,34 @@ class PolicySnapshot(_Strict):
 
 
 class HtnThresholds(_Strict):
+    """Uncontrolled hypertension (contract §10): strictly above `sbp_gt` or `dbp_gt` mmHg, with at
+    least `min_drugs` antihypertensives."""
+
     sbp_gt: int
     dbp_gt: int
     min_drugs: int
 
 
 class PrediabetesThresholds(_Strict):
+    """Prediabetes ranges as `[low, high]`, both ends inclusive: A1c in %, fasting glucose in mg/dL
+    (contract §10)."""
+
     a1c_pct: list[float] = Field(min_length=2, max_length=2)
     fpg_mg_dl: list[int] = Field(min_length=2, max_length=2)
 
 
 class DiabetesThresholds(_Strict):
+    """Lower bounds of the diabetes range, inclusive: A1c in %, fasting glucose in mg/dL (contract
+    §10)."""
+
     a1c_pct_ge: float
     fpg_mg_dl_ge: int
 
 
 class Thresholds(_Strict):
+    """The `thresholds` block (contract §10): BMI in kg/m², ascending; age in years;
+    `ckd_3a_egfr_lt` exclusive; `osa_moderate_ahi_ge` inclusive."""
+
     bmi: list[int] = Field(min_length=3, max_length=3)
     age: int
     htn: HtnThresholds
@@ -170,11 +187,18 @@ class Thresholds(_Strict):
 
 
 class ConditionSource(_Strict):
+    """The policy source a condition rests on: a `policy_snapshot.sources` id and one short
+    quotation (contract §10)."""
+
     id: str = Field(min_length=1)
     quote: str = Field(min_length=1)
 
 
 class Condition(_Strict):
+    """One entry of `conditions`: a condition id (contract §2), the compute names it requires
+    (contract §7.3) and its human-readable rule text. `max_status: review` marks an exclusion
+    (contract §3.3)."""
+
     id: str
     requires: list[str] = Field(min_length=1)
     rule: str = Field(min_length=1)
@@ -198,6 +222,9 @@ class Condition(_Strict):
 
 
 class RulesTable(_Strict):
+    """The whole of `rules/bridge-v1.yaml` (contract §10), cross-checked: unique condition ids,
+    known source ids, and every exclusion capped at `review`."""
+
     version: str = Field(pattern=r"^bridge-v\d+$")
     policy_snapshot: PolicySnapshot
     thresholds: Thresholds
@@ -232,11 +259,16 @@ class RulesTable(_Strict):
 
 
 class DrugComponent(_Strict):
+    """One ingredient of a combination product, with its own class (contract §10)."""
+
     drug_canonical: str = Field(min_length=1)
     class_: DrugClass = Field(alias="class")
 
 
 class Drug(_Strict):
+    """One entry of `rules/drugs-v2.yaml` (contract §10): the names it is written as, its canonical
+    name and its class. `components` marks a combination product."""
+
     model_config = ConfigDict(strict=True, extra="forbid", frozen=True, populate_by_name=True)
 
     names: list[str] = Field(min_length=1)
@@ -258,6 +290,9 @@ class Drug(_Strict):
 
 
 class DrugTable(_Strict):
+    """The whole of `rules/drugs-v2.yaml` (contract §10): one canonical drug per name, and a
+    standalone entry of the same class for every component."""
+
     version: int
     drugs: list[Drug]
 

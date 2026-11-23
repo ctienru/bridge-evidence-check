@@ -145,3 +145,25 @@ def test_window_failure_message_does_not_leak_source_text() -> None:
 
 def test_window_check_passes_on_unrelated_text() -> None:
     _assert_no_shared_windows("x" * 100, "t", "y" * 100, "s")
+
+
+_OUT_OF_REPO_REFERENCE = re.compile(r"planning|\b0[1-9] §|\b1[0-5] §")
+
+
+def test_source_cites_only_in_repo_documents() -> None:
+    """Source comments cite only documents a reader of this repository can open.
+
+    The failure lists `path:line` only, never the matched line.
+    """
+    hits: list[str] = []
+    for folder in ("src", "scripts"):
+        for path in sorted((ROOT / folder).rglob("*.py")):
+            lines = path.read_text(encoding="utf-8").splitlines()
+            for number, line in enumerate(lines, start=1):
+                if _OUT_OF_REPO_REFERENCE.search(line):
+                    hits.append(f"{path.relative_to(ROOT).as_posix()}:{number}")
+    if hits:
+        pytest.fail(
+            "out-of-repo document reference in:\n" + "\n".join(hits),
+            pytrace=False,
+        )

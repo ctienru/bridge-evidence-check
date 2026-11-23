@@ -682,7 +682,7 @@ def compare_case(
 
 
 def false_support_count(rows: Mapping[str, Mapping[str, Any]]) -> int:
-    """Rows the system calls `supported` where gold does not (planning §3.1)."""
+    """Rows the system calls `supported` where gold does not (`docs/eval.md` §1)."""
     return sum(
         r["status"] == "supported" and r["gold_status"] != "supported" for r in rows.values()
     )

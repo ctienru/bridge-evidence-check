@@ -26,8 +26,8 @@ transaction. No SQL write transaction is open while the request is in flight.
 Retry budget per case run (contract §11, AGENTS.md): at most 4 API attempts (including
 the first), of which at most 1 may end parse-class (`parse_failed`, `refused`,
 `truncated`), and 5 minutes of wall clock. A parse-class outcome therefore ends the run
-(`failed_stage=parse`); only API errors are retried. Planning 06 §2.5 allowed one retry
-after a parse-class outcome; the contract wins. A failed replay is not an attempt of this
+(`failed_stage=parse`); only API errors are retried
+(`docs/adr/0001-global-limits.md`, Consequences). A failed replay is not an attempt of this
 run and does not use that allowance. The wall clock is checked before each send, bounds
 each request's timeout, and is checked again after the reply is classified and before
 anything is marked parsed: a reply that arrives or finishes parsing after the budget is
@@ -162,13 +162,14 @@ LIMITS = Limits()
 
 MAX_TOKENS = LIMITS.max_tokens
 REQUEST_TIMEOUT_S = LIMITS.request_timeout_s
-"""Per-request timeout (06 §2.5). Not part of the cache key."""
+"""Per-request timeout (`docs/adr/0001-global-limits.md`). Not part of the cache key."""
 MAX_ATTEMPTS = LIMITS.max_attempts
 MAX_PARSE_CLASS_ATTEMPTS = LIMITS.max_parse_class_attempts
 WALL_CLOCK_S = LIMITS.wall_clock_s
 BACKOFF_BASE_S = 1.0
 
-# USD per token, claude-sonnet-5-5 (06 §2.3, 2026-11-08).
+# USD per token, claude-sonnet-5-5 (list prices of 2026-11-08,
+# `docs/adr/0001-global-limits.md`).
 PRICE_INPUT = 2.00 / 1_000_000
 PRICE_OUTPUT = 10.00 / 1_000_000
 
