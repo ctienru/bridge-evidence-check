@@ -21,6 +21,7 @@ from bridge_check.dataside.openai_client import (
     json_schema_format,
     read_api_key,
 )
+from bridge_check.manifest import ANNOTATOR_FILES
 
 draft = load_script("draft_authored")
 propose = load_script("propose_candidates")
@@ -471,6 +472,13 @@ def test_propose_candidates_refuses_case_aliases_and_annotator_outputs(
     # a public output may not be an annotator-owned file or sit under a holdout case
     args = _propose_args(tmp_path, tmp_path / "none.env", **{"--out": str(hold / "expected.json")})
     assert propose.main(args) == 1 and "annotator-owned" in capsys.readouterr().err
+    # every annotator-owned name is refused wherever it sits, the assisted review included
+    assert "assisted_review.json" in ANNOTATOR_FILES
+    for name in sorted(ANNOTATOR_FILES):
+        args = _propose_args(
+            tmp_path, tmp_path / "none.env", **{"--out": str(tmp_path / "pub" / name)}
+        )
+        assert propose.main(args) == 1 and "annotator-owned" in capsys.readouterr().err, name
     args = _propose_args(
         tmp_path, tmp_path / "none.env", **{"--out": str(hold / "c.jsonl"), "--root": str(root)}
     )

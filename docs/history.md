@@ -36,3 +36,4 @@ One line per merged PR, in merge order. "Why" is the question the PR answered. D
 | #59 | 11-23 | Rules follow the contract in five known gaps | Close the gaps that need no new extraction |
 | #61 | 11-23 | Guide version 3; lifestyle applicability; claim rule; relative time expressions | The remaining gaps that can be checked offline |
 | #63 | 11-23 | Parse retry, prompt `extract-v5`, date binding; dev replays recorded again | The extraction weaknesses the holdout run showed |
+| #65 | 11-23 | Dev report regenerated from main; history page; README brought up to date | The report named a commit that was not on main, and no page explained the order of the work |

@@ -29,6 +29,9 @@ is never involved here.
    `cases/<id>/docs/D2-mtsamples-<row>.txt` (git-ignored, never committed).
 2. **Terri blind-labels** every condition status and fills the inventory table
    (`blind_draft.json`, B-01–B-03) before seeing any model output. Never edited afterwards.
+   A case may instead carry `assisted_review.json` (same format): its inventory was proposed
+   with AI assistance and confirmed by the annotator. Such a case has no blind draft and no
+   blind agreement count. A case has one file or the other, never both.
 3. **`scripts/propose_candidates.py`** `--case` (or `--doc` + `--doc-id`) `--guide` `--prompt`
    `--out` `--raw-out`: archives the raw reply first (private), then writes candidates with
    verbatim-located quotes (`start`, `end`, `sha8`) in the adjudication `candidate` shape:
@@ -60,6 +63,7 @@ through the P-02 API step; their drafting records are kept in the private repo u
 | File | Public repo | Private repo |
 |---|---|---|
 | `case.yaml`, `input.yaml`, authored `docs/*.txt`, `blind_draft.json`, `adjudication.jsonl`, `expected.json` (dev cases) | yes | — |
+| `assisted_review.json` (cases without a blind draft: holdout cases 09, 10, 12, 18) | — | yes |
 | `candidates.jsonl`, `uncovered.jsonl` (sanitized dev outputs) | yes | — |
 | `docs/D2-mtsamples-*.txt` | downloaded at run time, git-ignored | — |
 | Drafting spec, prompts (`--prompt`), drafting record (`--out-record`) | — | yes |
@@ -69,7 +73,8 @@ through the P-02 API step; their drafting records are kept in the private repo u
 
 The tools never read a holdout variant (checked on the path as written and as resolved),
 never write an annotator-owned file (`expected.json`, `blind_draft.json`,
-`adjudication.jsonl`, `input.yaml`, `case.yaml`) or `splits.yaml`, and never print
+`assisted_review.json`, `adjudication.jsonl`, `input.yaml`, `case.yaml`) or `splits.yaml`,
+and never print
 document text, quotes or patient names.
 
 ## Import boundary

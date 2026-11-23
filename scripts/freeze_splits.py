@@ -35,7 +35,9 @@ Hash-only rows: a variant whose `cases/<variant_id>/` directory does not exist i
 checkout (its files are kept in the private repo) is checked for shape only (the
 `files` map with `input.yaml` and `expected.json`, sha256 hex hashes, `split`,
 `gold_version`, `frozen_at`) and treated as frozen; (a) and (c) never look for its files.
-(b) applies to it unchanged. If the directory exists, every listed file must exist and
+(b) applies to it unchanged. A hash-only row may carry a salted sha256 for a document whose
+plain hash would identify a public source text, marked by a comment on the entry. If the
+directory exists, every listed file must exist and
 hash-match as usual.
 
 Exit code 0 when everything passes, 1 otherwise. Output never includes document text.

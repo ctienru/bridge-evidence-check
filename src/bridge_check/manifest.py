@@ -135,9 +135,16 @@ CHECKOUT_ROOT = Path(__file__).resolve().parent.parent.parent
 """The public checkout this code runs from; private outputs are checked against it
 regardless of any `--root` argument, which only relocates `cases/`."""
 
-# Files only the annotator writes (AGENTS.md); no tool may use them as an output path.
+# Files only the annotator writes (docs/dataside.md); no tool may use them as an output path.
 ANNOTATOR_FILES: frozenset[str] = frozenset(
-    {"expected.json", "blind_draft.json", "adjudication.jsonl", "input.yaml", "case.yaml"}
+    {
+        "expected.json",
+        "blind_draft.json",
+        "assisted_review.json",
+        "adjudication.jsonl",
+        "input.yaml",
+        "case.yaml",
+    }
 )
 PROTECTED_FILES: frozenset[str] = ANNOTATOR_FILES | {MANIFEST_NAME}
 
