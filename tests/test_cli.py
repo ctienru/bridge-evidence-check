@@ -196,7 +196,7 @@ def test_failed_parse_exits_3(
     code, report, _ = _json(capsys, "check", str(SMOKE), "--db", str(db), "--json")
     assert code == EXIT_FAILED
     assert report["failed_stage"] == "parse"
-    assert report["attempt_summary"]["by_status"] == {"parse_failed": 1}
+    assert report["attempt_summary"]["by_status"] == {"parse_failed": 2}
 
 
 def test_missing_document_fails_at_input(

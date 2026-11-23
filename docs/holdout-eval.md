@@ -92,3 +92,7 @@ Every miss on the two completed runs is charged to extraction. On case 14 the ex
 - Three variants of one text origin; nothing here is clinic performance.
 - The verifier ablation and the rules-only table are out of scope in this report, as in the dev report.
 - The holdout golds have not had the annotator's final read (see the gold disclosure above).
+
+## After this run
+
+Added 2026-11-23. After this run, and using the failure classes reported above (`run_failed` on one badly shaped date, `extraction_wrong_value` on the dates and timepoints of baseline values, `extraction_missed` and the missed exclusion evidence), three things were changed: the retry budget (one more parse-class attempt per run, contract §11), the extraction prompt (`extract-v5`) and the binding of a date to its value in the verifier (contract §6). Cases 11, 14 and 16 are therefore no longer untouched test cases for any later configuration: a later result on them is a result on cases that informed the configuration. Nothing above this section was changed, and none of the three cases was run again for these changes.

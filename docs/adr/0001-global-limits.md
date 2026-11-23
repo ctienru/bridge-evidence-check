@@ -18,7 +18,7 @@ place: `Limits` in `src/bridge_check/extract.py` (`LIMITS` is the committed inst
 | Limit | Value | Where enforced | Source |
 |---|---|---|---|
 | API attempts per run | ≤ 4, including the first | `extract._call_api` | contract §11, AGENTS.md |
-| Parse-class attempts (`parse_failed`, `refused`, `truncated`) | ≤ 1 | same | contract §11 |
+| Parse-class attempts (`parse_failed`, `refused`, `truncated`) | ≤ 2 (only a first `parse_failed` is sent again) | same | contract §11 |
 | Wall clock per run | 300 s | checked before each send, bounds each timeout, checked again before `parsed` | contract §11 |
 | Request timeout | 120 s | `client.with_options(timeout=min(120, remaining))`; not in the cache key | measured, below |
 | `max_tokens` | 16 000 | request kwarg; **in the cache key** | kept, below |
@@ -101,16 +101,25 @@ case and passes `eval_spent_usd=0.0`; `eval` (not implemented yet) will pass the
 total of the cases already run, computed with the same unknown-outcome rule.
 
 **Caps are caps.** `Limits` validates its values: `max_attempts` ≤ 4,
-`max_parse_class_attempts` ≤ 1 and `wall_clock_s` ≤ 300 can be lowered by a caller but
+`max_parse_class_attempts` ≤ 2 and `wall_clock_s` ≤ 300 can be lowered by a caller but
 never raised; a larger value raises `ValueError` before any call.
 
 ## Consequences
 
 - A reply that is cut by `max_tokens` is `truncated` (parse-class) and ends the run; the
-  ceilings never cut a reply themselves.
-- A parse-class outcome also ends the run (one allowed), and under the tool-use output mode
-  (ADR 0002) it is a measured quantity rather than a rarity: 3 of 4 accepted first-draft calls on
-  2026-11-09 (2 of 3 without the probe), 0 of 3 after the prompt was tightened. The cost of such a run is one call.
+  ceilings never cut a reply themselves. A refusal ends the run the same way. Neither is sent
+  again: the same request would be cut or refused again.
+- Two parse-class outcomes are allowed per run (revised 2026-11-23; one until then). After a
+  first `parse_failed` the same request is sent once more, as a new attempt with its own row
+  and saved response; a second parse-class outcome ends the run. Under the tool-use output
+  mode (ADR 0002) a failed validation is a measured quantity rather than a rarity: 3 of 4
+  accepted first-draft calls on 2026-11-09 (2 of 3 without the probe), 0 of 3 after the prompt
+  was tightened, and 1 of 3 in the holdout evaluation of 2026-11-10 (`docs/holdout-eval.md`),
+  where one badly shaped date failed a whole run. The cost of a run that fails at `parse` is
+  now at most two calls; both are recorded and both count toward the run and evaluation
+  ceilings, and the second send is refused like any other when its reservation does not fit.
+- The retry stays inside the 4-attempt and 5-minute budgets; it adds no attempt to them. No
+  backoff precedes it, since nothing failed on the API side.
 - The ceilings live in code, not in `rules/bridge-v1.yaml`: they are operational limits,
   not policy, and the rules table's `IMPLEMENTED` allow-list stays about CMS policy.
 - Tests use the fake client with monkeypatched prices (`tests/test_extract.py`,

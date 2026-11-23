@@ -16,9 +16,10 @@ evidence may be used (`exclusion_reasons`). The checks run in a fixed order:
    count), and bound to the fact it describes: a number to its unit and label, a stage or
    severity to its diagnosis, a date or dose to its drug and a start / stop date to a
    non-negated start / stop word, a date of birth to its label, an event date to its own
-   measurement (the nearest date, with nothing else between), a PAD symptom or cirrhosis
-   qualifier to the patient's own actual text in the same clause, a `doc_dates` date to the
-   nearest name of the document it describes, a GLP-1 purpose to a cue (a MACE cue cannot
+   measurement (the nearest date, with nothing else between; for a point-in-time value also
+   the only date of its clause, across a value label: `sole_clause_date`), a PAD symptom or
+   cirrhosis qualifier to the patient's own actual text in the same clause, a `doc_dates` date
+   to the nearest name of the document it describes, a GLP-1 purpose to a cue (a MACE cue cannot
    be overwritten), and each lifestyle value to one unambiguous cue. A percentile, a range
    end, a bound ("below", "<"), a signed number or a goal is not a measured value; a
    hypothetical or resumed start, or a start word that belongs to another drug, is not an
@@ -1698,10 +1699,11 @@ def check_values(fact_field: str, fact: Fact, w: _Window, docs: Docs | None = No
                 vc.need(dates_equal(d[name]))
 
     # What the quote itself says about the date, whatever the model wrote (or omitted).
-    vc.quote_date = quote_date_attribute(quote_dates(w, vc))
+    bound_dates = quote_dates(w, vc, fact_field)
+    vc.quote_date = quote_date_attribute(bound_dates)
     vc.relative_time = vc.quote_date is None and relative_time_bound(w, vc)
     if fact.event_date:
-        vc.event_date_source = _event_date(fact.event_date, quote_dates(w, vc), vc)
+        vc.event_date_source = _event_date(fact.event_date, bound_dates, vc)
     return vc
 
 
@@ -1735,34 +1737,81 @@ def _qualified(w: _Window, mentions: list[Span], yes: bool, what: str) -> list[S
 _PRECISION_BY_LENGTH = {4: "year", 7: "month", 10: "day"}
 
 
-def quote_dates(w: _Window, vc: _ValueCheck) -> list[str]:
-    """ISO dates inside the quote that belong to the fact: bound to its mention (nearest, with
-    no other number, date, value label or drug between), or any date in the quote when the
-    fact has no located mention. Independent of the model's `event_date`."""
-    inside = [(iso, (s, e)) for iso, s, e in w.dates if w.inside((s, e))]
-    if vc.anchors:
-        inside = [(iso, x) for iso, x in inside if any(w.value_bound(a, x) for a in vc.anchors)]
-    return [iso for iso, _ in inside]
-
+POINT_IN_TIME_FIELDS = frozenset({"anthropometrics", "bp_readings", "labs"})
+"""Fields whose value is one measurement taken at one time: the only explicit date of the
+value's clause is the value's own date, across a value label (contract §6)."""
 
 _CLAUSE_GAP_BREAK = re.compile(r"[.?!]\s|\n")
+
+
+def _together(w: _Window, a: Span, x: Span) -> bool:
+    """`a` and `x` stand in one clause. The sentence splitter keeps a unit abbreviation and
+    its period inside the sentence ("130 kg. Height 170 cm."), so the text between them must
+    also hold no sentence punctuation followed by a space and no line break."""
+    if not w.same_clause(a, x):
+        return False
+    lo, hi = w.between(a, x)
+    return _CLAUSE_GAP_BREAK.search(w.doc[lo:hi]) is None
+
+
+def sole_clause_date(w: _Window, anchor: Span, anchors: list[Span]) -> Span | None:
+    """The explicit date that is the own date of the point-in-time value at `anchor` because
+    it is the only date in the value's clause (contract §6): on either side of the value,
+    whatever value label stands between them. None when the clause holds no date or more than
+    one, when another number or a treatment term stands between the date and the value, or
+    when the date stands directly on another number of the clause (it is then that
+    measurement's date). The count of a relative time expression is not such a number."""
+    clause = [(s, e) for _, s, e in w.dates if _together(w, anchor, (s, e))]
+    if len(clause) != 1:
+        return None
+    date = clause[0]
+    lo, hi = w.between(anchor, date)
+    relative = [(h.start, h.end) for h in w.scan(w.m.relative_time_patterns)]
+    numbers = [
+        n
+        for n in w.plain_numbers()
+        if not any(a[0] <= n[0] and n[1] <= a[1] for a in anchors)
+        and not any(r[0] <= n[0] and n[1] <= r[1] for r in relative)
+    ]
+    if any(lo <= s and e <= hi for s, e in numbers):
+        return None
+    if any(lo <= h.start and h.end <= hi for h in w.scan(w.m.treatment_patterns)):
+        return None
+    if any(w.value_bound(n, date) for n in numbers):
+        return None
+    return date
+
+
+def quote_dates(w: _Window, vc: _ValueCheck, fact_field: str | None = None) -> list[str]:
+    """ISO dates inside the quote that belong to the fact: bound to its mention (nearest, with
+    no other number, date, value label or drug between), or any date in the quote when the
+    fact has no located mention. For a point-in-time value (`POINT_IN_TIME_FIELDS`) the only
+    date of its clause is bound across a value label as well (`sole_clause_date`).
+    Independent of the model's `event_date`."""
+    inside = [(iso, (s, e)) for iso, s, e in w.dates if w.inside((s, e))]
+    if vc.anchors:
+        sole = (
+            {sole_clause_date(w, a, vc.anchors) for a in vc.anchors}
+            if fact_field in POINT_IN_TIME_FIELDS
+            else set()
+        )
+        inside = [
+            (iso, x)
+            for iso, x in inside
+            if any(w.value_bound(a, x) for a in vc.anchors) or x in sole
+        ]
+    return [iso for iso, _ in inside]
 
 
 def relative_time_bound(w: _Window, vc: _ValueCheck) -> bool:
     """A relative time expression that belongs to the fact (contract §5): one in the same clause
     as the fact's mention, on either side of it and inside the quote or not, while no explicit
     date stands in that clause. For a fact with no located mention, any expression inside the
-    quote. The expressions are the frozen `relative_time_*` lists.
-
-    The sentence splitter keeps a unit abbreviation and its period inside the sentence
-    ("130 kg. Height 170 cm."), so the text between the mention and the expression must also
-    hold no sentence punctuation followed by a space and no line break."""
+    quote. The expressions are the frozen `relative_time_*` lists; "same clause" is
+    `_together`."""
 
     def together(a: Span, x: Span) -> bool:
-        if not w.same_clause(a, x):
-            return False
-        lo, hi = w.between(a, x)
-        return _CLAUSE_GAP_BREAK.search(w.doc[lo:hi]) is None
+        return _together(w, a, x)
 
     hits = [(h.start, h.end) for h in w.scan(w.m.relative_time_patterns)]
     if not vc.anchors:

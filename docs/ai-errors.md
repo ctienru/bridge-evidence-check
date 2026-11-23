@@ -15,6 +15,7 @@ a review before it reached `main`.
 | Identity facts named a date of birth that was not inside the quote (4 rows excluded as `value_not_in_quote`). | The value-in-quote verifier layer | Prompt `extract-v4` requires identity values inside their quote |
 | A relative's diabetes was extracted as the patient's `t2dm`, and a relative's hypertension as the patient's. | Gold comparison; the assertion layer excluded the evidence (`wrong_patient`, `assertion_mismatch`) | No code change needed; the rows stayed correct because the verifier blocked the evidence |
 | A commercial nutrition program was given `end_kind: unknown` instead of `ended`. | Gold comparison | Left as a sampled extraction error; the result erred toward `review` |
+| On the holdout cases one document date was written in a shape the schema rejects and failed the whole run; baseline values carried a wrong `event_date` or none bound to them; exclusion evidence was returned with a wrong assertion or not at all. | The holdout evaluation of 2026-11-10 (`docs/holdout-eval.md`): local schema validation, then the gold comparison | One more attempt after a failed validation; prompt `extract-v5` (date shapes, `event_date` only from the quote, document dates, every exclusion mention); the verifier binds the only date of a clause to its value across a label. The three holdout cases are no longer untouched |
 
 ## Coding agent
 

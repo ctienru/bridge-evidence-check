@@ -135,7 +135,7 @@ def test_request_carries_exactly_one_non_strict_tool_and_single_call_choice(
     assert "strict" not in tool
     assert req["tool_choice"] == TOOL_CHOICE == {"type": "auto", "disable_parallel_tool_use": True}
     assert f"`{TOOL_NAME}`" in load_system_prompt()
-    assert PROMPT_VERSION == "extract-v4" and SCHEMA_VERSION == "v2"
+    assert PROMPT_VERSION == "extract-v5" and SCHEMA_VERSION == "v2"
 
 
 def test_request_sends_documents_with_doc_id_and_role_only(case: LoadedCase) -> None:
@@ -275,19 +275,64 @@ def test_failed_replay_falls_through_to_the_api(case: LoadedCase, store: Store) 
 # --- state machine and budget
 
 
-def test_no_tool_call_ends_the_run_without_retry(case: LoadedCase, store: Store) -> None:
-    # Contract §11 / AGENTS.md: at most one parse-class attempt per case run. Under
-    # `tool_choice: auto` a reply in prose is the missing-call case (ADR 0002).
-    client = FakeClient([NO_TOOL_CALL, VALID])
+def test_first_parse_failure_is_sent_once_more_and_the_second_reply_parses(
+    case: LoadedCase, store: Store
+) -> None:
+    # Contract §11 / AGENTS.md: at most two parse-class attempts per case run; after a first
+    # `parse_failed` the same request is sent once more. Each attempt keeps its own row and
+    # its own saved response.
+    clock = Clock()
+    client = FakeClient([SCHEMA_VIOLATION, VALID])
+    result = _extract(case, client, store, clock)
+    assert result.source == "api"
+    assert len(client.calls) == 2
+    assert client.calls[0] == client.calls[1]
+    assert clock.sleeps == []  # no backoff: nothing failed on the API side
+    rows = store.conn.execute(
+        "SELECT attempt_no, status, response_json IS NOT NULL FROM attempts ORDER BY id"
+    ).fetchall()
+    assert [tuple(r) for r in rows] == [(1, "parse_failed", 1), (2, "parsed", 1)]
+    assert result.source_attempt_id == 2
+    assert store.count("extractions") == 1
+    letters = store.conn.execute("SELECT stage, error_type FROM dead_letters").fetchall()
+    assert [tuple(r) for r in letters] == [("parse", "ValidationError")]
+
+
+def test_two_parse_failures_end_the_run_at_parse(case: LoadedCase, store: Store) -> None:
+    # Under `tool_choice: auto` a reply in prose is the missing-call case (ADR 0002).
+    client = FakeClient([NO_TOOL_CALL, NO_TOOL_CALL, VALID])
     with pytest.raises(ExtractionFailed) as info:
         _extract(case, client, store)
     assert info.value.stage == "parse"
     assert info.value.error_type == "NoToolUse"
-    assert len(client.calls) == 1
-    assert _statuses(store) == ["parse_failed"]
+    assert len(client.calls) == 2
+    assert _statuses(store) == ["parse_failed", "parse_failed"]
     letters = store.conn.execute("SELECT stage, error_type FROM dead_letters").fetchall()
-    assert [tuple(r) for r in letters] == [("parse", "NoToolUse")]
+    assert [tuple(r) for r in letters] == [("parse", "NoToolUse"), ("parse", "NoToolUse")]
     assert store.count("extractions") == 0
+
+
+@pytest.mark.parametrize(("reply", "status"), [(TRUNCATED, "truncated"), (REFUSAL, "refused")])
+def test_refusal_or_truncation_after_a_parse_failure_ends_the_run(
+    case: LoadedCase, store: Store, reply: Path, status: str
+) -> None:
+    client = FakeClient([NO_TOOL_CALL, reply, VALID])
+    with pytest.raises(ExtractionFailed) as info:
+        _extract(case, client, store)
+    assert info.value.stage == "parse"
+    assert len(client.calls) == 2
+    assert _statuses(store) == ["parse_failed", status]
+
+
+def test_failed_parse_attempt_of_a_completed_run_is_never_replayed(
+    case: LoadedCase, store: Store
+) -> None:
+    _extract(case, FakeClient([SCHEMA_VIOLATION, VALID]), store)
+    client = FakeClient([VALID])
+    again = _extract(case, client, store)
+    assert again.source == "cache" and client.calls == []
+    assert again.source_attempt_id == 2
+    assert _statuses(store) == ["parse_failed", "parsed"]
 
 
 def test_tool_input_that_is_not_an_object_is_parse_failed() -> None:
@@ -309,15 +354,15 @@ def test_other_tool_name_counts_as_no_call() -> None:
 
 def test_schema_violation_records_field_path(case: LoadedCase, store: Store) -> None:
     with pytest.raises(ExtractionFailed):
-        _extract(case, FakeClient([SCHEMA_VIOLATION, VALID]), store)
-    assert _statuses(store) == ["parse_failed"]
+        _extract(case, FakeClient([SCHEMA_VIOLATION, SCHEMA_VIOLATION, VALID]), store)
+    assert _statuses(store) == ["parse_failed", "parse_failed"]
     letter = store.conn.execute("SELECT fact_path, message FROM dead_letters").fetchone()
     assert letter[0] == "bp_readings.0.sbp"
     assert "int_type" in letter[1] or "int_parsing" in letter[1]
 
 
 @pytest.mark.parametrize(("reply", "status"), [(TRUNCATED, "truncated"), (REFUSAL, "refused")])
-def test_truncated_and_refused_are_parse_class(
+def test_truncated_and_refused_are_parse_class_and_not_retried(
     case: LoadedCase, store: Store, reply: Path, status: str
 ) -> None:
     client = FakeClient([reply, VALID])
@@ -365,12 +410,23 @@ def test_bad_request_is_not_retried(case: LoadedCase, store: Store) -> None:
 
 
 def test_parse_class_limit_inside_attempt_budget(case: LoadedCase, store: Store) -> None:
-    client = FakeClient([status_error(500), NO_TOOL_CALL, VALID])
+    client = FakeClient([status_error(500), NO_TOOL_CALL, NO_TOOL_CALL, VALID])
     with pytest.raises(ExtractionFailed) as info:
         _extract(case, client, store)
     assert info.value.stage == "parse"
-    assert len(client.calls) == 2
-    assert _statuses(store) == ["api_error", "parse_failed"]
+    assert len(client.calls) == 3
+    assert _statuses(store) == ["api_error", "parse_failed", "parse_failed"]
+
+
+def test_parse_retry_does_not_extend_the_attempt_budget(case: LoadedCase, store: Store) -> None:
+    client = FakeClient(
+        [status_error(500), status_error(500), status_error(500), NO_TOOL_CALL, VALID]
+    )
+    with pytest.raises(ExtractionFailed) as info:
+        _extract(case, client, store)
+    assert info.value.stage == "parse"
+    assert len(client.calls) == MAX_ATTEMPTS
+    assert _statuses(store) == ["api_error"] * 3 + ["parse_failed"]
 
 
 def test_failed_replay_then_failed_api_attempt_stops(case: LoadedCase, store: Store) -> None:
@@ -386,11 +442,11 @@ def test_failed_replay_then_failed_api_attempt_stops(case: LoadedCase, store: St
         output_tokens=1,
         cost_usd=0.0,
     )
-    client = FakeClient([NO_TOOL_CALL, VALID])
+    client = FakeClient([NO_TOOL_CALL, NO_TOOL_CALL, VALID])
     with pytest.raises(ExtractionFailed) as info:
         _extract(case, client, store)
     assert info.value.stage == "parse"
-    assert len(client.calls) == 1
+    assert len(client.calls) == 2
 
 
 def test_response_after_the_wall_clock_is_kept_for_replay(case: LoadedCase, store: Store) -> None:
@@ -555,6 +611,42 @@ def test_unknown_outcome_is_charged_at_the_reservation(
     assert store.cost_for_run(1) == 0.0
 
 
+def test_cost_of_both_parse_attempts_counts_toward_the_run_ceiling(
+    case: LoadedCase, store: Store, fake_cost: None
+) -> None:
+    """The failed first reply is billed (5200 in, 1400 out at the fake price): its cost plus
+    the reservation for the second send is what the ceiling is compared with."""
+    reserve = _reserve(case, Limits())
+    fits = Limits(run_cost_ceiling_usd=6600.0 + reserve, eval_cost_ceiling_usd=1e9)
+    result = _extract(case, FakeClient([SCHEMA_VIOLATION, VALID]), store, limits=fits)
+    assert result.source == "api"
+    assert store.cost_for_run(1) == pytest.approx(13200.0)
+
+
+def test_parse_retry_is_refused_when_the_first_attempt_used_the_run_ceiling(
+    case: LoadedCase, store: Store, fake_cost: None
+) -> None:
+    reserve = _reserve(case, Limits())
+    limits = Limits(run_cost_ceiling_usd=6600.0 + reserve - 1.0, eval_cost_ceiling_usd=1e9)
+    client = FakeClient([SCHEMA_VIOLATION, VALID])
+    with pytest.raises(ExtractionFailed) as info:
+        _extract(case, client, store, limits=limits)
+    assert (info.value.stage, info.value.error_type) == ("extract", "RunCostCeiling")
+    assert len(client.calls) == 1 and _statuses(store) == ["parse_failed"]
+
+
+def test_parse_retry_counts_toward_the_eval_ceiling(
+    case: LoadedCase, store: Store, fake_cost: None
+) -> None:
+    reserve = _reserve(case, Limits())
+    limits = Limits(run_cost_ceiling_usd=1e9, eval_cost_ceiling_usd=100.0 + 6600.0 + reserve - 1.0)
+    client = FakeClient([SCHEMA_VIOLATION, VALID])
+    with pytest.raises(ExtractionFailed) as info:
+        _extract(case, client, store, limits=limits, eval_spent_usd=100.0)
+    assert info.value.error_type == "EvalCostCeiling"
+    assert len(client.calls) == 1 and _statuses(store) == ["parse_failed"]
+
+
 def test_status_error_is_free_and_not_charged(
     case: LoadedCase, store: Store, fake_cost: None
 ) -> None:
@@ -636,7 +728,7 @@ def test_ceiling_message_carries_no_document_text(
     [
         ("max_attempts", 5),
         ("max_attempts", 0),
-        ("max_parse_class_attempts", 2),
+        ("max_parse_class_attempts", 3),
         ("wall_clock_s", 301.0),
         ("request_timeout_s", 0.0),
         ("max_tokens", 0),
