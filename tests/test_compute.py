@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from datetime import date
 from decimal import Decimal
+from typing import Any
 
 import pytest
 from conftest import INITIATION, checked, ctx, decide
@@ -118,6 +119,41 @@ def test_t05_undated_measurement_inherits_the_verified_document_date() -> None:
     assert "timing_disagreement" not in update.flags
     assert facts.doc_facts["D1"].doc_date == DateInterval.day(date(2025, 3, 15))
     assert facts.doc_facts["D1"].doc_date_evidence_id == 2
+
+
+def _weight_and_height(**weight: Any) -> list[CheckedEvidence]:
+    return [
+        INITIATION,
+        DOC_DATE_D1,
+        checked("anthropometrics", kind="weight", raw_value="130", raw_unit="kg", **weight),
+        checked("anthropometrics", kind="height", raw_value="170", raw_unit="cm"),
+    ]
+
+
+def test_relative_time_fact_does_not_inherit_the_document_date() -> None:
+    """Contract §5: "weight ... last year" in a note dated on the initiation day."""
+    rows = _weight_and_height(relative_time=True)
+    facts = compute(rows, ctx(evidence_ids=[1, 2, 3, 4]))
+    update = next(u for u in facts.evidence_updates if u.evidence_id == 3)
+    assert update.relative_computed == "unknown"
+    assert update.event_date is None and update.event_date_source is None
+    assert facts.weights[0].src.tp.relative == "unknown"
+    assert facts.weights[0].src.tp.source == "none"
+    assert [c for c in facts.bmi_candidates if c.tp.relative == "at"] == []
+    assert decide(rows)["bmi_path_a"].status == "insufficient"
+    # the same sentence without the expression inherits the document date as before
+    plain = _weight_and_height()
+    assert compute(plain, ctx()).weights[0].src.tp.relative == "at"
+    assert decide(plain)["bmi_path_a"].status == "supported"
+
+
+def test_relative_time_fact_with_its_own_date_keeps_that_date() -> None:
+    rows = _weight_and_height(
+        relative_time=True, quote_date="2024-03-10", event_date_source="none", relative_llm="before"
+    )
+    facts = compute(rows, ctx(evidence_ids=[1, 2, 3, 4]))
+    assert facts.weights[0].src.tp.source == "quote"
+    assert facts.weights[0].src.tp.relative == "before"
 
 
 def test_excluded_doc_dates_row_dates_nothing() -> None:
@@ -536,11 +572,12 @@ def test_lifestyle_applicability_against_the_assessment_date() -> None:
         ),
     ]
     facts = compute(rows, ctx())
-    # an undated record, ongoing or not, never proves coverage of the assessment date
+    # an undated record, ongoing or not, never proves coverage of the assessment date; nor
+    # does a start before it with nothing said about continuing (contract §3.5)
     assert [r.applicable for r in facts.lifestyle_applicable] == [
         False,
         False,
-        True,
+        False,
         False,
         False,
         True,
@@ -740,6 +777,33 @@ def test_same_note_list_uses_the_note_date_not_a_quoted_reading_date() -> None:
     assert ov.unambiguous == () and len(ov.period_unknown) == 2
     ended = next(p for p in facts.med_periods if p.drug_canonical == "metoprolol")
     assert ended.in_use_on == () and not ended.same_note_list
+
+
+def _life_applies(**o: Any) -> bool:
+    row = checked("lifestyle", kind="nutrition", program_type="structured_clinical", **o)
+    return compute([row], ctx()).lifestyle_applicable[0].applicable
+
+
+def test_lifestyle_dated_before_with_unknown_end_does_not_apply() -> None:
+    # contract §3.5: a date before the assessment date says nothing about that day
+    assert _life_applies(event_date="2026-09-01", end_kind="unknown") is False
+    assert _life_applies(start="2026-01", end_kind="unknown") is False
+    assert _life_applies(event_date="2026-09-01", end_kind="ended") is False
+
+
+def test_lifestyle_dated_on_the_assessment_date_applies_with_unknown_end() -> None:
+    assert _life_applies(event_date="2026-10-15", end_kind="unknown") is True
+
+
+def test_lifestyle_dated_before_and_ongoing_applies() -> None:
+    assert _life_applies(event_date="2026-09-01", end_kind="ongoing") is True
+    assert _life_applies(start="2026-01", end_kind="ongoing") is True
+
+
+def test_lifestyle_end_on_or_after_the_assessment_date_applies() -> None:
+    assert _life_applies(start="2026-01", end="2026-10-15", end_kind="unknown") is True
+    assert _life_applies(start="2026-01", end="2026-12", end_kind="ended") is True
+    assert _life_applies(start="2026-01", end="2026-10-14", end_kind="unknown") is False
 
 
 def test_lifestyle_recorded_after_the_assessment_date_does_not_apply() -> None:

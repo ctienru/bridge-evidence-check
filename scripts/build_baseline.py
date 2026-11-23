@@ -14,20 +14,27 @@ import argparse
 import sys
 from pathlib import Path
 
-from bridge_check.baseline import build, dump
+from bridge_check.baseline import build, dirty_tree_refusal, dump
+from bridge_check.cli import code_sha
 from bridge_check.export import ExportError, write_public_file
 from bridge_check.manifest import write_problem
 from bridge_check.store import DatabaseHasLinks, open_store, sidecar_paths
 
 ROOT = Path(__file__).resolve().parent.parent
+COMMITTED = ROOT / "reports" / "baseline-dev.json"
+"""The committed baseline of this checkout: never written from a dirty working tree."""
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--db", type=Path, required=True)
-    ap.add_argument("--out", type=Path, default=ROOT / "reports" / "baseline-dev.json")
+    ap.add_argument("--out", type=Path, default=COMMITTED)
     ap.add_argument("--run", action="append", default=[], help="<variant_id>=<run_id>")
     args = ap.parse_args(argv)
+    refusal = dirty_tree_refusal(args.out, COMMITTED, code_sha())
+    if refusal is not None:  # same check, message and exit code as `bridge eval --write-baseline`
+        print(f"build_baseline: {refusal}", file=sys.stderr)
+        return 3
     if not args.db.is_file():
         print("build_baseline: database not found", file=sys.stderr)
         return 1

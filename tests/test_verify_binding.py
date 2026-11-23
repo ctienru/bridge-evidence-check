@@ -8,8 +8,9 @@ a mismatch.
 from __future__ import annotations
 
 import pytest
-from conftest import fact, run_verify
+from conftest import ctx, fact, run_verify
 
+from bridge_check.compute import compute
 from bridge_check.verify import UNRESOLVED_DOC, CheckedEvidence, VerifyResult
 
 
@@ -973,6 +974,115 @@ def test_t05_explicitly_dated_measurement_never_inherits_the_document_date() -> 
     assert doc_date.exclusion_reasons == () and doc_date.flags == ()
     assert bmi.event_date_source is None
     assert bmi.attributes["quote_date"] == {"date": "2025-03-16", "precision": "day"}
+
+
+# --- attributes.relative_time (contract §5) -------------------------------------------------------
+
+
+def _weight(doc: str, quote: str | None = None, value: str = "130") -> CheckedEvidence:
+    return _ev(doc, "anthropometrics", quote, kind="weight", raw_value=value, raw_unit="kg")
+
+
+@pytest.mark.parametrize(
+    "doc",
+    [
+        "Weight was 130 kg last year.",
+        "Weight 130 kg two months before the visit.",
+        "Weight 130 kg 3 weeks ago.",
+        "Weight 130 kg a year ago.",
+    ],
+)
+def test_relative_time_expression_is_recorded(doc: str) -> None:
+    ev = _weight(doc)
+    assert ev.exclusion_reasons == ()
+    assert ev.attributes["relative_time"] is True
+    assert "quote_date" not in ev.attributes
+
+
+def test_relative_time_expression_before_the_value_blocks_the_document_date() -> None:
+    """Contract §5: the common word order, in a note dated on the initiation day."""
+    letter = "I enclose the D2 consult note of 2025-03-15. Wegovy was started on 2025-03-15."
+    docs: dict[str, str | tuple[str, str]] = {
+        "D1": ("referral", letter),
+        "D2": "A year ago the weight was 130 kg. Height 170 cm.",
+    }
+    result = run_verify(
+        docs,
+        {
+            "doc_dates": [
+                fact(
+                    "doc_dates",
+                    "I enclose the D2 consult note of 2025-03-15.",
+                    target_doc_id="D2",
+                    date="2025-03-15",
+                )
+            ],
+            "glp1_start": [
+                fact(
+                    "glp1_start",
+                    "Wegovy was started on 2025-03-15.",
+                    drug="Wegovy",
+                    date="2025-03-15",
+                )
+            ],
+            "anthropometrics": [
+                fact(
+                    "anthropometrics",
+                    "A year ago the weight was 130 kg.",
+                    doc_id="D2",
+                    kind="weight",
+                    raw_value="130",
+                    raw_unit="kg",
+                ),
+                fact(
+                    "anthropometrics",
+                    "Height 170 cm.",
+                    doc_id="D2",
+                    kind="height",
+                    raw_value="170",
+                    raw_unit="cm",
+                ),
+            ],
+        },
+    )
+    assert all(ev.exclusion_reasons == () for ev in result.evidence)
+    weight = next(ev for ev in result.evidence if ev.kind == "weight")
+    assert weight.attributes["relative_time"] is True
+    facts = compute(result.evidence, ctx(doc_roles={"D1": "referral", "D2": "clinical"}))
+    assert facts.initiation is not None
+    assert facts.weights[0].src.tp.relative == "unknown"
+    assert facts.heights[0].src.tp.relative == "at"  # the plain sentence still inherits
+    assert [c for c in facts.bmi_candidates if c.tp.relative == "at"] == []
+
+
+def test_relative_time_expression_binds_within_its_clause_only() -> None:
+    # either side of the value, also when the quote clips the expression off
+    assert _weight("Last year her weight was 130 kg.").attributes["relative_time"] is True
+    clipped = _weight("A year ago the weight was 130 kg.", "the weight was 130 kg")
+    assert clipped.attributes["relative_time"] is True
+    # a unit abbreviation with its period does not end a sentence for the splitter; the
+    # expression still stops there and at a line break
+    later = "Weight 130 kg 2 years ago. Today weight 110 kg."
+    assert "relative_time" not in _weight(later, "Today weight 110 kg", value="110").attributes
+    assert _weight(later, "Weight 130 kg 2 years ago", value="130").attributes["relative_time"]
+    lines = "Weight 130 kg 2 years ago\nToday weight 110 kg"
+    assert "relative_time" not in _weight(lines, "Today weight 110 kg", value="110").attributes
+    # an explicit date in the clause wins, whichever side it is on
+    dated = _weight("A year ago, on 2024-03-10, the weight was 130 kg.")
+    assert "relative_time" not in dated.attributes
+
+
+def test_explicit_date_wins_over_a_relative_time_expression() -> None:
+    ev = _weight("Weight was 130 kg last year, on 2024-03-10.")
+    assert ev.attributes["quote_date"] == {"date": "2024-03-10", "precision": "day"}
+    assert "relative_time" not in ev.attributes
+
+
+def test_no_time_expression_records_no_relative_time() -> None:
+    assert "relative_time" not in _weight("Weight 130 kg today.").attributes
+    # an expression that belongs to another measurement of the sentence is not this fact's
+    ev = _weight("Weight 96 kg today; last year it was 130 kg.", value="96")
+    assert "relative_time" not in ev.attributes
 
 
 # --- PA-form checkboxes bind to their own label (guide K-01, K-02) -------------------------------

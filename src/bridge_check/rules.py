@@ -1889,20 +1889,66 @@ _POSITIVE_BOXES = frozenset({"yes", "checked"})
 _NEGATIVE_BOXES = frozenset({"no", "unchecked"})
 
 
+_CLAIM_SOURCE_FLAGS = frozenset({"table_source", "unrecognized", "imprecise_source"})
+"""Source and format flags of a sub-result: on an `insufficient` sub-result they say how the
+text was written, not that the chart mentions what the box asks (guide K-03)."""
+
+_CLAIM_BUILDS_ON_DIAGNOSIS: dict[str, str] = {"bmi_path_b.htn": "hypertension"}
+"""Claim target → the diagnosis concept the claim builds on while asking for more than the
+diagnosis (uncontrolled hypertension on two or more drugs needs a reading and the drugs)."""
+
+
+def _claim_related_material(ri: RuleInput, target: str) -> list[Source]:
+    """Chart material related to the box of `target` that cannot answer it (guide K-03; contract
+    §2). Reads `dx`, `a1c` and `fpg_mg_dl`, nothing after initiation.
+
+    Related material is a written diagnosis of the patient that the claim builds on (present,
+    current or historical; `_CLAIM_BUILDS_ON_DIAGNOSIS`), or, for `bmi_path_c.prediabetes`, a lab
+    inside the range that defines prediabetes. A relative's, a denied or a hypothetical diagnosis
+    and a lab outside that range are not related material. An empty list means the chart holds
+    nothing related.
+    """
+    concept = _CLAIM_BUILDS_ON_DIAGNOSIS.get(target)
+    if concept is not None:
+        rows, _ = _patient_dx(ri, concept, pathway=True)
+        return [d.src for d in rows if d.src.affirmed]
+    if target == "bmi_path_c.prediabetes":
+        p = ri.policy
+        a1c = [v for v in ri.facts.a1c if v.src.tp.relative != "after"]
+        fpg = [v for v in ri.facts.fpg_mg_dl if v.src.tp.relative != "after"]
+        in_range = _in_range(a1c, *p.prediabetes_a1c) + _in_range(fpg, *p.prediabetes_fpg)
+        return [v.src for v in in_range]
+    return []
+
+
 def _claim_vs_condition(
-    polarity: bool, condition: Decision, ri: RuleInput | None = None
+    polarity: bool,
+    condition: Decision,
+    ri: RuleInput | None = None,
+    related: Sequence[Source] = (),
 ) -> tuple[Status, str]:
-    """Positive claim: supported↔supported, not_supported↔conflict; negative claim mirrored.
-    What the chart leaves uncertain (`review`, `conflict`) stays so; an `insufficient`
-    condition that still carries a flag (a boundary reading, a missing identifier) is an
-    unclear mention → `review` (guide K-03). The Part D `not_supported` only says that the
-    documented fill does not trigger the exclusion (contract §3.3): it supports no box."""
+    """The status of a yes/no box against its condition; a claim is decided on its own question
+    (guide K-03; contract §2), so it may differ from the sub-result.
+
+    Positive claim: supported↔supported, not_supported↔conflict; negative claim mirrored. What
+    the chart leaves uncertain (`review`, `conflict`) stays so. An `insufficient` condition gives
+    `review` when the chart holds `related` material that cannot answer the box
+    (`_claim_related_material`), or when the condition carries a flag that marks an unclear
+    mention (a boundary reading, a missing identifier); a source or format flag alone
+    (`table_source`, `unrecognized`, `imprecise_source`) does not. With nothing related the claim
+    is `insufficient`. The Part D `not_supported` only says that the documented fill does not
+    trigger the exclusion (contract §3.3): it supports no box."""
     status = condition.status
     if condition.condition == "exclusion.part_d_glp1" and status == "not_supported":
         return "insufficient", "the documented fill says nothing about the box"
-    if status == "insufficient" and condition.flags:
-        return "review", "chart mention is unclear (" + ",".join(condition.flags) + ")"
-    if status in ("insufficient", "review", "conflict"):
+    if status == "insufficient":
+        if related:
+            return "review", f"related chart material cannot answer the box ({_refs(related)})"
+        unclear = sorted(set(condition.flags) - _CLAIM_SOURCE_FLAGS)
+        if unclear:
+            return "review", "chart mention is unclear (" + ",".join(unclear) + ")"
+        return "insufficient", "chart holds nothing related"
+    if status in ("review", "conflict"):
         return status, "chart " + status
     agrees = (status == "supported") == polarity
     # The chart rows the condition rests on: table-sourced or unrecognized ones cannot carry
@@ -1931,8 +1977,10 @@ def claim_rule(claim_id: str) -> RuleFn:
     `claim.bmi_bracket`: an unreadable bracket or candidates in different brackets → `review`, no
     BMI at initiation → `insufficient`, otherwise `supported` or `conflict` by bracket equality. Any
     other box is compared with its condition by `_claim_vs_condition`: agreement → `supported`,
-    contradiction → `conflict`, an undecided chart (`insufficient`, `review`, `conflict`) stays
-    undecided; an unfilled box or a missing condition → `insufficient`.
+    contradiction → `conflict`, a chart left at `review` or `conflict` stays so; an `insufficient`
+    condition gives `review` when the chart holds related material that cannot answer the box
+    (`_claim_related_material`, listed in `used_evidence`) and `insufficient` when it holds nothing
+    related (guide K-03). An unfilled box or a missing condition → `insufficient`.
     """
 
     def rule(ri: RuleInput) -> Decision:
@@ -2072,14 +2120,15 @@ def claim_rule(claim_id: str) -> RuleFn:
                 excluded=excluded,
                 computed=computed,
             )
-        status, why = _claim_vs_condition(polarity, condition, ri)
+        related = _claim_related_material(ri, target) if condition.status == "insufficient" else []
+        status, why = _claim_vs_condition(polarity, condition, ri, related)
         return _decision(
             ri,
             claim_id,
             status,
             "2",
             f"{why} ({target} {condition.status})",
-            used=used,
+            used=[*used, *related],
             excluded=excluded,
             computed={**computed, "condition_status": condition.status},
         )

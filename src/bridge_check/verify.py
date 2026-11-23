@@ -173,6 +173,10 @@ class VerifyTerms(BaseModel):
     purpose_cues: dict[str, list[str]]
     treatment_modifier_suffixes: list[str]
     event_object_fillers: list[str]
+    relative_time_terms: list[str]
+    relative_time_counts: list[str]
+    relative_time_units: list[str]
+    relative_time_suffixes: list[str]
 
     def model_post_init(self, context: Any, /) -> None:
         unknown = set(self.concept_terms) - set(CONCEPTS)
@@ -587,6 +591,21 @@ class _Matchers:
         )
         self.purpose_patterns = [
             p for value, words in terms.purpose_cues.items() for p in _patterns(words, value)
+        ]
+        counts = _words_regex(terms.relative_time_counts)
+        units = _words_regex(terms.relative_time_units)
+        ends = _words_regex(terms.relative_time_suffixes)
+        # A fixed phrase, or "<count> <unit> <suffix>" (contract §5).
+        self.relative_time_patterns = [
+            *_patterns(terms.relative_time_terms, "relative_time", case_sensitive=False),
+            (
+                re.compile(
+                    rf"(?<![^\W_])(?:\d+|{counts})\s+(?:{units})\s+(?:{ends})(?![^\W_])",
+                    re.IGNORECASE,
+                ),
+                "relative_time",
+                "<count> <unit> <suffix>",
+            ),
         ]
         objects = _words_regex(terms.event_object_fillers)
         self.event_object = re.compile(rf"\s*(?:(?:{objects})\s+)*", re.IGNORECASE)
@@ -1304,6 +1323,8 @@ class _ValueCheck:
     event_date_source: str | None = None
     quote_date: dict[str, str] | None = None
     """The quote's own bound date at the text's precision; None when it names none."""
+    relative_time: bool = False
+    """The quote names no date of its own but a relative time expression bound to the fact."""
     list_status: str | None = None
     """For a medication list: `current`, `discontinued` or `unknown` from its heading."""
 
@@ -1678,6 +1699,7 @@ def check_values(fact_field: str, fact: Fact, w: _Window, docs: Docs | None = No
 
     # What the quote itself says about the date, whatever the model wrote (or omitted).
     vc.quote_date = quote_date_attribute(quote_dates(w, vc))
+    vc.relative_time = vc.quote_date is None and relative_time_bound(w, vc)
     if fact.event_date:
         vc.event_date_source = _event_date(fact.event_date, quote_dates(w, vc), vc)
     return vc
@@ -1721,6 +1743,35 @@ def quote_dates(w: _Window, vc: _ValueCheck) -> list[str]:
     if vc.anchors:
         inside = [(iso, x) for iso, x in inside if any(w.value_bound(a, x) for a in vc.anchors)]
     return [iso for iso, _ in inside]
+
+
+_CLAUSE_GAP_BREAK = re.compile(r"[.?!]\s|\n")
+
+
+def relative_time_bound(w: _Window, vc: _ValueCheck) -> bool:
+    """A relative time expression that belongs to the fact (contract §5): one in the same clause
+    as the fact's mention, on either side of it and inside the quote or not, while no explicit
+    date stands in that clause. For a fact with no located mention, any expression inside the
+    quote. The expressions are the frozen `relative_time_*` lists.
+
+    The sentence splitter keeps a unit abbreviation and its period inside the sentence
+    ("130 kg. Height 170 cm."), so the text between the mention and the expression must also
+    hold no sentence punctuation followed by a space and no line break."""
+
+    def together(a: Span, x: Span) -> bool:
+        if not w.same_clause(a, x):
+            return False
+        lo, hi = w.between(a, x)
+        return _CLAUSE_GAP_BREAK.search(w.doc[lo:hi]) is None
+
+    hits = [(h.start, h.end) for h in w.scan(w.m.relative_time_patterns)]
+    if not vc.anchors:
+        return any(w.inside(x) for x in hits)
+    dates = [(s, e) for _, s, e in w.dates]
+    return any(
+        any(together(a, x) for x in hits) and not any(together(a, d) for d in dates)
+        for a in vc.anchors
+    )
 
 
 def quote_date_attribute(dates: list[str]) -> dict[str, str] | None:
@@ -2048,6 +2099,8 @@ def verify_fact(
     attributes["per_axis"] = dict(check.per_axis)
     if vc.quote_date is not None:
         attributes["quote_date"] = vc.quote_date
+    if vc.relative_time:
+        attributes["relative_time"] = True
     if vc.list_status is not None:
         attributes["list_status"] = vc.list_status
     if fact_field == "patient_identity":

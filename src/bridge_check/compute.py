@@ -9,7 +9,9 @@ as excluded. Every value is a `Decimal`; nothing is rounded.
 Timepoints: a fact with its own verified date (`event_date_source == "llm"`) is compared with
 the initiation date by interval; a fact whose quote names a date but whose model date is empty
 uses that quote date and never inherits; a fact with no date of its own inherits the verified
-document date (`event_date_source = doc_dates:<evidence_id>`); everything else is `unknown`.
+document date (`event_date_source = doc_dates:<evidence_id>`), unless its mention carries a
+relative time expression (`attributes.relative_time`, contract §5; period facts excepted, see
+`_PERIOD_FIELDS`); everything else is `unknown`.
 The model's `relative_to_glp1_initiation` is not used for any decision: `unknown` from the
 model means "not stated" and is never a claim, and `timing_disagreement` is raised only when
 the model's `at` / `before` / `after` contradicts the computed value (`relative_computed`,
@@ -1030,6 +1032,12 @@ def _is_dob(r: _Row, iso: str) -> bool:
     )
 
 
+_PERIOD_FIELDS = frozenset({"medications", "lifestyle"})
+"""Fields whose facts describe a period: a relative time expression in their mention states
+when the period began (`start`), not when the entry was recorded, so the entry still takes the
+document date (guide T-09, C-18)."""
+
+
 def _timepoints(
     rows: list[_Row], doc_facts: Mapping[str, DocFactComputed], initiation: Initiation | None
 ) -> None:
@@ -1040,6 +1048,10 @@ def _timepoints(
         tp: Timepoint
         if own is not None:
             tp = Timepoint("unknown", own[0], own[1])
+        elif r.attr("relative_time") and r.ev.field not in _PERIOD_FIELDS:
+            # Contract §5: a relative time expression is the fact's own time reference; with
+            # no date of its own the fact does not inherit the document date.
+            tp = Timepoint("unknown", None, "none")
         else:
             df = doc_facts.get(r.ev.doc_id)
             if df is not None and df.doc_date is not None and df.doc_date_evidence_id is not None:
@@ -1243,6 +1255,13 @@ def _dx(r: _Row) -> Dx:
 
 
 def _lifestyle(r: _Row, assessment: date) -> LifestyleRecord:
+    """One lifestyle record with its applicability on `assessment` (contract §3.5; guide C-18).
+
+    The record applies only if a verified date or period places it on that day: its end is on
+    or after the day; or it is dated on the day; or it is dated before the day and `end_kind`
+    is `ongoing`. A record dated before the day with `end_kind: unknown`, any `ended` record
+    without such an end, an undated record and one that may start after the day do not apply.
+    """
     start = DateInterval.parse(r.attr("start"))
     end = DateInterval.parse(r.attr("end"))
     end_kind = str(r.attr("end_kind") or "unknown")
@@ -1261,6 +1280,11 @@ def _lifestyle(r: _Row, assessment: date) -> LifestyleRecord:
         applicable = end.start >= assessment
     elif end_kind == "ended":
         applicable = False
+    elif anchor is not None and anchor.start == anchor.end == assessment:
+        applicable = True  # dated on the assessment date itself
+    else:
+        # dated before the day: only wording that the program continues carries it there
+        applicable = end_kind == "ongoing"
     distance: int | None = None
     if anchor is not None:
         distance = anchor.distance_days(assessment)

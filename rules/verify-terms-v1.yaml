@@ -12,7 +12,7 @@
 # (MI, PAD, OSA, HTN, T2DM, HFpEF) is matched case-sensitively so that "pad" or "mi" in prose
 # does not count. Word-bounded at alphanumeric ends; leftmost-longest and non-overlapping
 # across `concept_terms` and `blocking_terms` together, so a longer term wins.
-version: verify-terms-v2
+version: verify-terms-v3
 
 # Concept -> the words that name it in a quote. Used (1) by layer 3: a diagnosis fact's
 # concept must be named in its quote (this is the alias table: T2DM = type 2 diabetes,
@@ -343,3 +343,17 @@ treatment_modifier_suffixes: [related, induced, associated, emergent, resistant,
 # A drug mention right after an event word, with only these words between, is the event's
 # object ("started taking metformin"); it wins over a closer drug before the verb.
 event_object_fillers: [taking, "on", the, a, an, her, his, their, oral, daily, weekly, low-dose, with, back on]
+
+# Relative time expressions (contract §5; guide T-05). A fact whose mention carries one and no
+# date of its own does not inherit the document date. Two shapes are recognised: a fixed phrase
+# of `relative_time_terms`, or "<count> <unit> <suffix>" ("two months before the visit",
+# "3 weeks ago"), where <count> is a number in digits or an entry of `relative_time_counts`.
+relative_time_terms:
+  [last year, last month, last week, yesterday, the year before, the month before,
+   the week before, the previous year, the previous month, the previous week, the prior year,
+   the prior month, the prior week, earlier this year, earlier this month]
+relative_time_counts:
+  [a, an, one, two, three, four, five, six, seven, eight, nine, ten, eleven, twelve, several,
+   a few, a couple of, some]
+relative_time_units: [day, days, week, weeks, month, months, year, years]
+relative_time_suffixes: [ago, earlier, before, prior, previously, back]
