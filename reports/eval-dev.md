@@ -1,6 +1,6 @@
 # Eval report, split=dev, mode=offline
 
-prompt extract-v5 · schema v2 · rules bridge-v1 · splitter sentences-v1 · model returned claude-sonnet-5-5 · code 687be0662ee9c11549a70df06de5efc5e5dc76f2
+prompt extract-v5 · schema v2 · rules bridge-v1 · splitter sentences-v1 · model returned claude-sonnet-5-5 · code 428e7186ff62e4a93edd93055ede9fdc8991667c
 
 One run of one model on 7 dev variants. Not a holdout result; not a validation on real records. Scoring rules: docs/eval.md. Every number is a count.
 
@@ -10,6 +10,10 @@ Skipped variants (never read, never scored):
 - `case-14`: holdout_never_read
 - `case-16`: holdout_never_read
 - `case-11`: holdout_never_read
+- `case-09`: holdout_never_read
+- `case-10`: holdout_never_read
+- `case-12`: holdout_never_read
+- `case-18`: holdout_never_read
 
 ## Totals (micro, all sections pooled)
 

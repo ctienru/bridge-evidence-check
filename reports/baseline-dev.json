@@ -1436,7 +1436,7 @@
     }
   },
   "generated_from": {
-    "code_sha": "687be0662ee9c11549a70df06de5efc5e5dc76f2",
+    "code_sha": "428e7186ff62e4a93edd93055ede9fdc8991667c",
     "model_returned": "claude-sonnet-5-5",
     "prompt_version": "extract-v5",
     "rules_version": "bridge-v1",
@@ -1445,7 +1445,7 @@
   "hash_only": [
     "case-15-L0"
   ],
-  "manifest_sha256": "d9287ae2b585444b2af24d8c76815711f15d1dc0988019f7f60d939b3e556a6e",
+  "manifest_sha256": "449ee7a0df62c170ef1b60defb05110d352ddf85064ec3ec76304a6023dc1c65",
   "split": "dev",
   "totals": {
     "cases": 7,
