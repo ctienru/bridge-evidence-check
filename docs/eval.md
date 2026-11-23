@@ -2,9 +2,8 @@
 
 > 2026-11-10. How the dev split is scored (`src/bridge_check/scoring.py`), what `bridge
 > eval` writes (`reports/eval-dev.json`, `reports/eval-dev.md`), how a regression is decided
-> against `reports/baseline-dev.json`, and how that baseline is updated. The rules below are
-> the scoring rules of the planning document's evaluation-report section (3.1), named by
-> their rows; the machine names are in `docs/contracts.md` §1, §8 and §11.
+> against `reports/baseline-dev.json`, and how that baseline is updated. The machine names
+> are in `docs/contracts.md` §1, §8 and §11.
 
 Every number in a report is a count. There are no percentages and no confidence intervals:
 the dev set is a small, deliberately chosen functional test with several variants of one
