@@ -48,20 +48,22 @@ Every run is bounded by one set of limits (`docs/adr/0001-global-limits.md`): at
 
 ## 3. Results
 
-The two columns are different configurations. Dev is the current `main` (prompt `extract-v5`, guide version 3): one run of one model on 7 variants, used to find and fix errors. Holdout is the single run of 2026-11-10 on the configuration frozen at that time (prompt `extract-v4`, guide version 2); the cases were frozen before the pipeline first ran on them and have not been run again; one of the three runs failed at the parse stage and is counted with every row wrong. `docs/holdout-eval.md` has the dated note on why those three cases are no longer untouched. The numbers are counts over a deliberately chosen functional test set, not clinic performance, and zero errors on the dev set does not mean a near-zero real error rate.
+The three columns are different configurations. Dev is the current `main` (prompt `extract-v5`, guide version 3): one run of one model on 7 variants, used to find and fix errors. Holdout batch 1 is the single run of 2026-11-10 on the configuration frozen at that time (prompt `extract-v4`, guide version 2); the cases were frozen before the pipeline first ran on them and have not been run again; one of the three runs failed at the parse stage and is counted with every row wrong. Holdout batch 2 is the single run of 2026-11-23 on `main` at `a62edc7` (prompt `extract-v5`, guide version 3) on four more cases, frozen before the pipeline first ran on them. The two holdout batches are never summed. `docs/holdout-eval.md` has the dated note on why the three cases of batch 1 are no longer untouched. The numbers are counts over a deliberately chosen functional test set, not clinic performance, and zero errors on the dev set does not mean a near-zero real error rate.
 
-| Measure | Dev (7 variants) | Holdout (3 variants, 1 run failed) |
-|---|---|---|
-| Conditions correct (status and flags) | 134/140 | 27/60 |
-| Claims correct (status) | 38/39 | 4/19 |
-| False supports, conditions (target 0) | 0 of 112 gold non-supported rows | 0 of 51 gold non-supported rows |
-| Missed exclusion evidence | 0 of 2 | 3 of 3 |
-| Human workload (top-level `review` + `conflict` + `insufficient`) | 47 | 16 |
-| Packets with at least one human item | 7/7 | 3/3 |
-| Correctly automated among gold-automatable | 16/18 | 2/7 |
-| Cost of the live run (USD, 7 calls / 3 calls) | $0.49 | $0.18 |
+| Measure | Dev (7 variants) | Holdout batch 1 (3 variants, 1 run failed) | Holdout batch 2 (4 variants, 0 runs failed) |
+|---|---|---|---|
+| Conditions correct (status and flags) | 134/140 | 27/60 | 60/80 |
+| Claims correct (status) | 38/39 | 4/19 | 9/26 |
+| False supports, conditions (target 0) | 0 of 112 gold non-supported rows | 0 of 51 gold non-supported rows | 0 of 64 gold non-supported rows |
+| Missed exclusion evidence | 0 of 2 | 3 of 3 | 0 of 3 |
+| Human workload (top-level `review` + `conflict` + `insufficient`) | 47 | 16 | 33 |
+| Packets with at least one human item | 7/7 | 3/3 | 4/4 |
+| Correctly automated among gold-automatable | 16/18 | 2/7 | 3/11 |
+| Cost of the live run (USD, 7 calls / 3 calls / 4 calls) | $0.49 | $0.18 | $0.34 |
 
-False supports are reported next to their denominators and per text-origin section, never summed. The current dev report with the first upstream error of every miss is `reports/eval-dev.md`; the scoring rules are in `docs/eval.md`. The holdout run, its per-case condition table, the parse failure on case 11 and the disclosure that the annotator had not completed the final read of the three holdout golds before the run (any later correction bumps `gold_version`, is written to `changes` and turns that case into a regression case) are in `docs/holdout-eval.md`.
+Holdout batch 2 had no false support: 0 of 64 gold non-supported condition rows and 0 of 13 gold non-supported claim rows. 37 of its rows are wrong, and 30 of them, in all four cases, share one cause that was not predicted: the extractor wrote the drug of the start fact as a brand name followed by the ingredient in parentheses, the GLP-1 name resolver does not resolve that form, and so no initiation date was verified. None of the 37 is attributed to the six gaps written down before the run, and nothing was changed in response to the result. The wrong rows and their notes are in `docs/holdout-eval.md`; the report of the run is `reports/eval-holdout-round2.md`.
+
+False supports are reported next to their denominators and per text-origin section, never summed. The current dev report with the first upstream error of every miss is `reports/eval-dev.md`; the scoring rules are in `docs/eval.md`. The first holdout run (report `reports/eval-holdout.md`), its per-case condition table, the parse failure on case 11 and the disclosure that the annotator had not completed the final read of the three holdout golds before the run (any later correction bumps `gold_version`, is written to `changes` and turns that case into a regression case) are in `docs/holdout-eval.md`.
 
 ## 4. Data
 
@@ -73,7 +75,7 @@ There is no real patient data from any EHR in this repository. Every GLP-1 scena
 | Published case reports (CC BY) | 1 public (case 17) + 4 hash-only rows (cases 11, 14, 16, 18) | 6 | excerpt committed with attribution, or hash only |
 | Authored synthetic documents | 4 variants (cases 02, 04, 07, 07b) + 1 hash-only row (case 10) | 6 (2 partly adapted from published cases, DOI cited as context, original text not used) | committed, or hash only |
 
-The remaining cases are planned, not present: this release holds the 7 dev variants in `cases/` and nothing else. Holdout variants and the private ladder level `case-15-L0` are listed in `splits.yaml` by sha256 only; `splits.yaml` has 8 hash-only rows (1 dev, `case-15-L0`; 7 holdout, cases 09, 10, 11, 12, 14, 16 and 18), which `bridge eval` skips. Cases 09, 10, 12 and 18 are frozen and not yet run. Their text stays outside the public repository. Referral letters, PA form drafts and other supporting documents are authored.
+The remaining cases are planned, not present: this release holds the 7 dev variants in `cases/` and nothing else. Holdout variants and the private ladder level `case-15-L0` are listed in `splits.yaml` by sha256 only; `splits.yaml` has 8 hash-only rows (1 dev, `case-15-L0`; 7 holdout, cases 09, 10, 11, 12, 14, 16 and 18), which `bridge eval` skips. Cases 09, 10, 12 and 18 were frozen and then run once on 2026-11-23. Their text stays outside the public repository. Referral letters, PA form drafts and other supporting documents are authored.
 
 **CC BY passages.** Each passage is reproduced unmodified except that figures, videos and captions are omitted.
 
@@ -81,7 +83,7 @@ The remaining cases are planned, not present: this release holds the 7 dev varia
 |---|---|---|---|---|---|---|
 | Abhinav Karan, Julien Feghaly, Anamarys Blanco, Calvin Choi | Dual Culprit ST-Elevation Myocardial Infarction: A Rare but Complex Clinical Entity | Cureus, 2025, 17(8), e90478 | [10.7759/cureus.90478](https://doi.org/10.7759/cureus.90478) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | Case 1 heading and narrative prose (case-17) | no |
 
-**Holdout main documents** (text not in this repository; listed by sha256 in `splits.yaml`). The private repository keeps the selected passages unmodified, with the selected table rows rendered as plain text; cases 11, 14 and 16 were run once after freezing (`docs/holdout-eval.md`); case 18 is frozen and not yet run.
+**Holdout main documents** (text not in this repository; listed by sha256 in `splits.yaml`). The private repository keeps the selected passages unmodified, with the selected table rows rendered as plain text; cases 11, 14 and 16 were run once after freezing, on 2026-11-10, and case 18 once after freezing, on 2026-11-23 (`docs/holdout-eval.md`).
 
 | Case | Authors | Title | Journal | DOI | Licence | Excerpt |
 |---|---|---|---|---|---|---|
@@ -121,7 +123,8 @@ Recovery is at-least-once, not exactly-once: scenario 2 may call the API and pay
 - Not a clinical tool and not a CMS tool. It supports the attestation and does not replace the prescriber's judgement. It does not check plan type, dosage form or prescriber eligibility, and does not judge the purpose of use.
 - The verifier cannot catch what its frozen lexicon does not name: unknown wording sends a fact to `review`, it does not parse tables, and a cue in one paragraph does not reach the next.
 - Known gaps: heights written in feet and inches are `unparseable_value`; medication periods of the form "started on X, still on at Y" are not counted as certainly in use on Y; `program_type` has no value for a record that names only a limitation.
-- Holdout cases are design-time known scenarios; the author knows their content. The holdout number is from the one run of 2026-11-10, before anything was adjusted on its results. The changes of 2026-11-23 used the failure classes that run reported, so the three cases are no longer untouched for the current configuration (`docs/holdout-eval.md`).
+- Found by holdout batch 2 and not fixed: the GLP-1 name resolver does not resolve a drug written as a brand name followed by the ingredient in parentheses, so a start fact written that way yields no verified initiation date (`docs/holdout-eval.md`).
+- Holdout cases are design-time known scenarios; the author knows their content. The number of holdout batch 1 is from the one run of 2026-11-10, before anything was adjusted on its results. The changes of 2026-11-23 used the failure classes that run reported, so the three cases are no longer untouched for the current configuration (`docs/holdout-eval.md`). The four cases of the second batch have been run once, on 2026-11-23, and are no longer untouched either; their gold has no blind draft.
 - No production deployment and no real patient data.
 
 ## 8. How I used AI
