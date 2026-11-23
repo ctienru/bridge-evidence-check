@@ -324,15 +324,27 @@ def _decision(
     flags: Iterable[str] = (),
     timing_sensitive: bool = False,
 ) -> Decision:
+    """Build one decision and apply the evidence-flag caps of contract §3.1 step 8 and §6.
+
+    `used` is extended by the rows its timepoints rest on. A `supported` status becomes `review`
+    when that evidence carries `table_source` or `unrecognized`, or `timing_disagreement` for a
+    `timing_sensitive` decision. A `not_supported` status becomes `review` when it carries
+    `unrecognized`. The step gets the suffix `-flagged` and the flags are recorded. Every rule
+    function except the pathway aggregation returns through here.
+    """
     used_list = _with_anchors(ri, used)
     used_ids = tuple(sorted({s.evidence_id for s in used_list}))
     flag_set: set[str] = set(flags)
-    # Flags of the evidence used are recorded on the decision; table-sourced or unrecognized
-    # evidence caps any decision at `review` (contract §6), a timing disagreement only the
-    # decisions that rest on the initiation timepoint (§3.1 step 8: BMI and its bracket).
+    # Flags of the evidence used are recorded on the decision when they change it. Table-sourced
+    # or unrecognized evidence caps a `supported` decision at `review` (contract §6), a timing
+    # disagreement only the decisions that rest on the initiation timepoint (§3.1 step 8: BMI and
+    # its bracket). Unrecognized evidence supports `not_supported` no more than `supported`
+    # (§6); `insufficient`, `review` and `conflict` are left as they are.
     carried = {f for s in used_list for f in s.flags} & _STEP8_FLAGS
     capping = carried if timing_sensitive else carried - {"timing_disagreement"}
-    if status == "supported" and capping:
+    if status == "not_supported":
+        capping = carried & {"unrecognized"}
+    if status in ("supported", "not_supported") and capping:
         status = "review"
         step = f"{step}-flagged"
         reason = f"{reason}; evidence carries {sorted(capping)}"
@@ -402,9 +414,10 @@ def decide_bmi(ri: RuleInput, condition: str, threshold: Decimal) -> Decision:
     them x with `x <= threshold < x + 0.5` (`imprecise_source`); or a value at or above the
     threshold whose evidence carries `table_source`, `timing_disagreement` or `unrecognized`.
     `conflict`: candidates on both sides of the threshold, whatever the gap. Otherwise `supported`
-    when the unrounded `bmi_raw >= threshold` and `not_supported` when it is below; `bmi_raw` is the
-    value computed from height and weight when there is one, else the stated value. Same-side
-    candidates more than 0.2 apart add `inconsistent_values`.
+    when the unrounded `bmi_raw >= threshold` and `not_supported` when it is below (`review` when
+    the evidence below the threshold carries `unrecognized`); `bmi_raw` is the value computed from
+    height and weight when there is one, else the stated value. Same-side candidates more than 0.2
+    apart add `inconsistent_values`.
     """
     facts = ri.facts
     cands = facts.bmi_candidates
@@ -679,7 +692,9 @@ def rule_ckd(ri: RuleInput) -> Decision:
     `table_source` or `unrecognized`). `review`: a diagnosis with no written stage (policy
     `ckd_dx_egfr_only`; the eGFR values are listed, never compared with a threshold), or only an
     uncertain mention. `not_supported`: explicit stage 1 or 2, or explicit denial. `insufficient`:
-    no diagnosis, with or without eGFR values.
+    no diagnosis, with or without eGFR values. A decision that lists eGFR values adds
+    `inconsistent_values` when two of them differ at the same timepoint; eGFR never gives
+    `conflict`.
     """
     condition = "bmi_path_b.ckd"
     rows, excluded = _patient_dx(ri, "ckd", pathway=True)
@@ -735,6 +750,7 @@ def rule_ckd(ri: RuleInput) -> Decision:
             used=[d.src for d in affirmed] + [v.src for v in egfr],
             excluded=excluded,
             computed={"egfr": [str(v.value) for v in egfr]},
+            flags=_lab_flags(egfr),
         )
     if any(d.ckd_stage in _CKD_EARLY for d in affirmed):
         early = [d for d in affirmed if d.ckd_stage in _CKD_EARLY]
@@ -759,6 +775,7 @@ def rule_ckd(ri: RuleInput) -> Decision:
             f"ckd mentioned as uncertain ({_refs(d.src for d in uncertain)}); eGFR: {egfr_text}",
             used=[d.src for d in uncertain] + [v.src for v in egfr],
             excluded=excluded,
+            flags=_lab_flags(egfr),
         )
     negated = [d for d in rows if d.src.negated]
     if negated:
@@ -780,6 +797,7 @@ def rule_ckd(ri: RuleInput) -> Decision:
         used=(v.src for v in egfr),
         excluded=excluded,
         computed={"egfr": [str(v.value) for v in egfr]},
+        flags=_lab_flags(egfr),
     )
 
 
@@ -903,7 +921,36 @@ def _lab_straddle(values: Sequence[LabValue], thresholds: Iterable[Decimal]) -> 
     return []
 
 
+def _lab_flags(values: Sequence[LabValue]) -> set[str]:
+    """`inconsistent_values` when two labs of the same kind at the same timepoint differ (contract
+    §4; labs have no tolerance). Called with the labs a decision uses, after the threshold checks,
+    so the differing values lie on the same side."""
+    for i, a in enumerate(values):
+        for b in values[i + 1 :]:
+            if (
+                a.kind == b.kind
+                and a.value != b.value
+                and same_timepoint(a.src.tp, b.src.tp, a.src.doc_id == b.src.doc_id)
+            ):
+                return {"inconsistent_values"}
+    return set()
+
+
 def rule_prediabetes(ri: RuleInput) -> Decision:
+    """`bmi_path_c.prediabetes` (same `id` in `rules/bridge-v1.yaml`; contract §3.2, §4). Reads the
+    patient's `dx` rows of concept `prediabetes` and the `a1c` and `fpg_mg_dl` values, all not after
+    initiation.
+
+    `conflict`: asserted and denied at the same timepoint; or, with no present or uncertain
+    diagnosis, two values of one lab kind at the same timepoint on opposite sides of a prediabetes
+    or diabetes threshold. `supported`: a present diagnosis, current or historical (`review` when
+    that row is flagged `table_source` or `unrecognized`). `review`: only an uncertain mention; or
+    no diagnosis and a lab in the prediabetes range, with or without a denial (policy
+    `a1c_prediabetes_range_without_dx`). `insufficient`: no diagnosis and a lab in the diabetes
+    range, with or without a denial (see `exclusion.t2dm`); or nothing usable, including labs below
+    the range. `not_supported`: an explicit denial and no lab in either range. Differing same-kind
+    labs at one timepoint on the same side add `inconsistent_values`.
+    """
     condition = "bmi_path_c.prediabetes"
     p = ri.policy
     rows, excluded = _patient_dx(ri, "prediabetes", pathway=True)
@@ -968,29 +1015,34 @@ def rule_prediabetes(ri: RuleInput) -> Decision:
     computed = {"a1c": [str(v.value) for v in a1c], "fpg_mg_dl": [str(v.value) for v in fpg]}
     in_range = _in_range(a1c, *p.prediabetes_a1c) + _in_range(fpg, *p.prediabetes_fpg)
     negated = [d for d in rows if d.src.negated]
-    if in_range and not negated:
+    # A lab in range outranks a denial (contract §3.2): the denial is listed, it does not decide.
+    denial = f"; a denial is present ({_refs(d.src for d in negated)})" if negated else ""
+    if in_range:
         return _decision(
             ri,
             condition,
             p.a1c_prediabetes_range_without_dx,
             "3",
-            f"no diagnosis; lab in the prediabetes range ({_refs(v.src for v in in_range)})",
-            used=[v.src for v in in_range],
+            f"no diagnosis; lab in the prediabetes range ({_refs(v.src for v in in_range)})"
+            f"{denial}",
+            used=[v.src for v in in_range] + [d.src for d in negated],
             excluded=excluded,
             computed=computed,
+            flags=_lab_flags(in_range),
         )
     diabetic = _at_least(a1c, p.diabetes_a1c) + _at_least(fpg, p.diabetes_fpg)
-    if diabetic and not negated:
+    if diabetic:
         return _decision(
             ri,
             condition,
             "insufficient",
             "4",
             f"no diagnosis; lab in the diabetes range ({_refs(v.src for v in diabetic)}); "
-            "see exclusion.t2dm",
-            used=[v.src for v in diabetic],
+            f"see exclusion.t2dm{denial}",
+            used=[v.src for v in diabetic] + [d.src for d in negated],
             excluded=excluded,
             computed=computed,
+            flags=_lab_flags(diabetic),
         )
     if negated:
         return _decision(
@@ -1012,6 +1064,7 @@ def rule_prediabetes(ri: RuleInput) -> Decision:
         used=[v.src for v in labs],
         excluded=excluded,
         computed=computed,
+        flags=_lab_flags(labs),
     )
 
 
@@ -1029,7 +1082,9 @@ def rule_htn(ri: RuleInput) -> Decision:
     the components of a combination pill → `review` + `combination_pill`; reached only by counting a
     `class_ambiguous` drug → `review` + `class_ambiguous`; fewer, with an explicitly complete list
     in the reading's document → `not_supported`; otherwise `insufficient`. With several readings
-    above, the earliest outcome in that order wins.
+    above, each is judged on its own and the outcomes rank `supported`, `combination_pill`,
+    `class_ambiguous`, `insufficient`, `not_supported`: `insufficient` outranks `not_supported`,
+    which holds only when every reading above is refuted by a complete list.
     """
     condition = "bmi_path_b.htn"
     facts, p = ri.facts, ri.policy
@@ -1098,33 +1153,35 @@ def rule_htn(ri: RuleInput) -> Decision:
                 for mp in (*counted, *ov.ambiguous)
             )
         ]
-        outcome: tuple[int, Status, str, str, list[Source], set[str]] | None = None
+        # Rank across readings (contract §3.2): supported, the two review outcomes, insufficient,
+        # and `not_supported` last, so that it holds only when every reading is refuted.
+        outcome: tuple[int, Status, str, str, list[Source], set[str]]
         if ov.products() >= min_drugs:
             outcome = (
-                3,
+                4,
                 "supported",
                 "3a",
                 f"{ov.products()} distinct antihypertensives in use",
-                [m.src for m in counted],
+                [m.src for m in counted] + list_rows,
                 flags,
             )
         elif ov.agents() >= min_drugs:
             outcome = (
-                2,
+                3,
                 p.combination_pill_counts_as_two,
                 "3b",
                 "the second agent comes only from a combination pill",
-                [m.src for m in counted],
+                [m.src for m in counted] + list_rows,
                 flags | {"combination_pill"},
             )
         elif ov.products_with_ambiguous() >= min_drugs:
             with_amb = counted + list(ov.ambiguous)
             outcome = (
-                1,
+                2,
                 "review",
                 "3c",
                 "the second drug counts only through a class_ambiguous entry",
-                [m.src for m in with_amb],
+                [m.src for m in with_amb] + list_rows,
                 flags | {"class_ambiguous"},
             )
         elif ov.complete_lists and p.htn_not_supported_by_complete_list:
@@ -1133,29 +1190,22 @@ def rule_htn(ri: RuleInput) -> Decision:
                 "not_supported",
                 "4",
                 f"fewer than {min_drugs} antihypertensives in an explicitly complete list",
-                [m.src for m in counted] + list(ov.complete_lists),
+                [m.src for m in counted] + list(ov.complete_lists) + list_rows,
                 flags,
             )
-        if outcome is not None and outcome[0] > best_rank:
-            best_rank = outcome[0]
-            best = (
-                outcome[1],
-                outcome[2],
-                outcome[3],
-                [r.src, *outcome[4], *list_rows],
-                outcome[5],
-                unknown,
-            )
-        elif best is None:
-            best = (
+        else:
+            outcome = (
+                1,
                 "insufficient",
                 "5",
                 f"fewer than {min_drugs} recognized antihypertensives certainly in use on the "
                 f"reading date ({ov.products()} counted)",
-                [r.src, *(m.src for m in counted)],
+                [m.src for m in counted],
                 flags,
-                unknown,
             )
+        if outcome[0] > best_rank:
+            best_rank = outcome[0]
+            best = (outcome[1], outcome[2], outcome[3], [r.src, *outcome[4]], outcome[5], unknown)
     assert best is not None
     status, step, text, used, flags, unknown = best
     computed["above_threshold"] = [[r.sbp, r.dbp] for r in above]
@@ -1257,16 +1307,37 @@ def _exclusion(ri: RuleInput, condition: str, concept: str) -> Decision:
             ri.facts.fpg_mg_dl, p.diabetes_fpg
         )
         excluded += _candidates_of(ri, "labs")
-        if diabetic and not any(d.src.negated for d in rows):
+        # Thresholds first (contract §4): same-timepoint values across the diabetes threshold.
+        straddle = _lab_straddle(ri.facts.a1c, (p.diabetes_a1c,)) or _lab_straddle(
+            ri.facts.fpg_mg_dl, (p.diabetes_fpg,)
+        )
+        if straddle:
+            return _decision(
+                ri,
+                condition,
+                "conflict",
+                "4-lab-conflict",
+                "lab values on both sides of the diabetes threshold at the same timepoint "
+                f"({_refs(v.src for v in straddle)})",
+                used=(v.src for v in straddle),
+                excluded=excluded,
+                computed={"positive": True, "labs": [str(v.value) for v in straddle]},
+            )
+        if diabetic:
+            # A lab in range outranks a denial (contract §3.3 row 4): the denial is listed.
+            denied = [d for d in rows if d.src.negated]
+            denial = f"; a denial is present ({_refs(d.src for d in denied)})" if denied else ""
             return _decision(
                 ri,
                 condition,
                 p.lab_in_diabetes_range_without_dx,
                 "4-lab",
-                f"lab in the diabetes range without a diagnosis ({_refs(v.src for v in diabetic)})",
-                used=[v.src for v in diabetic],
+                f"lab in the diabetes range without a diagnosis ({_refs(v.src for v in diabetic)})"
+                f"{denial}",
+                used=[v.src for v in diabetic] + [d.src for d in denied],
                 excluded=excluded,
                 computed={"positive": True, "labs": [str(v.value) for v in diabetic]},
+                flags=_lab_flags(diabetic),
             )
     negated = [d for d in rows if d.src.negated]
     if negated:
@@ -1292,6 +1363,18 @@ def _exclusion(ri: RuleInput, condition: str, concept: str) -> Decision:
 
 
 def rule_t2dm(ri: RuleInput) -> Decision:
+    """`exclusion.t2dm` (same `id` in `rules/bridge-v1.yaml`; contract §3.3, §4). Reads the
+    patient's `dx` rows of concept `t2dm` and the `a1c` and `fpg_mg_dl` values, at any timepoint;
+    never returns `supported`.
+
+    `conflict`: asserted and denied at the same timepoint; or, with no present or uncertain mention,
+    two A1c values or two fasting-glucose values at the same timepoint on opposite sides of the
+    diabetes threshold. `review`: a present or uncertain mention, with `post_initiation_exclusion`
+    when all of them are after initiation; or no such mention and a lab in the diabetes range, with
+    or without a denial (policy `lab_in_diabetes_range_without_dx`; differing same-kind values at
+    one timepoint add `inconsistent_values`). `not_supported`: an explicit denial and no lab in the
+    diabetes range. `insufficient`: not mentioned.
+    """
     return _exclusion(ri, "exclusion.t2dm", "t2dm")
 
 
@@ -1528,10 +1611,15 @@ def rule_age(ri: RuleInput) -> Decision:
     """`age_18` (same `id` in `rules/bridge-v1.yaml`; contract §3.5). Reads
     `age_interval_at_initiation` (completed years, both ends inclusive) and `initiation`.
 
-    `conflict`: with an initiation date, one interval wholly below `age_years` and another wholly at
+    With an initiation date. `conflict`: one interval wholly below `age_years` and another wholly at
     or above it. `supported`: every interval wholly at or above. `not_supported`: every interval
-    wholly below. Otherwise `review` with an initiation date and `insufficient` without one. No date
-    of birth and no stated age → `insufficient`. Intervals more than a year apart add
+    wholly below. Otherwise `review`.
+
+    Without one the intervals are ages on `assessment_date`, an upper bound on the age at
+    initiation: `not_supported` when every interval is wholly below `age_years`, otherwise
+    `insufficient`; never `supported` and never `conflict`.
+
+    No date of birth and no stated age → `insufficient`. Intervals more than a year apart add
     `inconsistent_values`.
     """
     condition = "age_18"
@@ -1553,9 +1641,36 @@ def rule_age(ri: RuleInput) -> Decision:
         "initiation_date": ri.facts.initiation_date.iso() if ri.facts.initiation_date else None,
     }
     initiation = ri.facts.initiation
+    if initiation is None:
+        flags = {"inconsistent_values"} if age_inconsistent(intervals) else set()
+        if all(a.whole_below(years) for a in intervals):
+            return _decision(
+                ri,
+                condition,
+                "not_supported",
+                "2",
+                f"no initiation date; age interval entirely < {years} on the assessment date "
+                f"({_refs(used)})",
+                used=used,
+                excluded=excluded,
+                computed=computed,
+                flags=flags,
+            )
+        return _decision(
+            ri,
+            condition,
+            "insufficient",
+            "4",
+            "no initiation date; the age on the assessment date is only an upper bound "
+            f"({_refs(used)})",
+            used=used,
+            excluded=excluded,
+            computed=computed,
+            flags=flags,
+        )
     below = next((a for a in intervals if a.whole_below(years)), None)
     at_least = next((a for a in intervals if a.whole_at_least(years)), None)
-    if initiation is not None and below is not None and at_least is not None:
+    if below is not None and at_least is not None:
         opposing = (below.src, at_least.src)
         return _decision(
             ri,
@@ -1589,18 +1704,6 @@ def rule_age(ri: RuleInput) -> Decision:
             "not_supported",
             "2",
             f"age interval entirely < {years} ({_refs(used)})",
-            used=used,
-            excluded=excluded,
-            computed=computed,
-            flags=flags,
-        )
-    if initiation is None:
-        return _decision(
-            ri,
-            condition,
-            "insufficient",
-            "4",
-            f"no initiation date and the age interval straddles {years}",
             used=used,
             excluded=excluded,
             computed=computed,

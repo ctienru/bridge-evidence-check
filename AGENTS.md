@@ -29,7 +29,9 @@ Machine-level names and rules (condition IDs, status codes, decision tables, sch
 
 ## Invariants (tests must hold these)
 - Without a verified GLP-1 start date, BMI sub-results and pathways A/B/C are never `supported`.
+- Without a verified GLP-1 start date, `age_18` is never `supported`.
 - Evidence whose position status is not `verbatim` or `normalized` never supports `supported` or `not_supported`.
+- Evidence flagged `unrecognized` never supports `supported` or `not_supported`.
 - Evidence from a wrong-patient document is excluded from every condition.
 - Evidence from the PA draft (`role: pa_draft`) never supports a clinical condition.
 - If an extraction already exists for a cache key, do not call the API; still re-run verify, compute, and rules with current code.

@@ -179,12 +179,13 @@ class Initiation:
 
 @dataclass(frozen=True)
 class AgeInterval:
-    """Completed age in whole years on the reference date, as `[lo_years, hi_years]`."""
+    """Completed age in whole years on the reference date, as `[lo_years, hi_years]`. The reference
+    is the initiation date, or `assessment_date` when no start was verified (contract §3.5)."""
 
     lo_years: int
     hi_years: int
     origin: Literal["dob", "stated_age"]
-    reference: Literal["initiation", "own_date"]
+    reference: Literal["initiation", "assessment_date"]
     src: Source
 
     def whole_at_least(self, years: int) -> bool:
@@ -1114,7 +1115,13 @@ def _bmi_candidates(
 def _ages(
     usable: list[_Row], initiation: Initiation | None, ctx: CaseContext
 ) -> tuple[AgeInterval, ...]:
+    """Age intervals from dates of birth and stated ages (contract §3.5). The reference date is the
+    initiation date; with no verified start every interval is converted to `assessment_date`, which
+    bounds the age at initiation from above. A stated age needs its document date."""
     out: list[AgeInterval] = []
+    reference: Literal["initiation", "assessment_date"] = (
+        "initiation" if initiation else "assessment_date"
+    )
     for r in usable:
         if r.ev.field != "patient_identity":
             continue
@@ -1131,7 +1138,7 @@ def _ages(
                     years_between(dob.start, ref.start),
                     years_between(dob.start, ref.end),
                     "dob",
-                    "initiation" if initiation else "own_date",
+                    reference,
                     src,
                 )
             )
@@ -1139,13 +1146,13 @@ def _ages(
             d0, d1 = r.tp.date.start, r.tp.date.end
             birth_lo = shift_years(d0, -(stated + 1)) + timedelta(days=1)
             birth_hi = shift_years(d1, -stated)
-            ref = initiation.date if initiation else r.tp.date
+            ref = initiation.date if initiation else DateInterval.day(ctx.assessment_date)
             out.append(
                 AgeInterval(
                     years_between(birth_hi, ref.start),
                     years_between(birth_lo, ref.end),
                     "stated_age",
-                    "initiation" if initiation else "own_date",
+                    reference,
                     r.source(),
                 )
             )

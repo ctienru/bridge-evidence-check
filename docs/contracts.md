@@ -186,7 +186,7 @@ Tests: `test_htn_boundary_reading_with_ambiguous_diuretics_is_insufficient` (cas
 
 - **Threshold first, then tolerance**: two values on either side of a threshold → the sub-results that use that threshold are `conflict`, whether or not they are within tolerance. BMI thresholds 27, 30 and 35 are each judged separately (34.6 vs 36 → only `bmi_path_a` conflicts).
 - Same side, beyond tolerance → decide as usual, add `inconsistent_values`. Age 58 vs 55 → `age_18` `supported` + `inconsistent_values`; but a contradiction in date of birth or ID is handled by the identity table and does not disappear because the ages are on the same side.
-- **Labs**: Labs follow the BMI rule: thresholds first. Two values of the same lab kind at the same timepoint that fall on opposite sides of a threshold (A1c 5.7 and 6.5; fasting glucose 100 and 126; eGFR 60) → `conflict` for the sub-result that uses that threshold. Two different values on the same side → decide as usual and add `inconsistent_values`. Labs have no tolerance; values are compared as `Decimal`.
+- **Labs**: Labs follow the BMI rule: thresholds first. Two values of the same lab kind at the same timepoint that fall on opposite sides of a threshold (A1c 5.7 and 6.5; fasting glucose 100 and 126) → `conflict` for the sub-result that uses that threshold. Two different values on the same side → decide as usual and add `inconsistent_values`. `bmi_path_b.ckd` decides from the diagnosis and its stage; differing eGFR values at the same timepoint add `inconsistent_values`. When a diagnosis decides a sub-result, its lab values are not compared with the thresholds. Labs have no tolerance; values are compared as `Decimal`.
 - A `conflict` cannot be rescued by another piece of evidence.
 - **Diagnoses**: same concept, overlapping timepoints, one present / historical and one negated → `conflict` (E15). Different timepoints: for "prior" questions (MI, stroke) any valid present / historical record counts; for "current" questions (symptomatic PAD, OSA severity) take the one closest to the initiation date.
 
@@ -472,6 +472,8 @@ Terminal states such as `parse_failed` are not replayed. **The retry budget is p
 
 **Sentence splitting**: a rule-based splitter at a fixed version (with a clinical abbreviation list); the version is recorded in `case_runs`.
 
+**Rules version**: `rules_version` names the rules table (`rules/bridge-v1.yaml`). Rule code has no version of its own; the commit in the report header identifies it.
+
 **CI** (GitHub Actions; job names are fixed and branch protection points to them):
 
 | job | Runs | Fetches MTSamples |
@@ -505,13 +507,8 @@ Terminal states such as `parse_failed` are not replayed. **The retry budget is p
 
 ### Known gaps between this contract and the code
 
-- §3.2, §3.3, denial together with a lab in range: the code returns `not_supported` for `bmi_path_c.prediabetes` (denial with a prediabetes-range or a diabetes-range lab) and for `exclusion.t2dm` (denial with a diabetes-range lab).
-- §3.5, age without a verified initiation date: the code returns `supported` when every interval is wholly at or above 18, and it takes a stated age at its own document date instead of converting it to `assessment_date`.
 - §3.5, lifestyle applicability: the code treats a record dated before `assessment_date` with `end_kind: unknown` and no end date as applicable.
-- §4, labs: only `bmi_path_c.prediabetes` returns `conflict` for same-timepoint values on opposite sides of a threshold, and only when there is no diagnosis. `exclusion.t2dm` returns `review` for A1c or fasting glucose values on both sides of the diabetes threshold, `bmi_path_b.ckd` never compares eGFR with 60, and no rule adds `inconsistent_values` for labs.
-- §3.2, `bmi_path_b.htn`, several readings above the threshold: in the code `not_supported` from one reading outranks `insufficient` from another.
 - §5, relative time expressions: the code does not recognize them, so such a fact inherits the verified document date and can become `at`.
 - §5, baseline wording: no code implements "an undated quote that states a baseline at initiation is `at`"; such a fact stays `unknown`.
-- §6, `unrecognized` flag: the code caps only `supported` to `review`; a `not_supported` result that rests on a flagged fact is unchanged.
 - §6, target values: the code rejects only a blood pressure after goal or target wording; a BMI, weight or lab is accepted as a measurement.
 - §11, cost of `unknown_outcome`: counted at the reservation only within its own run; it counts as $0 toward the evaluation ceiling across runs.
