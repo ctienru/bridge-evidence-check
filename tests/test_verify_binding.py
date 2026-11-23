@@ -1287,3 +1287,126 @@ def test_date_must_belong_to_the_attached_mention() -> None:
         {"doc_dates": [f]},
     ).evidence[0]
     assert "value_not_in_quote" in ev.exclusion_reasons
+
+
+# --- A sole explicit date in the clause binds across a label (contract §6) ------------------------
+
+
+def test_sole_date_in_the_clause_binds_to_the_value_across_a_label() -> None:
+    ev = _weight("A year ago, on 2024-03-10, the weight was 130 kg.")
+    assert ev.exclusion_reasons == ()
+    assert ev.attributes["quote_date"] == {"date": "2024-03-10", "precision": "day"}
+    assert "relative_time" not in ev.attributes
+    # either side of the value
+    after = _ev(
+        "Weight 130 kg, BMI 45.0 on 2024-03-10.", "anthropometrics", kind="bmi", raw_value="45.0"
+    )
+    assert after.attributes["quote_date"] == {"date": "2024-03-10", "precision": "day"}
+    lab = _ev(
+        "On 2024-03-10 the hemoglobin A1c was 6.1 %.",
+        "labs",
+        kind="a1c",
+        raw_value="6.1",
+        raw_unit="%",
+    )
+    assert lab.exclusion_reasons == ()
+    assert lab.attributes["quote_date"] == {"date": "2024-03-10", "precision": "day"}
+
+
+def test_sole_clause_date_is_the_value_s_own_date_and_not_the_document_date() -> None:
+    letter = "I enclose the D2 consult note of 2025-03-15. Wegovy was started on 2025-03-15."
+    sentence = "A year ago, on 2024-03-10, the weight was 130 kg."
+    docs: dict[str, str | tuple[str, str]] = {
+        "D1": ("referral", letter),
+        "D2": f"{sentence} Height 170 cm.",
+    }
+    result = run_verify(
+        docs,
+        {
+            "doc_dates": [
+                fact(
+                    "doc_dates",
+                    "I enclose the D2 consult note of 2025-03-15.",
+                    target_doc_id="D2",
+                    date="2025-03-15",
+                )
+            ],
+            "glp1_start": [
+                fact(
+                    "glp1_start",
+                    "Wegovy was started on 2025-03-15.",
+                    drug="Wegovy",
+                    date="2025-03-15",
+                )
+            ],
+            "anthropometrics": [
+                fact(
+                    "anthropometrics",
+                    sentence,
+                    doc_id="D2",
+                    kind="weight",
+                    raw_value="130",
+                    raw_unit="kg",
+                ),
+                fact(
+                    "anthropometrics",
+                    "Height 170 cm.",
+                    doc_id="D2",
+                    kind="height",
+                    raw_value="170",
+                    raw_unit="cm",
+                ),
+            ],
+        },
+    )
+    assert all(ev.exclusion_reasons == () for ev in result.evidence)
+    weight = next(ev for ev in result.evidence if ev.kind == "weight")
+    assert weight.attributes["quote_date"] == {"date": "2024-03-10", "precision": "day"}
+    facts = compute(result.evidence, ctx(doc_roles={"D1": "referral", "D2": "clinical"}))
+    assert facts.initiation is not None
+    tp = facts.weights[0].src.tp
+    assert tp.source == "quote" and tp.date is not None
+    assert tp.date.iso() == "2024-03-10"  # not the document date 2025-03-15
+    assert tp.relative == "before"
+    assert facts.heights[0].src.tp.relative == "at"  # the plain sentence still inherits
+    assert [c for c in facts.bmi_candidates if c.tp.relative == "at"] == []
+
+
+def test_date_next_to_the_value_binds_as_before() -> None:
+    ev = _weight("Weight on 2026-01-12 is 82 kg.", value="82")
+    assert ev.exclusion_reasons == ()
+    assert ev.attributes["quote_date"] == {"date": "2026-01-12", "precision": "day"}
+
+
+def test_clause_with_two_dates_keeps_the_nearest_unblocked_date_only() -> None:
+    # Two dates: nothing binds across the label; the date next to the value still does.
+    ev = _weight("On 2024-03-10 the weight was 130 kg, rechecked 2025-01-05.")
+    assert ev.attributes["quote_date"] == {"date": "2025-01-05", "precision": "day"}
+    none = _weight("Between 2024-03-10 and 2025-01-05 the weight was 130 kg.")
+    assert "quote_date" not in none.attributes
+
+
+def test_sole_clause_date_of_another_measurement_is_not_borrowed() -> None:
+    # The date stands on another number of the clause: it is that measurement's date.
+    whole = "BMI 29 on 2025-03-15, BMI 36.5 today."
+    assert "quote_date" not in _ev(whole, "anthropometrics", raw_value="36.5").attributes
+    other = "BMI 36.5 today, weight on 2025-03-15 was 98 kg."
+    assert "quote_date" not in _ev(other, "anthropometrics", raw_value="36.5").attributes
+    # another number between the date and the value
+    apart = "On 2025-03-15 weight 98 kg, BMI 36.5."
+    assert "quote_date" not in _ev(apart, "anthropometrics", raw_value="36.5").attributes
+    # a drug event between them: the date is the event's
+    drug = "Weight was 130 kg when Wegovy was started on 2025-03-15."
+    assert "quote_date" not in _weight(drug).attributes
+    # a date in the clause but outside the quote is not what the quote says
+    clipped = _weight("A year ago, on 2024-03-10, the weight was 130 kg.", "the weight was 130 kg")
+    assert "quote_date" not in clipped.attributes
+
+
+def test_sole_clause_date_binds_a_blood_pressure_and_skips_a_counted_expression() -> None:
+    bp = _ev("On 2024-03-10 the blood pressure was 145/98.", "bp_readings", sbp=145, dbp=98)
+    assert bp.exclusion_reasons == ()
+    assert bp.attributes["quote_date"] == {"date": "2024-03-10", "precision": "day"}
+    # the count of a relative time expression is not another measurement of the clause
+    counted = _weight("2 years ago, on 2024-03-10, the weight was 130 kg.")
+    assert counted.attributes["quote_date"] == {"date": "2024-03-10", "precision": "day"}

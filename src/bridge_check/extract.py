@@ -7,8 +7,9 @@ call. The server compiles no grammar for a non-strict tool, so the schema size i
 limited; the reply's `tool_use.input` is always a JSON object but is not guaranteed to
 match the schema, and the local Pydantic validation is the only check (contract §7.2). A
 reply without the tool call, or whose input is not an object, is `parse_failed`
-(`NoToolUse`, `BadToolInput`), as is a validation error, and the parse-class budget below
-ends the run. Forced tool use (`tool_choice` `tool`/`any`) is rejected by the model.
+(`NoToolUse`, `BadToolInput`), as is a validation error; the parse-class budget below
+allows the request to be sent once more. Forced tool use (`tool_choice` `tool`/`any`) is
+rejected by the model.
 
 Lookup order for every check:
 
@@ -24,11 +25,13 @@ before the response reached disk; cost NULL). `parsed` and the `extractions` row
 transaction. No SQL write transaction is open while the request is in flight.
 
 Retry budget per case run (contract §11, AGENTS.md): at most 4 API attempts (including
-the first), of which at most 1 may end parse-class (`parse_failed`, `refused`,
-`truncated`), and 5 minutes of wall clock. A parse-class outcome therefore ends the run
-(`failed_stage=parse`); only API errors are retried
-(`docs/adr/0001-global-limits.md`, Consequences). A failed replay is not an attempt of this
-run and does not use that allowance. The wall clock is checked before each send, bounds
+the first), of which at most 2 may end parse-class (`parse_failed`, `refused`,
+`truncated`), and 5 minutes of wall clock. After a first `parse_failed` the same request is
+sent once more, as a new attempt with its own row and its own saved response; a second
+parse-class outcome ends the run (`failed_stage=parse`). `refused` and `truncated` are not
+retried: either ends the run at once (`docs/adr/0001-global-limits.md`, Consequences). A
+`parse_failed` attempt stays final and is never replayed. A failed replay is not an attempt
+of this run and does not use that allowance. The wall clock is checked before each send, bounds
 each request's timeout, and is checked again after the reply is classified and before
 anything is marked parsed: a reply that arrives or finishes parsing after the budget is
 kept (`response_saved`) and replayed by the next check.
@@ -79,7 +82,7 @@ from bridge_check.store import Store
 from bridge_check.text import read_doc
 
 MODEL = "claude-sonnet-5-5"
-PROMPT_VERSION = "extract-v4"
+PROMPT_VERSION = "extract-v5"
 PROMPT_PATH = CHECKOUT_ROOT / "prompts" / f"{PROMPT_VERSION}.md"
 THINKING: dict[str, str] = {"type": "adaptive"}
 
@@ -103,7 +106,7 @@ def extraction_tool() -> dict[str, Any]:
 
 
 CONTRACT_MAX_ATTEMPTS = 4
-CONTRACT_MAX_PARSE_CLASS_ATTEMPTS = 1
+CONTRACT_MAX_PARSE_CLASS_ATTEMPTS = 2
 CONTRACT_WALL_CLOCK_S = 300.0
 """Contract §11 caps: a `Limits` may lower them, never raise them."""
 
@@ -646,6 +649,9 @@ def _call_api(run: _Run, request: dict[str, Any], key: str) -> ExtractResult:
             assert outcome.extraction is not None
             return ExtractResult(extraction_id, "api", key, attempt_id, outcome.extraction)
         last = ("parse", outcome.error_type or "ParseError")
+        if outcome.status != "parse_failed":
+            # Only a reply that failed validation is sent again (contract §11).
+            raise ExtractionFailed("parse", last[1], f"{outcome.status}, not retried")
 
 
 def _backoff(run: _Run, attempt_no: int) -> None:

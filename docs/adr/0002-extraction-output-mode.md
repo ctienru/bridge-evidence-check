@@ -92,11 +92,14 @@ with no `record_extraction` call, or whose input is not an object, is `parse_fai
 (`NoToolUse`, `BadToolInput`); a Pydantic error is `parse_failed` with the field path in the
 dead letter; `refused` and `truncated` are unchanged.
 
-The cover is the retry budget of contract §11: a parse-class outcome ends the run
-(`failed_stage=parse`) because at most one parse-class attempt is allowed per run, and the
-next check of the same case replays nothing (terminal states are not replayed) and makes a
-fresh call. Nothing downstream ever sees an invalid extraction, so the safety invariants
-hold; what is lost is attempts and money, not correctness.
+The cover is the retry budget of contract §11: at most two parse-class attempts are allowed
+per run (revised 2026-11-23, `docs/adr/0001-global-limits.md`; one until then). After a
+first `parse_failed` the same request is sent once more, as a new attempt with its own row
+and saved response; a second parse-class outcome, or a first `refused` or `truncated`, ends
+the run (`failed_stage=parse`), and the next check of the same case replays nothing
+(terminal states are not replayed) and makes a fresh call. Nothing downstream ever sees an
+invalid extraction, so the safety invariants hold; what is lost is attempts and money, not
+correctness.
 
 Measured on 2026-11-09 (`docs/live-run-01.md`): under the first draft of the v2 prompt, 3 of
 the 4 accepted calls failed validation (the probe on the `claim_id` schema gap, then one on

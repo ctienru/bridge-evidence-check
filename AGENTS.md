@@ -15,7 +15,7 @@ Machine-level names and rules (condition IDs, status codes, decision tables, sch
 - Do not read or run variants marked `holdout` in `splits.yaml`.
 - Do not print full document text, quotes, or patient names in logs, exceptions, or test output. Logs refer to evidence by `evidence_id` only (no MTSamples offsets). Public reports refer to evidence as `doc_id[start:end] sha8`.
 - Do not put patient data in schema property names or enums.
-- Do not enable SDK automatic retries (`max_retries=0`). Retries live only in `extract.py`, with a per-run budget: at most 4 API attempts per case run (including the first, at most 1 of them for parse/refusal/truncation) and at most 5 minutes in total.
+- Do not enable SDK automatic retries (`max_retries=0`). Retries live only in `extract.py`, with a per-run budget: at most 4 API attempts per case run (including the first, at most 2 of them ending in parse failure, refusal or truncation; only a first parse failure is sent again, a refusal or a truncation ends the run) and at most 5 minutes in total.
 - Do not mark a quote as verified using fuzzy similarity.
 - Do not call `messages.parse()`. Save the raw response first, then validate.
 - Do not add Streamlit, RAG, an agent framework, or PostgreSQL.

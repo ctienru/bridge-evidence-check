@@ -1,6 +1,6 @@
 # Eval report, split=dev, mode=offline
 
-prompt extract-v4 · schema v2 · rules bridge-v1 · splitter sentences-v1 · model returned claude-sonnet-5-5 · code 068b735a37320c99e33fd960bf607503a7701485
+prompt extract-v5 · schema v2 · rules bridge-v1 · splitter sentences-v1 · model returned claude-sonnet-5-5 · code 199274bfddec2de990f7377082e8c347260e62f0
 
 One run of one model on 7 dev variants. Not a holdout result; not a validation on real records. Scoring rules: docs/eval.md. Every number is a count.
 
@@ -177,16 +177,16 @@ Live status per variant; a bold cell differs from gold and names the gold status
 
 | Gold facts | Matched | Matched, excluded by verify | Wrong value (timing only) | Missed | False positives | Expected-absent correct | Expected-absent FP |
 |---|---|---|---|---|---|---|---|
-| 158 | 114 | 21 | 19 (8) | 4 | 26 | 99 | 0 |
+| 158 | 120 | 22 | 12 (5) | 4 | 22 | 98 | 1 |
 
 | Citation measure | Count |
 |---|---|
-| Quote located (verbatim or normalized) / evidence rows | 204/204 |
-| Fact semantically correct (every key) / gold facts | 114/158 |
-| Gold evidence recalled (span overlapped by a located row) / gold facts | 152/158 |
+| Quote located (verbatim or normalized) / evidence rows | 196/196 |
+| Fact semantically correct (every key) / gold facts | 120/158 |
+| Gold evidence recalled (span overlapped by a located row) / gold facts | 155/158 |
 
-Position status: verbatim 204 · normalized 0 · candidate 0 · not_found 0.
-Exclusion reasons: assertion_mismatch 10 · claim_document 27 · unparseable_value 2 · value_not_in_quote 3 · wrong_patient 10.
+Position status: verbatim 196 · normalized 0 · candidate 0 · not_found 0.
+Exclusion reasons: assertion_mismatch 10 · claim_document 24 · unparseable_value 2 · value_not_in_quote 3 · wrong_patient 9.
 
 ## Traps
 
