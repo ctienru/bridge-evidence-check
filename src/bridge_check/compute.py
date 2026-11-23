@@ -176,7 +176,7 @@ class Initiation:
     drug_canonical: str
     src: Source
     drug_name: str = ""
-    """The product or ingredient name as extracted, casefolded (a claim compares products)."""
+    """The product or ingredient the start names (`glp1_product`): a claim compares products."""
 
 
 @dataclass(frozen=True)
@@ -722,13 +722,58 @@ GLP1_BRANDS: dict[str, str] = {
 }
 
 
+_ONE_PARENTHETICAL = re.compile(r"([^()]*)\(([^()]*)\)")
+
+
+def _glp1_key(name: str) -> str:
+    return re.sub(r"\s+", " ", name.strip()).casefold()
+
+
+def _glp1_brand_with_ingredient(key: str) -> str | None:
+    """The brand of a casefolded name of the form `outer (inner)` in which one part is a brand
+    of `GLP1_BRANDS` and the other part is exactly that brand's ingredient, in either order;
+    None for every other name."""
+    m = _ONE_PARENTHETICAL.fullmatch(key)
+    if m is None:
+        return None
+    outer, inner = m.group(1).strip(), m.group(2).strip()
+    for brand, ingredient in ((outer, inner), (inner, outer)):
+        if brand in GLP1_BRANDS and ingredient == GLP1_BRANDS[brand]:
+            return brand
+    return None
+
+
 def glp1_canonical(name: str) -> str:
-    """The canonical ingredient of a GLP-1 name: a brand maps to its ingredient, case and whitespace
-    are ignored, and an unknown name is returned casefolded."""
-    key = re.sub(r"\s+", " ", name.strip()).casefold()
+    """The canonical ingredient of a GLP-1 name (contract §5). Case and whitespace are ignored.
+
+    - A name without parentheses: an ingredient of `GLP1_CANONICALS` is itself, a brand of
+      `GLP1_BRANDS` maps to its ingredient, and any other name is unresolved.
+    - A name of the form `outer (inner)` resolves only when one part is a brand of
+      `GLP1_BRANDS` and the other part is exactly that brand's ingredient
+      (`GLP1_BRANDS[brand]`, a member of `GLP1_CANONICALS`), in either order: "Wegovy
+      (semaglutide)" and "semaglutide (Wegovy)" are semaglutide.
+    - Every other name with a parenthesis is unresolved: two brands, two ingredients, a brand
+      or an ingredient next to a dose, a route, a formulation word or any other word, a
+      brand with another ingredient, text after the closing parenthesis, more than one
+      parenthetical, an unbalanced parenthesis, an empty part.
+
+    An unresolved name is returned casefolded with its whitespace collapsed, so it equals no
+    ingredient. There is no fuzzy match, no prefix match and no stripping of words."""
+    key = _glp1_key(name)
     if key in GLP1_CANONICALS:
         return key
+    brand = _glp1_brand_with_ingredient(key)
+    if brand is not None:
+        return GLP1_BRANDS[brand]
     return GLP1_BRANDS.get(key, key)
+
+
+def glp1_product(name: str) -> str:
+    """The name a drug claim is compared with (`claim.drug` compares products when both sides
+    name one): the brand of a name written as a brand with its ingredient in parentheses (or
+    the reverse), as `glp1_canonical` resolves it; otherwise the casefolded name."""
+    key = _glp1_key(name)
+    return _glp1_brand_with_ingredient(key) or key
 
 
 class DrugIndex:
@@ -999,7 +1044,7 @@ def _initiation(rows: list[_Row], ctx: CaseContext) -> Initiation | None:
         purpose,
         target,
         first.source(),
-        re.sub(r"\s+", " ", str(first.attr("drug") or "")).strip().casefold(),
+        glp1_product(str(first.attr("drug") or "")),
     )
 
 

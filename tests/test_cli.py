@@ -532,6 +532,72 @@ def test_historical_start_without_its_date_in_the_quote_anchors_nothing(
         assert decisions[cid]["status"] != "supported", cid
 
 
+# --- A start whose drug is written as a name with a parenthetical (contract §5) ----------------
+
+
+def _parenthetical_decisions(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+    name: str,
+    drug: str,
+) -> dict[str, dict[str, Any]]:
+    """`bridge check` on a copy of the smoke case whose referral states the start with `drug`
+    as written, and whose scripted reply returns that same string as the drug of the start."""
+    case = tmp_path / name
+    shutil.copytree(SMOKE, case)
+    referral = case / "docs" / "D1-referral.txt"
+    text = referral.read_text(encoding="utf-8")
+    assert "Semaglutide (Wegovy) was started" in text
+    referral.write_text(
+        text.replace("Semaglutide (Wegovy) was started", f"{drug} was started"), encoding="utf-8"
+    )
+    resp = json.loads(fixture("valid").read_text(encoding="utf-8"))
+    ext = next(b for b in resp["content"] if b["type"] == "tool_use")["input"]
+    start = ext["glp1_start"][0]
+    start.update(drug=drug, quote=start["quote"].replace("Semaglutide (Wegovy)", drug))
+    reply = tmp_path / f"{name}.json"
+    reply.write_text(json.dumps(resp), encoding="utf-8")
+    monkeypatch.setattr(cli, "make_client", lambda case_dir=None: FakeClient([reply]))
+    code, report, _ = _json(
+        capsys, "check", str(case), "--db", str(tmp_path / f"{name}.db"), "--json", "--explain"
+    )
+    assert code == EXIT_OK and report["status"] == "completed"
+    starts = [e for e in report["evidence"] if e["field"] == "glp1_start"]
+    # the start itself is located and not excluded in every form: only its drug name differs
+    assert [(e["position_status"], e["exclusion_reasons"]) for e in starts] == [("verbatim", [])]
+    return {d["condition"]: d for d in report["decisions"]}
+
+
+def test_start_named_as_brand_with_ingredient_in_parentheses_is_the_initiation(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    bare = _scripted_decisions(tmp_path, capsys, monkeypatch, "bare")
+    decisions = _parenthetical_decisions(
+        tmp_path, capsys, monkeypatch, "parenthetical", "Wegovy (semaglutide)"
+    )
+    assert _anchored(decisions)
+    assert decisions["age_18"]["status"] == bare["age_18"]["status"] == "supported"
+    assert decisions["claim.drug"]["status"] == "supported"
+    assert {c: d["status"] for c, d in decisions.items()} == {
+        c: d["status"] for c, d in bare.items()
+    }
+
+
+def test_start_named_with_a_contradictory_parenthetical_is_no_initiation(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    decisions = _parenthetical_decisions(
+        tmp_path, capsys, monkeypatch, "contradictory", "Wegovy (tirzepatide)"
+    )
+    assert not _anchored(decisions)
+    assert decisions["age_18"]["status"] == "insufficient"
+    assert decisions["claim.drug"]["status"] == "insufficient"
+    for cid, d in decisions.items():
+        if cid.startswith("bmi_path"):
+            assert d["status"] != "supported", cid
+
+
 # --- check and history never open a holdout case outside the checkout -------------------------
 
 

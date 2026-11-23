@@ -1,6 +1,6 @@
 # Eval report, split=dev, mode=offline
 
-prompt extract-v5 · schema v2 · rules bridge-v1 · splitter sentences-v1 · model returned claude-sonnet-5-5 · code a62edc72ccdcaed9815b7bf0f6227c2cf03400d5
+prompt extract-v5 · schema v2 · rules bridge-v1 · splitter sentences-v1 · model returned claude-sonnet-5-5 · code 62706e81fbcddb1dadab67de394bdeb472444984
 
 One run of one model on 7 dev variants. Not a holdout result; not a validation on real records. Scoring rules: docs/eval.md. Every number is a count.
 
