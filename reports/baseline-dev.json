@@ -230,8 +230,8 @@
       "input_hash": "43931e3233b805cc291e8d542a56e56e9693ea3e8e9d977012a635d664bbebe5",
       "missed_exclusion_count": 0,
       "replay": {
-        "path": "replays/case-01/43931e3233b805cc291e8d542a56e56e9693ea3e8e9d977012a635d664bbebe5-extract-v4-v2.json",
-        "sha256": "78607bc0b332ff48ac84b727f45ae6d22c55e7d976cbaedbf095a5968aea917c"
+        "path": "replays/case-01/43931e3233b805cc291e8d542a56e56e9693ea3e8e9d977012a635d664bbebe5-extract-v5-v2.json",
+        "sha256": "7e1293fa21b4d8ada46ba88fc3a3b3e00412b38eba6f72359e0e6c18301b0279"
       }
     },
     "case-02": {
@@ -420,8 +420,8 @@
       "input_hash": "3934e23a9ca78bee80aaf57224ad3fa22b09c0507b27dfeeccc095954015d97f",
       "missed_exclusion_count": 0,
       "replay": {
-        "path": "replays/case-02/3934e23a9ca78bee80aaf57224ad3fa22b09c0507b27dfeeccc095954015d97f-extract-v4-v2.json",
-        "sha256": "b8de049f00d4377ff32228a25275d8df42a9e12221cedd3efd11debc99fc74bf"
+        "path": "replays/case-02/3934e23a9ca78bee80aaf57224ad3fa22b09c0507b27dfeeccc095954015d97f-extract-v5-v2.json",
+        "sha256": "669611b857c07cea342d3d6448f2e8a6fce4fa64f09a5a1281a08d0f4f4f2380"
       }
     },
     "case-03": {
@@ -628,8 +628,8 @@
       "input_hash": "7d40a9949aedf10dd061c1127cb4cd809d551398b6c666e6607cb91e0bfbc140",
       "missed_exclusion_count": 0,
       "replay": {
-        "path": "replays/case-03/7d40a9949aedf10dd061c1127cb4cd809d551398b6c666e6607cb91e0bfbc140-extract-v4-v2.json",
-        "sha256": "c1ad7a7fc992fa154f9b7770565b1ef8f616511c5a5a9c0d55f6c9ce545426b8"
+        "path": "replays/case-03/7d40a9949aedf10dd061c1127cb4cd809d551398b6c666e6607cb91e0bfbc140-extract-v5-v2.json",
+        "sha256": "a54924ca5a8eae691c6c8289f16a2e78043af8737f9dbc2d02d9511beda36223"
       }
     },
     "case-04": {
@@ -820,8 +820,8 @@
       "input_hash": "98db44ca3e6075fd9382db59c4f8e0e049c6cd4d0f557bde334b1788b1922d45",
       "missed_exclusion_count": 0,
       "replay": {
-        "path": "replays/case-04/98db44ca3e6075fd9382db59c4f8e0e049c6cd4d0f557bde334b1788b1922d45-extract-v4-v2.json",
-        "sha256": "17d86616fd77f448089678529323c271ae32c8f928b4376b425c782a3cf99f0c"
+        "path": "replays/case-04/98db44ca3e6075fd9382db59c4f8e0e049c6cd4d0f557bde334b1788b1922d45-extract-v5-v2.json",
+        "sha256": "593a59adc3000c913ae00b35a1eff53a572044fb3ef106fdbb7096d9dd5aeda0"
       }
     },
     "case-07": {
@@ -1021,8 +1021,8 @@
       "input_hash": "8a5bd980fcd13ad45fa88b64089896d45c037cc1593f592178d339a0ed6fa96f",
       "missed_exclusion_count": 0,
       "replay": {
-        "path": "replays/case-07/8a5bd980fcd13ad45fa88b64089896d45c037cc1593f592178d339a0ed6fa96f-extract-v4-v2.json",
-        "sha256": "bbc97686df384a54fcd82815d11c63caf32c6c13d68adda4345520d22f80a470"
+        "path": "replays/case-07/8a5bd980fcd13ad45fa88b64089896d45c037cc1593f592178d339a0ed6fa96f-extract-v5-v2.json",
+        "sha256": "42120e1c7a50da7eadf3612109b3aa39b4c63b0a8e8cd377596557069aabcaba"
       }
     },
     "case-07b": {
@@ -1222,8 +1222,8 @@
       "input_hash": "2b7dc575d40b4b24079bb0dec95cf0333b6036b5dc13962048276124aa3fe181",
       "missed_exclusion_count": 0,
       "replay": {
-        "path": "replays/case-07b/2b7dc575d40b4b24079bb0dec95cf0333b6036b5dc13962048276124aa3fe181-extract-v4-v2.json",
-        "sha256": "19de31ab35e24a89ece2464d117ac964419f20a822351f1b44c4d80582fb15ce"
+        "path": "replays/case-07b/2b7dc575d40b4b24079bb0dec95cf0333b6036b5dc13962048276124aa3fe181-extract-v5-v2.json",
+        "sha256": "c60e61a28191cec7b00a7d052506ca99d3b7d77c9f1e952866afa01742d2d306"
       }
     },
     "case-17": {
@@ -1430,15 +1430,15 @@
       "input_hash": "24dd49910d64ebe88129867a6810796768b882d7eee52f985abced6b5c6f0cd6",
       "missed_exclusion_count": 0,
       "replay": {
-        "path": "replays/case-17/24dd49910d64ebe88129867a6810796768b882d7eee52f985abced6b5c6f0cd6-extract-v4-v2.json",
-        "sha256": "654f28e1cd1c8860a67eaf68d02207f05334be9ae29186b7ed70a10c2f29a97c"
+        "path": "replays/case-17/24dd49910d64ebe88129867a6810796768b882d7eee52f985abced6b5c6f0cd6-extract-v5-v2.json",
+        "sha256": "e775c36fc00bb926aae45be6602517af919ef30c363dfd308112e6adf01ffdc7"
       }
     }
   },
   "generated_from": {
-    "code_sha": "068b735a37320c99e33fd960bf607503a7701485",
+    "code_sha": "199274bfddec2de990f7377082e8c347260e62f0",
     "model_returned": "claude-sonnet-5-5",
-    "prompt_version": "extract-v4",
+    "prompt_version": "extract-v5",
     "rules_version": "bridge-v1",
     "schema_version": "v2"
   },

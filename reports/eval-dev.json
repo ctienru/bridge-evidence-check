@@ -11,9 +11,9 @@
   "eval_version": 1,
   "exit_code": 0,
   "generated_from": {
-    "code_sha": "068b735a37320c99e33fd960bf607503a7701485",
+    "code_sha": "199274bfddec2de990f7377082e8c347260e62f0",
     "model_returned": "claude-sonnet-5-5",
-    "prompt_version": "extract-v4",
+    "prompt_version": "extract-v5",
     "rules_version": "bridge-v1",
     "schema_version": "v2",
     "splitter_version": "sentences-v1"
@@ -40,12 +40,12 @@
             "of": 31
           },
           "gold_evidence_recalled": {
-            "n": 26,
+            "n": 29,
             "of": 31
           },
           "quotes_located": {
-            "n": 37,
-            "of": 37
+            "n": 38,
+            "of": 38
           }
         },
         "claims": {
@@ -464,10 +464,10 @@
         },
         "extraction_source": "replay",
         "facts": {
-          "absent_correct": 11,
-          "absent_false_positive": 0,
+          "absent_correct": 10,
+          "absent_false_positive": 1,
           "excluded_unmatched": 10,
-          "false_positives": 1,
+          "false_positives": 2,
           "gold_facts": 31,
           "matched": 20,
           "matched_but_excluded": 2,
@@ -514,7 +514,7 @@
           "candidate": 0,
           "normalized": 0,
           "not_found": 0,
-          "verbatim": 37
+          "verbatim": 38
         },
         "run_id": 1,
         "run_status": "completed",
@@ -539,8 +539,8 @@
             "of": 19
           },
           "quotes_located": {
-            "n": 27,
-            "of": 27
+            "n": 23,
+            "of": 23
           }
         },
         "claims": {
@@ -879,14 +879,14 @@
         "cost_usd": 0.0,
         "exclusion_evidence_found": 1,
         "exclusion_reasons": {
-          "claim_document": 4
+          "claim_document": 3
         },
         "extraction_source": "replay",
         "facts": {
           "absent_correct": 16,
           "absent_false_positive": 0,
-          "excluded_unmatched": 2,
-          "false_positives": 6,
+          "excluded_unmatched": 1,
+          "false_positives": 3,
           "gold_facts": 19,
           "matched": 17,
           "matched_but_excluded": 2,
@@ -932,7 +932,7 @@
           "candidate": 0,
           "normalized": 0,
           "not_found": 0,
-          "verbatim": 27
+          "verbatim": 23
         },
         "run_id": 4,
         "run_status": "completed",
@@ -982,7 +982,7 @@
         "case_id": "case-03",
         "citations": {
           "facts_correct": {
-            "n": 12,
+            "n": 18,
             "of": 23
           },
           "gold_evidence_recalled": {
@@ -990,8 +990,8 @@
             "of": 23
           },
           "quotes_located": {
-            "n": 28,
-            "of": 28
+            "n": 27,
+            "of": 27
           }
         },
         "claims": {
@@ -1361,21 +1361,21 @@
         "exclusion_evidence_found": 1,
         "exclusion_reasons": {
           "assertion_mismatch": 1,
-          "claim_document": 4,
+          "claim_document": 3,
           "unparseable_value": 1
         },
         "extraction_source": "replay",
         "facts": {
           "absent_correct": 14,
           "absent_false_positive": 0,
-          "excluded_unmatched": 2,
+          "excluded_unmatched": 1,
           "false_positives": 4,
           "gold_facts": 23,
-          "matched": 12,
+          "matched": 18,
           "matched_but_excluded": 3,
           "missed": 0,
-          "wrong_value": 8,
-          "wrong_value_timing_only": 3
+          "wrong_value": 2,
+          "wrong_value_timing_only": 0
         },
         "failed_stage": null,
         "false_supports": {
@@ -1416,7 +1416,7 @@
           "candidate": 0,
           "normalized": 0,
           "not_found": 0,
-          "verbatim": 28
+          "verbatim": 27
         },
         "run_id": 6,
         "run_status": "completed",
@@ -1494,8 +1494,8 @@
             "of": 29
           },
           "quotes_located": {
-            "n": 37,
-            "of": 37
+            "n": 34,
+            "of": 34
           }
         },
         "claims": {
@@ -1843,7 +1843,7 @@
           "absent_correct": 12,
           "absent_false_positive": 0,
           "excluded_unmatched": 2,
-          "false_positives": 6,
+          "false_positives": 3,
           "gold_facts": 29,
           "matched": 25,
           "matched_but_excluded": 2,
@@ -1889,7 +1889,7 @@
           "candidate": 0,
           "normalized": 0,
           "not_found": 0,
-          "verbatim": 37
+          "verbatim": 34
         },
         "run_id": 5,
         "run_status": "completed",
@@ -1987,8 +1987,8 @@
             "of": 18
           },
           "quotes_located": {
-            "n": 25,
-            "of": 25
+            "n": 26,
+            "of": 26
           }
         },
         "claims": {
@@ -2353,7 +2353,7 @@
           "absent_correct": 15,
           "absent_false_positive": 0,
           "excluded_unmatched": 5,
-          "false_positives": 2,
+          "false_positives": 3,
           "gold_facts": 18,
           "matched": 13,
           "matched_but_excluded": 5,
@@ -2399,7 +2399,7 @@
           "candidate": 0,
           "normalized": 0,
           "not_found": 0,
-          "verbatim": 25
+          "verbatim": 26
         },
         "run_id": 2,
         "run_status": "completed",
@@ -2457,8 +2457,8 @@
             "of": 22
           },
           "quotes_located": {
-            "n": 30,
-            "of": 30
+            "n": 28,
+            "of": 28
           }
         },
         "claims": {
@@ -2815,14 +2815,14 @@
         "exclusion_evidence_found": 0,
         "exclusion_reasons": {
           "claim_document": 4,
-          "wrong_patient": 5
+          "wrong_patient": 4
         },
         "extraction_source": "replay",
         "facts": {
           "absent_correct": 13,
           "absent_false_positive": 0,
-          "excluded_unmatched": 4,
-          "false_positives": 4,
+          "excluded_unmatched": 3,
+          "false_positives": 3,
           "gold_facts": 22,
           "matched": 17,
           "matched_but_excluded": 5,
@@ -2868,7 +2868,7 @@
           "candidate": 0,
           "normalized": 0,
           "not_found": 0,
-          "verbatim": 30
+          "verbatim": 28
         },
         "run_id": 3,
         "run_status": "completed",
@@ -3296,20 +3296,20 @@
         "cost_usd": 0.0,
         "exclusion_evidence_found": 0,
         "exclusion_reasons": {
-          "claim_document": 3,
+          "claim_document": 2,
           "value_not_in_quote": 1
         },
         "extraction_source": "replay",
         "facts": {
           "absent_correct": 18,
           "absent_false_positive": 0,
-          "excluded_unmatched": 1,
-          "false_positives": 3,
+          "excluded_unmatched": 0,
+          "false_positives": 4,
           "gold_facts": 16,
           "matched": 10,
-          "matched_but_excluded": 2,
+          "matched_but_excluded": 3,
           "missed": 0,
-          "wrong_value": 4,
+          "wrong_value": 3,
           "wrong_value_timing_only": 2
         },
         "failed_stage": null,
@@ -4496,16 +4496,16 @@
       "case_families": 6,
       "citations": {
         "facts_correct": {
-          "n": 114,
+          "n": 120,
           "of": 158
         },
         "gold_evidence_recalled": {
-          "n": 152,
+          "n": 155,
           "of": 158
         },
         "quotes_located": {
-          "n": 204,
-          "of": 204
+          "n": 196,
+          "of": 196
         }
       },
       "claims_correct": {
@@ -4528,22 +4528,22 @@
       "exclusion_evidence_found": 2,
       "exclusion_reasons": {
         "assertion_mismatch": 10,
-        "claim_document": 27,
+        "claim_document": 24,
         "unparseable_value": 2,
         "value_not_in_quote": 3,
-        "wrong_patient": 10
+        "wrong_patient": 9
       },
       "facts": {
-        "absent_correct": 99,
-        "absent_false_positive": 0,
-        "excluded_unmatched": 26,
-        "false_positives": 26,
+        "absent_correct": 98,
+        "absent_false_positive": 1,
+        "excluded_unmatched": 22,
+        "false_positives": 22,
         "gold_facts": 158,
-        "matched": 114,
-        "matched_but_excluded": 21,
+        "matched": 120,
+        "matched_but_excluded": 22,
         "missed": 4,
-        "wrong_value": 19,
-        "wrong_value_timing_only": 8
+        "wrong_value": 12,
+        "wrong_value_timing_only": 5
       },
       "false_supports": {
         "correctly_automated": {
@@ -4577,7 +4577,7 @@
         "candidate": 0,
         "normalized": 0,
         "not_found": 0,
-        "verbatim": 204
+        "verbatim": 196
       },
       "runs_failed": 0,
       "variants": 7
@@ -4620,8 +4620,8 @@
               "of": 88
             },
             "quotes_located": {
-              "n": 119,
-              "of": 119
+              "n": 111,
+              "of": 111
             }
           },
           "claims_correct": {
@@ -4643,15 +4643,15 @@
           },
           "exclusion_evidence_found": 1,
           "exclusion_reasons": {
-            "claim_document": 16,
+            "claim_document": 15,
             "value_not_in_quote": 1,
-            "wrong_patient": 10
+            "wrong_patient": 9
           },
           "facts": {
             "absent_correct": 56,
             "absent_false_positive": 0,
-            "excluded_unmatched": 13,
-            "false_positives": 18,
+            "excluded_unmatched": 11,
+            "false_positives": 12,
             "gold_facts": 88,
             "matched": 72,
             "matched_but_excluded": 14,
@@ -4691,7 +4691,7 @@
             "candidate": 0,
             "normalized": 0,
             "not_found": 0,
-            "verbatim": 119
+            "verbatim": 111
           },
           "runs_failed": 0,
           "variants": 4
@@ -4740,19 +4740,19 @@
           },
           "exclusion_evidence_found": 0,
           "exclusion_reasons": {
-            "claim_document": 3,
+            "claim_document": 2,
             "value_not_in_quote": 1
           },
           "facts": {
             "absent_correct": 18,
             "absent_false_positive": 0,
-            "excluded_unmatched": 1,
-            "false_positives": 3,
+            "excluded_unmatched": 0,
+            "false_positives": 4,
             "gold_facts": 16,
             "matched": 10,
-            "matched_but_excluded": 2,
+            "matched_but_excluded": 3,
             "missed": 0,
-            "wrong_value": 4,
+            "wrong_value": 3,
             "wrong_value_timing_only": 2
           },
           "false_supports": {
@@ -4881,11 +4881,11 @@
           "case_families": 2,
           "citations": {
             "facts_correct": {
-              "n": 32,
+              "n": 38,
               "of": 54
             },
             "gold_evidence_recalled": {
-              "n": 48,
+              "n": 51,
               "of": 54
             },
             "quotes_located": {
@@ -4913,21 +4913,21 @@
           "exclusion_evidence_found": 1,
           "exclusion_reasons": {
             "assertion_mismatch": 10,
-            "claim_document": 8,
+            "claim_document": 7,
             "unparseable_value": 2,
             "value_not_in_quote": 1
           },
           "facts": {
-            "absent_correct": 25,
-            "absent_false_positive": 0,
-            "excluded_unmatched": 12,
-            "false_positives": 5,
+            "absent_correct": 24,
+            "absent_false_positive": 1,
+            "excluded_unmatched": 11,
+            "false_positives": 6,
             "gold_facts": 54,
-            "matched": 32,
+            "matched": 38,
             "matched_but_excluded": 5,
             "missed": 4,
-            "wrong_value": 13,
-            "wrong_value_timing_only": 4
+            "wrong_value": 7,
+            "wrong_value_timing_only": 1
           },
           "false_supports": {
             "correctly_automated": {
