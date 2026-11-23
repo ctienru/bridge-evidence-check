@@ -21,11 +21,13 @@ from bridge_check.compare import (
     classify_condition,
     condition_dependencies,
     mismatched_keys,
+    system_view,
     timing_only,
 )
+from bridge_check.compute import DrugIndex
 from bridge_check.enums import CONDITION_IDS
 from bridge_check.gold_schema import Gold
-from bridge_check.rules_schema import COMPUTE_NAMES, load_rules
+from bridge_check.rules_schema import COMPUTE_NAMES, load_drugs, load_rules
 from bridge_check.store import SCORING_ATTRIBUTE_KEYS, open_store
 
 SMOKE = FIXTURES / "case-smoke"
@@ -80,6 +82,43 @@ def test_wrong_value_names_only_the_differing_keys() -> None:
     (f,) = a.facts
     assert (f.outcome, f.evidence_id, f.mismatched) == ("wrong_value", 2, ["dbp"])
     assert a.false_positives == [1]
+
+
+def _start_row(drug: str) -> dict[str, Any]:
+    return {
+        "evidence_id": 1,
+        "field": "glp1_start",
+        "kind": None,
+        "concept": None,
+        "doc_id": "D1",
+        "event_date": "2025-03-15",
+        "certainty": "present",
+        "subject": "patient",
+        "temporality": "current",
+        "attrs": {"drug": drug, "date": "2025-03-15", "purpose": "weight"},
+    }
+
+
+@pytest.mark.parametrize(
+    ("drug", "outcome"),
+    [
+        pytest.param("Wegovy", "matched", id="bare-brand"),
+        pytest.param("Wegovy (semaglutide)", "matched", id="brand-with-ingredient"),
+        pytest.param("semaglutide (Wegovy)", "matched", id="ingredient-with-brand"),
+        pytest.param("Wegovy (tirzepatide)", "wrong_value", id="contradictory"),
+    ],
+)
+def test_start_named_with_a_parenthetical_matches_gold_on_drug_canonical(
+    drug: str, outcome: str
+) -> None:
+    drugs = DrugIndex(load_drugs(ROOT / "rules" / "drugs-v2.yaml"))
+    gold = system_view(_start_row("semaglutide"), {}, drugs)
+    del gold["evidence_id"]
+    system = {**system_view(_start_row(drug), {}, drugs), "exclusion_reasons": []}
+    (fact,) = assign([gold], [system]).facts
+    assert fact.outcome == outcome
+    if outcome == "wrong_value":
+        assert fact.mismatched == ["drug_canonical"]
 
 
 def test_missed_when_no_row_shares_the_bucket() -> None:

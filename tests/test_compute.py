@@ -13,6 +13,7 @@ from conftest import INITIATION, checked, ctx, decide
 from bridge_check.compute import (
     BMI_TOLERANCE,
     EXACT,
+    GLP1_BRANDS,
     DateInterval,
     Tolerance,
     compare_values,
@@ -22,6 +23,7 @@ from bridge_check.compute import (
     parse_bracket,
     years_between,
 )
+from bridge_check.enums import GLP1_CANONICALS
 from bridge_check.verify import CheckedEvidence
 
 DOC_DATE_D1 = checked("doc_dates", target_doc_id="D1", date="2025-03-15", event_date="2025-03-15")
@@ -292,6 +294,108 @@ def test_glp1_canonical_maps_brands() -> None:
     assert glp1_canonical("Wegovy") == glp1_canonical("semaglutide") == "semaglutide"
     assert glp1_canonical("Mounjaro") == "tirzepatide"
     assert glp1_canonical("Foundayo") == "foundayo"
+
+
+@pytest.mark.parametrize(
+    ("name", "expected"),
+    [
+        *(
+            pytest.param(f"{b.title()} ({i})", i, id=f"{b}-with-its-ingredient")
+            for b, i in GLP1_BRANDS.items()
+        ),
+        *(
+            pytest.param(f"{i} ({b.title()})", i, id=f"{b}-inside-its-ingredient")
+            for b, i in GLP1_BRANDS.items()
+        ),
+        pytest.param("WEGOVY (Semaglutide)", "semaglutide", id="mixed-case"),
+        pytest.param("  Wegovy   ( semaglutide )  ", "semaglutide", id="extra-spaces"),
+        pytest.param("Wegovy(semaglutide)", "semaglutide", id="no-space-before-parenthesis"),
+    ],
+)
+def test_glp1_canonical_resolves_a_brand_with_its_ingredient(name: str, expected: str) -> None:
+    assert glp1_canonical(name) == expected
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        pytest.param("Wegovy (tirzepatide)", id="brand-with-different-ingredient"),
+        pytest.param("semaglutide (Zepbound)", id="ingredient-with-different-brand"),
+        pytest.param("Wegovy (Mounjaro)", id="brands-of-different-ingredients"),
+        pytest.param("Wegovy (Ozempic)", id="two-brands-of-one-ingredient"),
+        pytest.param("semaglutide (semaglutide)", id="one-ingredient-twice"),
+        pytest.param("semaglutide (tirzepatide)", id="two-ingredients"),
+        pytest.param("Wegovy (2.4 mg)", id="brand-with-dose"),
+        pytest.param("Saxenda (injection)", id="brand-with-formulation-word"),
+        pytest.param("tirzepatide (weekly)", id="ingredient-with-formulation-word"),
+        pytest.param("weekly (Wegovy)", id="formulation-word-with-brand"),
+        pytest.param("Wegovy (subcutaneous)", id="brand-with-route"),
+        pytest.param("Trulicity (semaglutide)", id="unlisted-brand-with-ingredient"),
+        pytest.param("semaglutide (dulaglutide)", id="ingredient-with-unlisted-ingredient"),
+        pytest.param("Wegovy (orforglipron)", id="brand-with-unlisted-ingredient"),
+        pytest.param("Wegovy (Foundayo)", id="brand-with-unresolvable-glp1-name"),
+        pytest.param("Foundayo (semaglutide)", id="unresolvable-glp1-name-with-ingredient"),
+        pytest.param("Wegovy (semaglutide) (weekly)", id="two-parentheticals"),
+        pytest.param("Wegovy ((semaglutide))", id="nested-parentheses"),
+        pytest.param("Wegovy (semaglutide", id="unbalanced-open"),
+        pytest.param("Wegovy semaglutide)", id="unbalanced-close"),
+        pytest.param("Wegovy ()", id="empty-inner"),
+        pytest.param("(semaglutide)", id="empty-outer"),
+        pytest.param("Wegovy (semaglutide) 2.4 mg", id="text-after-parenthetical"),
+        pytest.param("Wegovy 2.4 mg (semaglutide)", id="extra-word-outside"),
+        pytest.param("Wegovy (semaglutide 2.4 mg)", id="extra-word-inside"),
+        pytest.param("Zepbound 2.5 mg (semaglutide)", id="other-brand-with-dose-outside"),
+        pytest.param("Wegovy (tirzepatide 5 mg)", id="other-ingredient-with-dose-inside"),
+        pytest.param("Wegovy semaglutide", id="two-names-without-parentheses"),
+        pytest.param("injection (weekly)", id="no-glp1-name"),
+    ],
+)
+def test_glp1_canonical_leaves_every_other_parenthetical_form_unresolved(name: str) -> None:
+    resolved = glp1_canonical(name)
+    assert resolved == " ".join(name.split()).casefold()  # returned as an unknown name is
+    assert resolved not in GLP1_CANONICALS
+
+
+@pytest.mark.parametrize(
+    ("name", "expected"),
+    [
+        *((n, n) for n in GLP1_CANONICALS),
+        *((n.upper(), n) for n in GLP1_CANONICALS),
+        *GLP1_BRANDS.items(),
+        *((f"  {b.title()} ", i) for b, i in GLP1_BRANDS.items()),
+        ("Foundayo", "foundayo"),
+        ("orforglipron", "orforglipron"),
+        ("Some  Other\tName", "some other name"),
+        ("", ""),
+    ],
+)
+def test_glp1_canonical_bare_names_resolve_as_before(name: str, expected: str) -> None:
+    assert glp1_canonical(name) == expected
+
+
+@pytest.mark.parametrize(
+    ("drug", "anchors"),
+    [
+        pytest.param("Wegovy (semaglutide)", True, id="brand-with-ingredient"),
+        pytest.param("semaglutide (Wegovy)", True, id="ingredient-with-brand"),
+        pytest.param("Wegovy (tirzepatide)", False, id="contradictory"),
+        pytest.param("Zepbound (tirzepatide)", False, id="another-course"),
+    ],
+)
+def test_initiation_reads_a_start_named_with_a_parenthetical(drug: str, anchors: bool) -> None:
+    start = checked("glp1_start", drug=drug, date="2025-03-15", event_date="2025-03-15")
+    facts = compute([start], ctx())
+    assert (facts.initiation is not None) is anchors
+    if facts.initiation is not None:
+        assert facts.initiation.drug_canonical == "semaglutide"
+        assert facts.initiation.drug_name == "wegovy"  # the product, for `claim.drug`
+
+
+def test_prior_fill_named_with_a_parenthetical_gets_its_ingredient() -> None:
+    fill = checked("prior_glp1", drug="Ozempic (semaglutide)", payer="part_d", date="2025")
+    assert [p.drug_canonical for p in compute([INITIATION, fill], ctx()).prior_glp1] == [
+        "semaglutide"
+    ]
 
 
 # --- normalization --------------------------------------------------------------------------------

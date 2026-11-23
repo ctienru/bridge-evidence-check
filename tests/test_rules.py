@@ -1222,6 +1222,22 @@ def test_drug_claim_compares_products_when_both_sides_name_one() -> None:
     assert d["claim.drug"].status == "supported"  # an ingredient covers its products
 
 
+@pytest.mark.parametrize(
+    ("claimed", "status"),
+    [("Wegovy", "supported"), ("semaglutide", "supported"), ("Ozempic", "conflict")],
+)
+def test_drug_claim_compares_the_product_of_a_start_named_with_a_parenthetical(
+    claimed: str, status: str
+) -> None:
+    # "Wegovy (semaglutide)" names the product Wegovy: a claim for another semaglutide
+    # product conflicts exactly as it does with the bare brand.
+    start = checked(
+        "glp1_start", drug="Wegovy (semaglutide)", date="2025-03-15", event_date="2025-03-15"
+    )
+    d = _decide_claims([start, DOC_DATE_D1], [_claim("claim.drug", claimed)])
+    assert d["claim.drug"].status == status
+
+
 @pytest.mark.parametrize("status", ["discontinued", "unknown"])
 def test_list_not_verified_as_current_does_not_place_its_drugs(status: str) -> None:
     rows = BASE + [
