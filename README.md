@@ -4,7 +4,7 @@ A pre-attestation chart evidence checker for the Medicare GLP-1 Bridge.
 
 ## 1. What it checks
 
-Before a prescriber signs the Bridge attestation, someone has to check the patient's documents for each eligibility condition: BMI at the start of GLP-1 therapy, the qualifying comorbidities, the exclusions, age and identity. This tool reads a document packet and reports, for every condition, one of five evidence statuses, each with verbatim evidence located in the source text. An LLM (Claude) only extracts fields and quotes. Deterministic code verifies every quote against the document, computes the derived values, applies the CMS rules and scores the result.
+Before a prescriber signs the Bridge attestation, someone has to check the patient's documents for each eligibility condition: BMI at the start of GLP-1 therapy, the qualifying comorbidities, the exclusions, age and identity. This tool reads a document packet and reports, for every condition, one of five evidence statuses, each with verbatim evidence located in the source text. An LLM (Claude) only extracts fields and quotes. Deterministic code verifies every quote against the document, computes the derived values, applies versioned decision tables based on CMS guidance and scores the result.
 
 | Status | Meaning |
 |---|---|
@@ -27,7 +27,7 @@ flowchart LR
     R --> O["Report<br/>(statuses + evidence)"]
 ```
 
-**Extract.** One call to `claude-sonnet-5-5` with a single non-strict tool, `record_extraction`, whose input schema is the extraction schema. The raw response is committed to the database before parsing; the tool input is then validated locally. Structured outputs and strict tools were rejected by the API because the schema is too large, so local validation is the only check (`docs/adr/0002-extraction-output-mode.md`). If an extraction already exists for the cache key, the API is not called; verify, compute and rules still run again with the current code.
+**Extract.** One call to `claude-sonnet-5-5` with a single non-strict tool, `record_extraction`, whose input schema is the extraction schema; after a first parse failure the same request is sent once more. The raw response is committed to the database before parsing; the tool input is then validated locally. Structured outputs and strict tools were rejected by the API because the schema is too large, so local validation is the only check (`docs/adr/0002-extraction-output-mode.md`). If an extraction already exists for the cache key, the API is not called; verify, compute and rules still run again with the current code.
 
 **Verify.** Every extracted quote passes four layers (`src/bridge_check/verify.py`, `docs/contracts.md` §6):
 
@@ -44,22 +44,22 @@ The verifier matches fixed patterns from frozen tables; it does not understand t
 
 **Report.** `--json` carries the decisions, case flags and human workload. `--explain` lists every decision with the rule step that fired, the evidence used or excluded as `doc_id[start:end] sha8` with reasons, and the computed values, as machine codes only. Logs never contain document text.
 
-Every run is bounded by one set of limits (`docs/adr/0001-global-limits.md`): at most 4 API attempts, 1 of them for parse, refusal or truncation, 5 minutes of wall clock, a request timeout, and two cost ceilings, $1.00 per run and $5.00 per evaluation, checked before each call. A call that would exceed a ceiling is refused and nothing downstream runs.
+Every run is bounded by one set of limits (`docs/adr/0001-global-limits.md`): at most 4 API attempts, at most 2 of them ending in parse failure, refusal or truncation (only a first parse failure is sent again; a refusal or a truncation ends the run), 5 minutes of wall clock, a request timeout, and two cost ceilings, $1.00 per run and $5.00 per evaluation, checked before each call. A call that would exceed a ceiling is refused and nothing downstream runs.
 
 ## 3. Results
 
-Dev: one run of one model on 7 variants, used to find and fix errors. Holdout: frozen before the pipeline first ran on it, run once on 2026-11-10; one of the three runs failed at the parse stage and is counted with every row wrong. The numbers are counts over a deliberately chosen functional test set, not clinic performance, and zero errors on the dev set does not mean a near-zero real error rate.
+The two columns are different configurations. Dev is the current `main` (prompt `extract-v5`, guide version 3): one run of one model on 7 variants, used to find and fix errors. Holdout is the single run of 2026-11-10 on the configuration frozen at that time (prompt `extract-v4`, guide version 2); the cases were frozen before the pipeline first ran on them and have not been run again; one of the three runs failed at the parse stage and is counted with every row wrong. `docs/holdout-eval.md` has the dated note on why those three cases are no longer untouched. The numbers are counts over a deliberately chosen functional test set, not clinic performance, and zero errors on the dev set does not mean a near-zero real error rate.
 
 | Measure | Dev (7 variants) | Holdout (3 variants, 1 run failed) |
 |---|---|---|
-| Conditions correct (status and flags) | 133/140 | 27/60 |
-| Claims correct (status) | 36/39 | 4/19 |
+| Conditions correct (status and flags) | 134/140 | 27/60 |
+| Claims correct (status) | 38/39 | 4/19 |
 | False supports, conditions (target 0) | 0 of 112 gold non-supported rows | 0 of 51 gold non-supported rows |
 | Missed exclusion evidence | 0 of 2 | 3 of 3 |
 | Human workload (top-level `review` + `conflict` + `insufficient`) | 47 | 16 |
 | Packets with at least one human item | 7/7 | 3/3 |
 | Correctly automated among gold-automatable | 16/18 | 2/7 |
-| Cost of the live run (USD, 7 calls / 3 calls) | $0.47 | $0.18 |
+| Cost of the live run (USD, 7 calls / 3 calls) | $0.49 | $0.18 |
 
 False supports are reported next to their denominators and per text-origin section, never summed. The current dev report with the first upstream error of every miss is `reports/eval-dev.md`; the scoring rules are in `docs/eval.md`. The holdout run, its per-case condition table, the parse failure on case 11 and the disclosure that the annotator had not completed the final read of the three holdout golds before the run (any later correction bumps `gold_version`, is written to `changes` and turns that case into a regression case) are in `docs/holdout-eval.md`.
 
@@ -120,7 +120,7 @@ Recovery is at-least-once, not exactly-once: scenario 2 may call the API and pay
 - Not a clinical tool and not a CMS tool. It supports the attestation and does not replace the prescriber's judgement. It does not check plan type, dosage form or prescriber eligibility, and does not judge the purpose of use.
 - The verifier cannot catch what its frozen lexicon does not name: unknown wording sends a fact to `review`, it does not parse tables, and a cue in one paragraph does not reach the next.
 - Known gaps: heights written in feet and inches are `unparseable_value`; medication periods of the form "started on X, still on at Y" are not counted as certainly in use on Y; `program_type` has no value for a record that names only a limitation.
-- Holdout cases are design-time known scenarios, not tuned on their runs. The author knows their content; the claim is only that nothing was adjusted on their results.
+- Holdout cases are design-time known scenarios; the author knows their content. The holdout number is from the one run of 2026-11-10, before anything was adjusted on its results. The changes of 2026-11-23 used the failure classes that run reported, so the three cases are no longer untouched for the current configuration (`docs/holdout-eval.md`).
 - No production deployment and no real patient data.
 
 ## 8. How I used AI
@@ -131,6 +131,7 @@ Recovery is at-least-once, not exactly-once: scenario 2 may call the API and pay
 - **Data side**: `gpt-6.1-sol` drafts authored documents from my spec and proposes candidate facts on real text. It has no dated snapshot, so each response's `model` field and a UTC timestamp are recorded. The extractor under test is `claude-sonnet-5-5`. Neither model's output enters gold without my verification.
 - **Decided by me, not by AI**: the policy and its sources, every scored gold item (AI proposes candidates and drafts; I verify each one), rule values, expected statuses, design decisions.
 - **What the AI got wrong**, and what caught it: `docs/ai-errors.md`.
+- **Order of the work**: one line per merged pull request, with the question it answered: `docs/history.md`.
 
 ## 9. Run it
 

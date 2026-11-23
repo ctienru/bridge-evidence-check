@@ -1,7 +1,7 @@
 # Data-side tools
 
-How gold for a case is produced with the data-side tools (planning 05 §5.2; annotation
-guide P-04, §8–§10; contract §7–§8). The data side uses `gpt-6.1-sol`; its output never
+How gold for a case is produced with the data-side tools (annotation guide P-04, §8–§10;
+contract §7–§8). The data side uses `gpt-6.1-sol`; its output never
 enters gold without Terri's verification. The extractor under test (`claude-sonnet-5-5`)
 is never involved here.
 
