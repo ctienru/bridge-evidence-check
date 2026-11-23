@@ -14,8 +14,9 @@
   migrations: delete the file or point `BRIDGE_DB` at a new one. Version 1 was the first
   store; version 2 added `--stop-after verify` and the evidence columns written by verify.
 
-The table design follows planning 06 §4; where it and `docs/contracts.md` differ, the
-contract wins.
+The tables implement the storage constraints of contract §11. `STRICT` makes SQLite
+reject a value of the wrong type instead of coercing it, so a malformed row fails at the
+write and never reaches a decision.
 """
 
 from __future__ import annotations
@@ -61,7 +62,7 @@ if TYPE_CHECKING:
     from bridge_check.verify import VerifyResult
 
 MIN_SQLITE = (3, 37, 0)
-"""`STRICT` tables need SQLite 3.37 (06 §4)."""
+"""`STRICT` tables exist from SQLite 3.37 on; an older library cannot create the schema."""
 
 SCHEMA_VERSION = 2
 """Store schema version, kept in `PRAGMA user_version`. Bump on any change to `schema_sql()`
@@ -118,6 +119,8 @@ class SchemaVersionMismatch(RuntimeError):
 
 
 class SqliteTooOld(RuntimeError):
+    """The linked SQLite library is older than `MIN_SQLITE` and cannot create `STRICT` tables."""
+
     pass
 
 
@@ -191,6 +194,7 @@ def require_single_link(db_path: Path | str) -> None:
 
 
 def require_sqlite_version(version: str = sqlite3.sqlite_version) -> None:
+    """Raise `SqliteTooOld` when `version` is below `MIN_SQLITE`; the database is not read."""
     parts = tuple(int(p) for p in version.split(".")[:3])
     if parts < MIN_SQLITE:
         need = ".".join(str(p) for p in MIN_SQLITE)
@@ -201,6 +205,8 @@ def require_sqlite_version(version: str = sqlite3.sqlite_version) -> None:
 
 
 def utc_now() -> str:
+    """Current UTC time as ISO 8601 with millisecond precision: the format of every timestamp
+    column."""
     return datetime.now(UTC).isoformat(timespec="milliseconds")
 
 
@@ -424,6 +430,7 @@ def connect(db_path: Path | str) -> sqlite3.Connection:
 
 
 def user_version(conn: sqlite3.Connection) -> int:
+    """The schema version stamped in `PRAGMA user_version`. A read; no transaction."""
     return int(conn.execute("PRAGMA user_version").fetchone()[0])
 
 
@@ -443,6 +450,9 @@ def create_schema(conn: sqlite3.Connection, *, new_database: bool) -> None:
 
 
 def open_store(db_path: Path | str) -> Store:
+    """Open or create the database and return its `Store`. A new file is stamped and its tables are
+    created in one transaction, before any run exists; a file of another schema version raises
+    `SchemaVersionMismatch` before anything is written."""
     path = Path(db_path)
     require_single_link(path)  # the file and its sidecars, before any SQLite connection
     new_database = not path.exists() or path.stat().st_size == 0
@@ -465,6 +475,9 @@ def open_store(db_path: Path | str) -> Store:
 
 @contextmanager
 def transaction(conn: sqlite3.Connection) -> Iterator[None]:
+    """`BEGIN` … `COMMIT` around the block, `ROLLBACK` on any exception, interrupts included. Every
+    write of this module runs in one, so no write transaction stays open while the caller waits on
+    the API (contract §11)."""
     conn.execute("BEGIN")
     try:
         yield
@@ -515,6 +528,9 @@ def recover_orphaned_runs(conn: sqlite3.Connection) -> int:
 
 @dataclass(frozen=True)
 class SavedAttempt:
+    """A `response_saved` attempt, whose raw response can be parsed again without an API call
+    (lookup order, contract §11)."""
+
     id: int
     case_run_id: int
     response_json: str
@@ -537,6 +553,7 @@ class Store:
             hook(point)
 
     def close(self) -> None:
+        """Close the connection. Writes nothing."""
         self.conn.close()
 
     # case_runs
@@ -551,6 +568,8 @@ class Store:
         schema_version: str,
         splitter_version: str | None = None,
     ) -> int:
+        """Insert the `case_runs` row in its own transaction: the run enters `running` (contract
+        §1). Returns the run id."""
         with transaction(self.conn):
             cur = self.conn.execute(
                 "INSERT INTO case_runs (case_id, rules_version, code_sha, status, "
@@ -570,6 +589,8 @@ class Store:
         return run_id
 
     def set_case_run_input(self, run_id: int, *, input_hash: str, assessment_date: str) -> None:
+        """Record the input hash and assessment date of a `running` run, in its own transaction; the
+        run status does not change."""
         with transaction(self.conn):
             self.conn.execute(
                 "UPDATE case_runs SET input_hash = ?, assessment_date = ? WHERE id = ?",
@@ -577,6 +598,8 @@ class Store:
             )
 
     def set_case_run_extraction(self, run_id: int, extraction_id: int, source: str) -> None:
+        """Record which extraction a `running` run uses and its source (`cache`, `replay` or `api`;
+        `docs/recovery.md`), in its own transaction; the run status does not change."""
         with transaction(self.conn):
             self.conn.execute(
                 "UPDATE case_runs SET extraction_id = ?, extraction_source = ? WHERE id = ?",
@@ -592,6 +615,9 @@ class Store:
         stopped_after: str | None = None,
         error: str | None = None,
     ) -> None:
+        """End a `running` run in its own transaction: `failed` with its `failed_stage`, or
+        `completed` with `stopped_after` for a run stopped at a stage boundary (contract §1). A full
+        run completes in `save_decisions_and_complete` instead."""
         with transaction(self.conn):
             self.conn.execute(
                 "UPDATE case_runs SET status = ?, failed_stage = ?, stopped_after = ?, "
@@ -600,6 +626,7 @@ class Store:
             )
 
     def case_run(self, run_id: int) -> dict[str, Any]:
+        """The `case_runs` row as a dict; `KeyError` for an unknown id. A read."""
         row = self.conn.execute("SELECT * FROM case_runs WHERE id = ?", (run_id,)).fetchone()
         if row is None:
             raise KeyError(run_id)
@@ -730,6 +757,8 @@ class Store:
         return extraction_id
 
     def find_extraction(self, cache_key: str) -> dict[str, Any] | None:
+        """The cached extraction for a cache key, or None: first step of the lookup order (contract
+        §11). A read."""
         row = self.conn.execute(
             "SELECT id, attempt_id, parsed_json FROM extractions WHERE cache_key = ?",
             (cache_key,),
@@ -737,6 +766,8 @@ class Store:
         return dict(row) if row is not None else None
 
     def latest_response_saved(self, cache_key: str) -> SavedAttempt | None:
+        """The newest `response_saved` attempt for a cache key, or None: second step of the lookup
+        order, replayed without an API call (contract §11). A read."""
         row = self.conn.execute(
             "SELECT id, case_run_id, response_json FROM attempts "
             "WHERE cache_key = ? AND status = 'response_saved' ORDER BY id DESC LIMIT 1",
@@ -757,6 +788,8 @@ class Store:
         return float(row[0])
 
     def attempts_for_run(self, run_id: int) -> list[dict[str, Any]]:
+        """Status, tokens and cost of the run's attempts in id order, without the request or
+        response body. A read."""
         rows = self.conn.execute(
             "SELECT id, attempt_no, status, latency_ms, error_type, input_tokens, "
             "output_tokens, cost_usd FROM attempts WHERE case_run_id = ? ORDER BY id",
@@ -765,6 +798,8 @@ class Store:
         return [dict(r) for r in rows]
 
     def attempt(self, attempt_id: int) -> dict[str, Any]:
+        """One `attempts` row as a dict, raw request and response included; `KeyError` for an
+        unknown id. A read."""
         row = self.conn.execute("SELECT * FROM attempts WHERE id = ?", (attempt_id,)).fetchone()
         if row is None:
             raise KeyError(attempt_id)
@@ -840,7 +875,7 @@ class Store:
     # evidence and doc_facts
 
     def save_verification(self, run_id: int, result: VerifyResult) -> list[int]:
-        """Every `evidence` and `doc_facts` row of the run in one transaction (06 §3.6).
+        """Every `evidence` and `doc_facts` row of the run in one transaction (contract §11).
 
         Returns the evidence ids in the order of `result.evidence`. Any error rolls the
         whole write back: a run never has part of its evidence.
@@ -926,6 +961,7 @@ class Store:
         return out
 
     def doc_facts_for_run(self, run_id: int) -> list[dict[str, Any]]:
+        """The run's `doc_facts` rows in `doc_id` order. A read."""
         rows = self.conn.execute(
             "SELECT doc_id, doc_date, identity_status, identity_evidence_id FROM doc_facts "
             "WHERE case_run_id = ? ORDER BY doc_id",
@@ -1024,6 +1060,7 @@ class Store:
             )
 
     def decisions_for_run(self, run_id: int) -> list[dict[str, Any]]:
+        """The run's decisions in `condition` order, with the JSON columns decoded. A read."""
         rows = self.conn.execute(
             "SELECT condition, kind, status, reason, rule_id, rules_version, used_evidence, "
             "excluded_evidence, computed, flags FROM decisions WHERE case_run_id = ? "
@@ -1039,6 +1076,7 @@ class Store:
         return out
 
     def med_periods_for_run(self, run_id: int) -> list[dict[str, Any]]:
+        """The run's `med_periods` rows in insertion order. A read."""
         rows = self.conn.execute(
             'SELECT drug_canonical, class, start, start_precision, "end", end_precision, '
             "end_kind, evidence_id FROM med_periods WHERE case_run_id = ? ORDER BY id",
@@ -1096,6 +1134,7 @@ class Store:
         return dl_id
 
     def dead_letters_for_run(self, run_id: int) -> list[dict[str, Any]]:
+        """Dead letters of the run or of any of its attempts, in id order. A read."""
         rows = self.conn.execute(
             "SELECT d.id, d.attempt_id, d.stage, d.error_type, d.fact_path, d.evidence_id, "
             "d.message FROM dead_letters d LEFT JOIN attempts a ON a.id = d.attempt_id "
@@ -1105,6 +1144,7 @@ class Store:
         return [dict(r) for r in rows]
 
     def count(self, table: str) -> int:
+        """Row count of one known table; any other name raises `ValueError`. A read."""
         if table not in _TABLES:
             raise ValueError("unknown table")
         return int(self.conn.execute(f"SELECT count(*) FROM {table}").fetchone()[0])

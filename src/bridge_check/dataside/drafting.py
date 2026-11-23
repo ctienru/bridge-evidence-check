@@ -1,4 +1,4 @@
-"""Route 1: authored documents drafted from a spec (planning 05 §5.2, guide P-04).
+"""Route 1: authored documents drafted from a spec (`docs/dataside.md`, guide P-04).
 
 A `DraftSpec` lists the documents to write and the facts each must contain. The model
 returns `documents: {doc_id: text}` and `quote_map: {fact_id: quote}`. Four deterministic

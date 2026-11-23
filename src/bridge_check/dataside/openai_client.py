@@ -1,13 +1,13 @@
 """Minimal OpenAI wrapper shared by the two data-side scripts.
 
-The data-side model (`gpt-6.1-sol`, planning 05 §5.2) drafts authored documents and
+The data-side model (`gpt-6.1-sol`, `docs/dataside.md`) drafts authored documents and
 proposes candidates; its output never enters the pipeline. `openai` lives in the optional
 `data` dependency group and is imported lazily, so tests, CI and the pipeline never need
 it. SDK retries are disabled (`max_retries=0`, AGENTS.md). The key is read from
 `OPENAI_API_KEY` or, failing that, from a `.env` file with `KEY=value` lines.
 
-API choice. The project contract and planning documents specify Chat Completions, and
-the SDK's `chat.completions.create` is what the recorded request kwargs describe; the
+API choice. The data side uses Chat Completions: the SDK's `chat.completions.create` is
+what the recorded request kwargs describe; the
 Responses API is not used so the data side and the extractor (Anthropic Messages) stay
 one-call-one-record alike. The default model is a reasoning model and rejects sampling
 parameters: sending `temperature=0` returned, observed live on 2026-11-08,

@@ -1,4 +1,4 @@
-"""Route 1: draft authored documents from a spec and check them (planning 05 §5.2).
+"""Route 1: draft authored documents from a spec and check them (`docs/dataside.md`).
 
 Reads `--spec <yaml>` (a `DraftSpec`) and `--prompt <file>` (both kept in the private
 repo) and calls the data-line model in JSON mode. Every round's complete raw reply is

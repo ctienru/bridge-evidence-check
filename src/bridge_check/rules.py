@@ -131,6 +131,8 @@ class Policy(BaseModel):
 
     @classmethod
     def from_rules(cls, table: RulesTable) -> Policy:
+        """The policy of a loaded rules table: its `project_policies`, `thresholds` and `version`. A
+        key or value no rule implements is rejected (contract §7.3)."""
         return cls.model_validate(
             {
                 **table.project_policies,
@@ -142,37 +144,49 @@ class Policy(BaseModel):
     # Decimal views of the thresholds (contract §10); compared with the unrounded values.
     @property
     def bmi_thresholds(self) -> tuple[Decimal, Decimal, Decimal]:
+        """BMI thresholds in kg/m², ascending: pathway C, B, A. Compared with `>=` against the
+        unrounded BMI (contract §10)."""
         a, b, c = self.thresholds.bmi
         return _d(a), _d(b), _d(c)
 
     @property
     def age_years(self) -> int:
+        """Minimum age in completed years at initiation; the whole age interval must be at or above
+        it (contract §3.5)."""
         return self.thresholds.age
 
     @property
     def prediabetes_a1c(self) -> tuple[Decimal, Decimal]:
+        """Prediabetes A1c range in %, as `(low, high)`, both ends inclusive (contract §10)."""
         lo, hi = self.thresholds.prediabetes.a1c_pct
         return _d(lo), _d(hi)
 
     @property
     def prediabetes_fpg(self) -> tuple[Decimal, Decimal]:
+        """Prediabetes fasting-glucose range in mg/dL, as `(low, high)`, both ends inclusive
+        (contract §10)."""
         lo, hi = self.thresholds.prediabetes.fpg_mg_dl
         return _d(lo), _d(hi)
 
     @property
     def diabetes_a1c(self) -> Decimal:
+        """Lower bound of the diabetes A1c range in %, inclusive (contract §10)."""
         return _d(self.thresholds.diabetes.a1c_pct_ge)
 
     @property
     def diabetes_fpg(self) -> Decimal:
+        """Lower bound of the diabetes fasting-glucose range in mg/dL, inclusive (contract §10)."""
         return _d(self.thresholds.diabetes.fpg_mg_dl_ge)
 
     @property
     def ckd_egfr_lt(self) -> Decimal:
+        """eGFR in mL/min/1.73m2; CKD is stage 3a or higher strictly below it (contract §10)."""
         return _d(self.thresholds.ckd_3a_egfr_lt)
 
     @property
     def osa_ahi_ge(self) -> Decimal:
+        """AHI from which (inclusive) OSA is moderate to severe; a lower AHI is mild (contract §3.3,
+        §10)."""
         return _d(self.thresholds.osa_moderate_ahi_ge)
 
 
@@ -180,6 +194,9 @@ class Policy(BaseModel):
 
 
 class ExcludedEvidence(BaseModel):
+    """One evidence row a decision set aside, with its condition-level exclusion reason (contract
+    §6)."""
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     evidence_id: int
@@ -225,6 +242,9 @@ class Decision(BaseModel):
 
 @dataclass(frozen=True)
 class RuleInput:
+    """What a rule function reads: the computed facts, the policy, and the decisions made earlier in
+    `EVALUATION_ORDER` (pathways and claims read their sub-results from `decided`)."""
+
     facts: ComputedFacts
     policy: Policy
     decided: Mapping[str, Decision]
@@ -373,6 +393,19 @@ def _timing_excluded(sources: Iterable[Source], keep: tuple[str, ...]) -> list[t
 
 
 def decide_bmi(ri: RuleInput, condition: str, threshold: Decimal) -> Decision:
+    """BMI sub-result against one threshold (contract §3.1), for the ids `bmi_path_a`,
+    `bmi_path_b.bmi` and `bmi_path_c.bmi` of `rules/bridge-v1.yaml`. Reads `bmi_candidates`,
+    `initiation` and `bmi_bracket`; only candidates at initiation decide.
+
+    `insufficient`: no verified initiation date, or no weight or BMI at initiation and none before
+    it. `review`: no candidate at initiation but one before it; or only integer stated BMIs, one of
+    them x with `x <= threshold < x + 0.5` (`imprecise_source`); or a value at or above the
+    threshold whose evidence carries `table_source`, `timing_disagreement` or `unrecognized`.
+    `conflict`: candidates on both sides of the threshold, whatever the gap. Otherwise `supported`
+    when the unrounded `bmi_raw >= threshold` and `not_supported` when it is below; `bmi_raw` is the
+    value computed from height and weight when there is one, else the stated value. Same-side
+    candidates more than 0.2 apart add `inconsistent_values`.
+    """
     facts = ri.facts
     cands = facts.bmi_candidates
     accepted = tuple(ri.policy.initiation_bmi_accepts)
@@ -598,14 +631,38 @@ def _simple_dx(ri: RuleInput, condition: str, concept: str) -> Decision:
 
 
 def rule_hfpef(ri: RuleInput) -> Decision:
+    """`bmi_path_b.hfpef` (same `id` in `rules/bridge-v1.yaml`; contract §3.2). Reads the patient's
+    `dx` rows of concept `hfpef` that are not after initiation.
+
+    `conflict`: asserted and denied at the same timepoint. `supported`: a present diagnosis, current
+    or historical (`review` when that row is flagged `table_source` or `unrecognized`).
+    `review`: only an uncertain mention. `not_supported`: explicit denial. `insufficient`: anything
+    else, including a hypothetical mention or none.
+    """
     return _simple_dx(ri, "bmi_path_b.hfpef", "hfpef")
 
 
 def rule_mi(ri: RuleInput) -> Decision:
+    """`bmi_path_c.mi` (same `id` in `rules/bridge-v1.yaml`; contract §3.2). Reads the patient's
+    `dx` rows of concept `mi` that are not after initiation.
+
+    `conflict`: asserted and denied at the same timepoint. `supported`: a present diagnosis, current
+    or historical (`review` when that row is flagged `table_source` or `unrecognized`).
+    `review`: only an uncertain mention. `not_supported`: explicit denial. `insufficient`: anything
+    else, including a hypothetical mention or none.
+    """
     return _simple_dx(ri, "bmi_path_c.mi", "mi")
 
 
 def rule_stroke(ri: RuleInput) -> Decision:
+    """`bmi_path_c.stroke` (same `id` in `rules/bridge-v1.yaml`; contract §3.2). Reads the patient's
+    `dx` rows of concept `stroke` that are not after initiation.
+
+    `conflict`: asserted and denied at the same timepoint. `supported`: a present diagnosis, current
+    or historical (`review` when that row is flagged `table_source` or `unrecognized`).
+    `review`: only an uncertain mention. `not_supported`: explicit denial. `insufficient`: anything
+    else, including a hypothetical mention or none.
+    """
     return _simple_dx(ri, "bmi_path_c.stroke", "stroke")
 
 
@@ -614,6 +671,16 @@ _CKD_EARLY = frozenset({"1", "2"})
 
 
 def rule_ckd(ri: RuleInput) -> Decision:
+    """`bmi_path_b.ckd` (same `id` in `rules/bridge-v1.yaml`; contract §3.2). Reads the patient's
+    `dx` rows of concept `ckd` and the `egfr` values, both not after initiation.
+
+    `conflict`: asserted and denied, or stage 3a or higher and stage 1–2, at the same timepoint.
+    `supported`: a present diagnosis with stage 3a, 3b, 4 or 5 (`review` when that row is flagged
+    `table_source` or `unrecognized`). `review`: a diagnosis with no written stage (policy
+    `ckd_dx_egfr_only`; the eGFR values are listed, never compared with a threshold), or only an
+    uncertain mention. `not_supported`: explicit stage 1 or 2, or explicit denial. `insufficient`:
+    no diagnosis, with or without eGFR values.
+    """
     condition = "bmi_path_b.ckd"
     rows, excluded = _patient_dx(ri, "ckd", pathway=True)
     egfr = [v for v in ri.facts.egfr if v.src.tp.relative != "after"]
@@ -726,6 +793,15 @@ def _closest_first(rows: Sequence[Dx], initiation: DateInterval | None) -> list[
 
 
 def rule_pad(ri: RuleInput) -> Decision:
+    """`bmi_path_c.pad` (same `id` in `rules/bridge-v1.yaml`; contract §3.2). Reads the patient's
+    `dx` rows of concept `pad` that are not after initiation.
+
+    `conflict`: asserted and denied at the same timepoint. Among present diagnoses the one dated
+    closest to initiation decides and the others are listed as `superseded_by_at`: symptomatic `yes`
+    → `supported` (`review` when the row is flagged `table_source` or `unrecognized`), `no` →
+    `not_supported`, `unknown` → `review`. Without one: an uncertain mention → `review`, a denial →
+    `not_supported`, otherwise `insufficient`.
+    """
     condition = "bmi_path_c.pad"
     rows, excluded = _patient_dx(ri, "pad", pathway=True)
     pair = _dx_conflict(rows)
@@ -943,6 +1019,18 @@ def rule_prediabetes(ri: RuleInput) -> Decision:
 
 
 def rule_htn(ri: RuleInput) -> Decision:
+    """`bmi_path_b.htn` (same `id` in `rules/bridge-v1.yaml`; contract §3.2). Reads
+    `bp_at_initiation`, `med_periods` and `medication_lists`.
+
+    `insufficient`: no reading at initiation, or none with `sbp > sbp_gt or dbp > dbp_gt` (strict; a
+    reading exactly on a threshold adds `boundary_value`). `conflict`: two same-timepoint readings
+    on opposite sides. For each reading above, the antihypertensives certainly in use that day are
+    counted by `drug_canonical`: `min_drugs` distinct products → `supported`; reached only through
+    the components of a combination pill → `review` + `combination_pill`; reached only by counting a
+    `class_ambiguous` drug → `review` + `class_ambiguous`; fewer, with an explicitly complete list
+    in the reading's document → `not_supported`; otherwise `insufficient`. With several readings
+    above, the earliest outcome in that order wins.
+    """
     condition = "bmi_path_b.htn"
     facts, p = ri.facts, ri.policy
     sbp_gt, dbp_gt, min_drugs = (
@@ -1208,10 +1296,27 @@ def rule_t2dm(ri: RuleInput) -> Decision:
 
 
 def rule_osa(ri: RuleInput) -> Decision:
+    """`exclusion.osa` (same `id` in `rules/bridge-v1.yaml`; contract §3.3). Reads the patient's
+    `dx` rows of concept `osa` at any timepoint; never returns `supported`.
+
+    `conflict`: asserted and denied at the same timepoint. `not_supported`: every present or
+    uncertain row is mild (severity `mild`, or an AHI below `osa_ahi_ge`), or the only mention is an
+    explicit denial. `review`: any other present or uncertain mention, with
+    `post_initiation_exclusion` when all of them are after initiation. `insufficient`: not
+    mentioned.
+    """
     return _exclusion(ri, "exclusion.osa", "osa")
 
 
 def rule_mash(ri: RuleInput) -> Decision:
+    """`exclusion.mash` (same `id` in `rules/bridge-v1.yaml`; contract §3.3). Reads the patient's
+    `dx` rows of concept `mash` at any timepoint; never returns `supported`.
+
+    `conflict`: asserted and denied at the same timepoint. `not_supported`: every present or
+    uncertain row is staged F0 or F1, or cirrhotic, or the only mention is an explicit denial.
+    `review`: any other present or uncertain mention, with `post_initiation_exclusion` when all of
+    them are after initiation. `insufficient`: not mentioned.
+    """
     return _exclusion(ri, "exclusion.mash", "mash")
 
 
@@ -1220,6 +1325,15 @@ _NOT_TRIGGERING_PAYERS = frozenset({"medicaid", "self_pay", "bridge"})
 
 
 def rule_part_d(ri: RuleInput) -> Decision:
+    """`exclusion.part_d_glp1` (same `id` in `rules/bridge-v1.yaml`; contract §3.3). Reads the
+    `prior_glp1` records; never returns `supported`.
+
+    `review`: a fill paid by Part D whose date interval touches calendar year 2026, or that has no
+    date. Otherwise `not_supported`: a fill paid by Medicaid, self-pay or the Bridge, or a Part D
+    fill wholly before 2026 (the documented fill does not trigger the exclusion; this is not
+    evidence that none was received). `insufficient`: no record, or only records with another or an
+    unknown payer.
+    """
     condition = "exclusion.part_d_glp1"
     rows = ri.facts.prior_glp1
     excluded = _candidates_of(ri, "prior_glp1")
@@ -1325,6 +1439,12 @@ def _path(
 
 
 def rule_path_a(ri: RuleInput) -> Decision:
+    """`bmi_path_a` (same `id` in `rules/bridge-v1.yaml`; contract §3.4): `decide_bmi` against the
+    highest BMI threshold; pathway A has no sub-results.
+
+    Returns what `decide_bmi` returns, except that `supported` becomes the
+    `mace_purpose_all_pathways` status (`review`) when the case flag `mace_purpose` is set.
+    """
     d = decide_bmi(ri, "bmi_path_a", ri.policy.bmi_thresholds[2])
     if d.status == "supported" and "mace_purpose" in ri.facts.case_flags:
         return d.model_copy(
@@ -1338,14 +1458,26 @@ def rule_path_a(ri: RuleInput) -> Decision:
 
 
 def rule_path_b_bmi(ri: RuleInput) -> Decision:
+    """`bmi_path_b.bmi` (same `id` in `rules/bridge-v1.yaml`): `decide_bmi` against the middle BMI
+    threshold; it reads and returns what `decide_bmi` does (contract §3.1)."""
     return decide_bmi(ri, "bmi_path_b.bmi", ri.policy.bmi_thresholds[1])
 
 
 def rule_path_c_bmi(ri: RuleInput) -> Decision:
+    """`bmi_path_c.bmi` (same `id` in `rules/bridge-v1.yaml`): `decide_bmi` against the lowest BMI
+    threshold; it reads and returns what `decide_bmi` does (contract §3.1)."""
     return decide_bmi(ri, "bmi_path_c.bmi", ri.policy.bmi_thresholds[0])
 
 
 def rule_path_b(ri: RuleInput) -> Decision:
+    """`bmi_path_b` (same `id` in `rules/bridge-v1.yaml`; contract §3.4). Reads no evidence: it
+    aggregates the decisions already made for `bmi_path_b.bmi`, `.hfpef`, `.htn` and `.ckd`.
+
+    `not_supported`: every comorbidity is, or the BMI sub-result is. BMI `insufficient`, `conflict`
+    or `review`: the pathway takes that status. BMI `supported`: `supported` when any comorbidity
+    is, otherwise the highest of `conflict` > `review` > `insufficient` among them. A `supported`
+    pathway becomes `review` when the case flag `mace_purpose` is set.
+    """
     return _path(
         ri,
         "bmi_path_b",
@@ -1356,6 +1488,17 @@ def rule_path_b(ri: RuleInput) -> Decision:
 
 
 def rule_path_c(ri: RuleInput) -> Decision:
+    """`bmi_path_c` (same `id` in `rules/bridge-v1.yaml`; contract §3.4). Reads no evidence: it
+    aggregates the decisions already made for `bmi_path_c.bmi`, `.prediabetes`, `.mi`, `.stroke` and
+    `.pad`.
+
+    `not_supported`: every comorbidity is, or the BMI sub-result is. BMI `insufficient`, `conflict`
+    or `review`: the pathway takes that status. BMI `supported`: `supported` when any comorbidity
+    is, otherwise the highest of `conflict` > `review` > `insufficient` among them. A `supported`
+    pathway becomes `review` + `cv_history_only` when the prediabetes sub-result is not `supported`
+    (policy `path_c_cv_history_requires_review`), and `review` when the case flag `mace_purpose` is
+    set.
+    """
     return _path(
         ri,
         "bmi_path_c",
@@ -1369,6 +1512,8 @@ def rule_path_c(ri: RuleInput) -> Decision:
 
 
 def age_inconsistent(intervals: Sequence[AgeInterval]) -> bool:
+    """True when two age intervals lie more than `AGE_TOLERANCE_YEARS` (1 year) apart: one's lower
+    bound exceeds the other's upper bound by more than the tolerance (contract §4)."""
     for i, a in enumerate(intervals):
         for b in intervals[i + 1 :]:
             if (
@@ -1380,6 +1525,15 @@ def age_inconsistent(intervals: Sequence[AgeInterval]) -> bool:
 
 
 def rule_age(ri: RuleInput) -> Decision:
+    """`age_18` (same `id` in `rules/bridge-v1.yaml`; contract §3.5). Reads
+    `age_interval_at_initiation` (completed years, both ends inclusive) and `initiation`.
+
+    `conflict`: with an initiation date, one interval wholly below `age_years` and another wholly at
+    or above it. `supported`: every interval wholly at or above. `not_supported`: every interval
+    wholly below. Otherwise `review` with an initiation date and `insufficient` without one. No date
+    of birth and no stated age → `insufficient`. Intervals more than a year apart add
+    `inconsistent_values`.
+    """
     condition = "age_18"
     years = ri.policy.age_years
     intervals = ri.facts.age_interval_at_initiation
@@ -1466,6 +1620,13 @@ def rule_age(ri: RuleInput) -> Decision:
 
 
 def rule_identity(ri: RuleInput) -> Decision:
+    """`patient_identity` (same `id` in `rules/bridge-v1.yaml`; contract §3.5). Reads
+    `doc_facts[*].identity_status`; identifiers were compared upstream, names never.
+
+    `conflict`: any document mismatches. `insufficient`: every document lacks a comparable
+    identifier. `review` + `id_missing`: some documents lack one and the rest match. `supported`:
+    every document matches.
+    """
     condition = "patient_identity"
     statuses = {d: f.identity_status for d, f in ri.facts.doc_facts.items()}
     identity_sources = [s for s in _identity_sources(ri)]
@@ -1596,10 +1757,26 @@ def _lifestyle(ri: RuleInput, kind: str) -> Decision:
 
 
 def rule_nutrition(ri: RuleInput) -> Decision:
+    """`lifestyle.nutrition` (contract §3.5; reported separately, no entry in
+    `rules/bridge-v1.yaml`). Reads the `lifestyle_applicable` records of kind `nutrition`.
+
+    Only records certainly applicable on the assessment date count, and the one closest to it
+    decides: `none_stated` → `not_supported`; `advice_only`, `referral_pending` or `declined` →
+    `insufficient`; a commercial program, irregular attendance or a limitation → `review`; otherwise
+    `supported`. No applicable record → `insufficient`.
+    """
     return _lifestyle(ri, "nutrition")
 
 
 def rule_activity(ri: RuleInput) -> Decision:
+    """`lifestyle.activity` (contract §3.5; reported separately, no entry in
+    `rules/bridge-v1.yaml`). Reads the `lifestyle_applicable` records of kind `activity`.
+
+    Only records certainly applicable on the assessment date count, and the one closest to it
+    decides: `none_stated` → `not_supported`; `advice_only`, `referral_pending` or `declined` →
+    `insufficient`; a commercial program, irregular attendance or a limitation → `review`; otherwise
+    `supported`. No applicable record → `insufficient`.
+    """
     return _lifestyle(ri, "activity")
 
 
@@ -1642,6 +1819,19 @@ def _claim_vs_condition(
 
 
 def claim_rule(claim_id: str) -> RuleFn:
+    """The rule function for one `claim.<id>` box of the PA draft (contract §2; claims have no entry
+    in `rules/bridge-v1.yaml`). It reads `claims` and, by target, `initiation`, `bmi_bracket` or the
+    condition already decided.
+
+    Different values for one box → `review`. `claim.drug`: `supported` when the claimed drug is the
+    verified course's, `conflict` when it differs, `insufficient` without a verified initiation.
+    `claim.bmi_bracket`: an unreadable bracket or candidates in different brackets → `review`, no
+    BMI at initiation → `insufficient`, otherwise `supported` or `conflict` by bracket equality. Any
+    other box is compared with its condition by `_claim_vs_condition`: agreement → `supported`,
+    contradiction → `conflict`, an undecided chart (`insufficient`, `review`, `conflict`) stays
+    undecided; an unfilled box or a missing condition → `insufficient`.
+    """
+
     def rule(ri: RuleInput) -> Decision:
         records = [c for c in ri.facts.claims if c.claim_id == claim_id]
         used = [c.src for c in records]

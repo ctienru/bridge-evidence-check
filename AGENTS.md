@@ -42,6 +42,8 @@ Machine-level names and rules (condition IDs, status codes, decision tables, sch
 Read `rules/*.yaml` and `tests/` first; make existing tests pass. Do not change expected values in tests.
 For new behavior, write a failing test first, then implement.
 One issue → one branch → one PR. Keep PRs small.
+Code and comments cite only documents inside this repository (`docs/contracts.md`, `docs/adr/`, `docs/eval.md`, `docs/recovery.md`, `docs/dataside.md`).
+Rule functions, computation functions and functions that write to the database carry a docstring.
 
 ## How to run (run these yourself and paste the output in the PR)
 - Tests: `uv run pytest -x -q -m "not live"`; one file: `uv run pytest tests/test_rules.py -x`

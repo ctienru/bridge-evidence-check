@@ -2,7 +2,7 @@
 
 Input is the dictionary `export_public_report()` returned: ids, enum values and counts.
 Every number is a count (`n/of` or a plain integer); there is no percentage anywhere.
-Sections follow planning section 3 in this order: header, totals, regression, sections by
+Sections follow `docs/eval.md` §2 in this order: header, totals, regression, sections by
 text origin, per-condition grid, per case, facts and citations, traps, coverage matrix,
 gold origin, policy sources, out of scope.
 """

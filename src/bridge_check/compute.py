@@ -43,6 +43,9 @@ class DateInterval:
 
     @classmethod
     def parse(cls, iso: str | None) -> DateInterval | None:
+        """`YYYY`, `YYYY-MM` or `YYYY-MM-DD` as the whole year, the whole month or the single day,
+        both ends inclusive; None for empty or invalid text. A month is never filled in as its first
+        day (contract §5)."""
         if not iso:
             return None
         parts = iso.split("-")
@@ -60,6 +63,7 @@ class DateInterval:
 
     @classmethod
     def day(cls, d: date) -> DateInterval:
+        """The single-day interval of `d` (precision `day`)."""
         return cls(d, d, "day")
 
     def relative_to(self, initiation: DateInterval) -> RelativeToInitiation:
@@ -73,12 +77,15 @@ class DateInterval:
         return "unknown"
 
     def contains(self, d: date) -> bool:
+        """Whether `d` lies in the interval; both ends are inclusive."""
         return self.start <= d <= self.end
 
     def overlaps(self, other: DateInterval) -> bool:
+        """Whether the two intervals share at least one day; both ends are inclusive."""
         return self.start <= other.end and other.start <= self.end
 
     def iso(self) -> str:
+        """The text form at the stored precision: `YYYY`, `YYYY-MM` or `YYYY-MM-DD`."""
         if self.precision == "year":
             return f"{self.start.year:04d}"
         if self.precision == "month":
@@ -86,6 +93,7 @@ class DateInterval:
         return self.start.isoformat()
 
     def distance_days(self, d: date) -> int:
+        """Whole days from `d` to the nearest end of the interval; 0 when `d` is inside it."""
         if self.contains(d):
             return 0
         return min(abs((self.start - d).days), abs((self.end - d).days))
@@ -114,6 +122,11 @@ TimepointSource = Literal["llm", "quote", "doc_date", "none"]
 
 @dataclass(frozen=True)
 class Timepoint:
+    """A fact's computed timepoint (contract §5): its relation to initiation, its date interval, and
+    where the date came from (`llm`: the model's date, confirmed in the quote; `quote`: the quote's
+    own date; `doc_date`: inherited from the verified `doc_dates` row `source_evidence_id`; `none`).
+    """
+
     relative: RelativeToInitiation
     date: DateInterval | None
     source: TimepointSource
@@ -147,11 +160,15 @@ class Source:
 
     @property
     def negated(self) -> bool:
+        """The patient's own explicitly denied fact, whatever its temporality."""
         return self.subject == "patient" and self.certainty == "negated"
 
 
 @dataclass(frozen=True)
 class Initiation:
+    """The verified start of the course under assessment (contract §5): its date interval, stated
+    purpose and canonical drug, with the evidence row that anchors it."""
+
     date: DateInterval
     purpose: str
     drug_canonical: str
@@ -171,14 +188,20 @@ class AgeInterval:
     src: Source
 
     def whole_at_least(self, years: int) -> bool:
+        """True when the whole interval is at or above `years` (inclusive: `lo_years >= years`)."""
         return self.lo_years >= years
 
     def whole_below(self, years: int) -> bool:
+        """True when the whole interval is below `years` (exclusive: `hi_years < years`)."""
         return self.hi_years < years
 
 
 @dataclass(frozen=True)
 class AnthroValue:
+    """A height (cm), weight (kg) or stated BMI (kg/m²) as an unrounded `Decimal` (contract §8
+    units); `integer_only` marks a value the text gave without decimals and no unit conversion
+    changed."""
+
     kind: str
     value: Decimal
     unit: str
@@ -188,6 +211,9 @@ class AnthroValue:
 
 @dataclass(frozen=True)
 class BmiCandidate:
+    """One BMI value in kg/m², unrounded: `computed` from a weight and its nearest height, or
+    `stated`. `tp` is the timepoint of the weight or of the stated BMI (contract §3.1)."""
+
     value: Decimal
     origin: Literal["stated", "computed"]
     integer_only: bool
@@ -197,15 +223,20 @@ class BmiCandidate:
 
     @property
     def evidence_ids(self) -> tuple[int, ...]:
+        """Evidence ids of the rows behind the value, in `sources` order (weight, then height)."""
         return tuple(s.evidence_id for s in self.sources)
 
     @property
     def all_flags(self) -> frozenset[str]:
+        """The candidate's own flags (`height_from_other_date`) together with the flags of its
+        source rows."""
         return frozenset(self.flags) | {f for s in self.sources for f in s.flags}
 
 
 @dataclass(frozen=True)
 class BpReading:
+    """One blood-pressure reading in whole mmHg; no tolerance applies to it (contract §4)."""
+
     sbp: int
     dbp: int
     src: Source
@@ -213,6 +244,10 @@ class BpReading:
 
 @dataclass(frozen=True)
 class MedPeriod:
+    """One medication row with its drug-table entry and what is known of its period (contract §5).
+    `in_use_on` holds the note dates on which a verified current list places it (`same_note_list`).
+    """
+
     drug_canonical: str
     class_: str | None
     class_ambiguous: bool
@@ -229,10 +264,13 @@ class MedPeriod:
 
     @property
     def antihypertensive(self) -> bool:
+        """Whether the drug table's `class` is an antihypertensive class; a drug not in the table is
+        not."""
         return self.class_ in ANTIHYPERTENSIVE_CLASSES
 
     @property
     def agents(self) -> tuple[str, ...]:
+        """The active ingredients: a combination pill's components, otherwise the drug itself."""
         return self.components or (self.drug_canonical,)
 
     def certain_intervals(self) -> tuple[DateInterval, ...]:
@@ -252,11 +290,16 @@ class MedPeriod:
         return tuple(out)
 
     def overlaps(self, day: DateInterval) -> bool:
+        """True only when `day` lies wholly inside an interval of certain use; an uncertain period
+        never overlaps (contract §5)."""
         return any(iv.start <= day.start and day.end <= iv.end for iv in self.certain_intervals())
 
 
 @dataclass(frozen=True)
 class MedListRecord:
+    """A `medication_lists` row: its id within the document and whether the text says the list is
+    complete (contract §5)."""
+
     list_id: str
     complete: bool
     src: Source
@@ -264,6 +307,9 @@ class MedListRecord:
 
 @dataclass(frozen=True)
 class LabValue:
+    """A lab value as an unrounded `Decimal` in its fixed unit: A1c %, fasting glucose mg/dL, eGFR
+    mL/min/1.73m2 (contract §8). Labs are compared exactly (contract §4)."""
+
     kind: str
     value: Decimal
     unit: str
@@ -272,6 +318,9 @@ class LabValue:
 
 @dataclass(frozen=True)
 class Dx:
+    """A `diagnoses` row with its qualifiers as extracted. A missing qualifier is `unspecified` (OSA
+    severity), `unknown` (symptomatic), empty (stages) or None (AHI, cirrhosis)."""
+
     concept: str
     osa_severity: str
     ahi: Decimal | None
@@ -284,6 +333,9 @@ class Dx:
 
 @dataclass(frozen=True)
 class PriorGlp1Record:
+    """A documented GLP-1 fill with its payer (`unknown` when not stated) and date interval; only
+    rows that pass the event gate of contract §5 become records."""
+
     drug_canonical: str
     date: DateInterval | None
     payer: str
@@ -293,6 +345,10 @@ class PriorGlp1Record:
 
 @dataclass(frozen=True)
 class LifestyleRecord:
+    """A `lifestyle` row. `applicable` is true only when a verified date or period certainly places
+    it on the assessment date; `distance_days` is the distance from its start, or from its own date,
+    to that date (contract §3.5)."""
+
     kind: str
     program_type: str
     attendance: str
@@ -307,6 +363,9 @@ class LifestyleRecord:
 
 @dataclass(frozen=True)
 class ClaimRecord:
+    """One checkbox value of the PA draft; only rows located in a `pa_draft` document become records
+    (contract §2)."""
+
     claim_id: str
     claimed_value: str
     src: Source
@@ -314,13 +373,17 @@ class ClaimRecord:
 
 @dataclass(frozen=True)
 class BmiBracket:
+    """A display bracket `[lo, hi)` in kg/m²; `hi` None means no upper bound (contract §10)."""
+
     lo: Decimal
     hi: Decimal | None
 
     def contains(self, value: Decimal) -> bool:
+        """Half-open: `lo <= value < hi`, tested on the unrounded value."""
         return self.lo <= value and (self.hi is None or value < self.hi)
 
     def label(self) -> str:
+        """`[lo,hi)`, or `>=lo` for the open top bracket."""
         return f"[{self.lo},{self.hi})" if self.hi is not None else f">={self.lo}"
 
 
@@ -341,6 +404,10 @@ class EvidenceUpdate:
 
 @dataclass(frozen=True)
 class DocFactComputed:
+    """Per-document conclusions (`doc_facts`, contract §11): the identity status and the verified
+    document date. A document whose `doc_dates` rows disagree gets no date and lists those rows in
+    `doc_date_disagreement`."""
+
     identity_status: str
     doc_date: DateInterval | None
     doc_date_evidence_id: int | None
@@ -359,12 +426,16 @@ class OverlapResult:
     complete_lists: tuple[Source, ...]
 
     def products(self) -> int:
+        """Distinct unambiguous products in use, counted by `drug_canonical`."""
         return len({p.drug_canonical for p in self.unambiguous})
 
     def agents(self) -> int:
+        """Distinct active ingredients among the unambiguous products; a combination pill counts
+        each component."""
         return len({a for p in self.unambiguous for a in p.agents})
 
     def products_with_ambiguous(self) -> int:
+        """Distinct products when `class_ambiguous` drugs are counted as well."""
         return len({p.drug_canonical for p in (*self.unambiguous, *self.ambiguous)})
 
 
@@ -412,14 +483,18 @@ class ComputedFacts:
 
     @property
     def initiation_date(self) -> DateInterval | None:
+        """The initiation date interval, or None when no start was verified (contract §5)."""
         return self.initiation.date if self.initiation else None
 
     @property
     def initiation_purpose(self) -> str | None:
+        """The stated purpose of the verified start (`mace` if any matching row says so) or None."""
         return self.initiation.purpose if self.initiation else None
 
     @property
     def bp_at_initiation(self) -> tuple[BpReading, ...]:
+        """Readings whose computed timepoint is `at`: dated the identical single day as initiation
+        (contract §5)."""
         return tuple(r for r in self.bp_readings if r.src.tp.relative == "at")
 
     def distinct_antihypertensives_overlapping(
@@ -452,6 +527,9 @@ class ComputedFacts:
 
 @dataclass(frozen=True)
 class Tolerance:
+    """A tolerance of contract §4: absolute (`abs`, in the unit of the values) and/or relative
+    (`rel`, a fraction of the lower value). A spread equal to the tolerance is within it."""
+
     abs: Decimal | None = None
     rel: Decimal | None = None
 
@@ -465,6 +543,9 @@ AGE_TOLERANCE_YEARS = 1
 
 @dataclass(frozen=True)
 class ValueComparison:
+    """Result of `compare_values`: the thresholds with values on both sides, whether the spread
+    exceeds the tolerance, and the lowest and highest value."""
+
     straddled: frozenset[Decimal]
     inconsistent: bool
     low: Decimal
@@ -586,6 +667,8 @@ def normalize_value(
 
 
 def bmi_from(weight_kg: Decimal, height_cm: Decimal) -> Decimal:
+    """BMI in kg/m² from kilograms and centimetres, as an unrounded `Decimal`; threshold comparisons
+    use this value (contract §10)."""
     metres = height_cm / Decimal("100")
     return weight_kg / (metres * metres)
 
@@ -637,6 +720,8 @@ GLP1_BRANDS: dict[str, str] = {
 
 
 def glp1_canonical(name: str) -> str:
+    """The canonical ingredient of a GLP-1 name: a brand maps to its ingredient, case and whitespace
+    are ignored, and an unknown name is returned casefolded."""
     key = re.sub(r"\s+", " ", name.strip()).casefold()
     if key in GLP1_CANONICALS:
         return key
@@ -654,6 +739,8 @@ class DrugIndex:
                     self._by_name.setdefault(variant, drug)
 
     def lookup(self, name: str) -> Drug | None:
+        """The table entry for a name as written; tries `-` / `/` and space-less variants, then the
+        name without a trailing dose (everything from the first number). None when unknown."""
         for variant in _name_variants(name):
             hit = self._by_name.get(variant)
             if hit is not None:
@@ -685,10 +772,12 @@ class _Row:
 
     @property
     def usable(self) -> bool:
+        """No exclusion reason and a `verbatim` or `normalized` position (step 0 of contract §3)."""
         return not self.reasons and self.ev.position_status in LOCATED
 
     @property
     def candidate(self) -> bool:
+        """No exclusion reason but only a `candidate` position: listed as excluded, never used."""
         return not self.reasons and self.ev.position_status == "candidate"
 
     @property
@@ -735,6 +824,14 @@ class _Row:
 
 
 def compute(evidence: Sequence[CheckedEvidence], ctx: CaseContext) -> ComputedFacts:
+    """`ComputedFacts` from verified evidence (contract §7.3).
+
+    Values are normalized to the fixed units of contract §8 and never rounded; a value that cannot
+    be parsed excludes its row (`unparseable_value`). Document dates and the initiation date come
+    only from anchored rows, and every timepoint is a comparison of date intervals at the precision
+    the text gives (contract §5). Raises `ValueError` when `ctx.evidence_ids` does not match the
+    evidence.
+    """
     ids = list(ctx.evidence_ids) if ctx.evidence_ids is not None else list(range(len(evidence)))
     if len(ids) != len(evidence):
         raise ValueError("evidence_ids must match the evidence")

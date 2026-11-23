@@ -1,4 +1,4 @@
-"""Deterministic keyword scan (annotation guide W-01, W-03; planning 05 §5.2 step 3).
+"""Deterministic keyword scan (annotation guide W-01, W-03; `docs/dataside.md`).
 
 Terms: `rules/scan-terms-v1.yaml` plus every `names:` entry of `rules/drugs-v2.yaml`.
 Matching is case-insensitive; alphanumeric terms match on word boundaries (so `EF` does

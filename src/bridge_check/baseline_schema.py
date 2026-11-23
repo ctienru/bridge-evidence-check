@@ -7,7 +7,7 @@ missed-exclusion counts. The eval job compares a new run against this file;
 `scripts/build_baseline.py` writes it. Hash-only dev rows (no directory) are listed by id
 under `hash_only`.
 
-Definitions (planning section 3.1, contract §11):
+Definitions (`docs/eval.md` §1, contract §11):
 - correct: same status, and for conditions the same sorted flags (gold claims carry none);
 - false support: gold is not `supported` and the system says `supported`;
 - missed exclusion: an `exclusion.*` row gold marks `review` (exclusion evidence exists)
@@ -31,6 +31,9 @@ class _Strict(BaseModel):
 
 
 class GeneratedFrom(_Strict):
+    """The versions that produced the baseline: code, prompt, schema, rules, and the model the API
+    reported (contract §11)."""
+
     code_sha: str
     prompt_version: str
     schema_version: str
@@ -39,6 +42,9 @@ class GeneratedFrom(_Strict):
 
 
 class ResultRow(_Strict):
+    """One condition or claim of one variant: the live status and flags next to gold, and whether
+    they are correct (contract §11)."""
+
     status: Status | None
     flags: list[str]
     gold_status: Status
@@ -47,17 +53,24 @@ class ResultRow(_Strict):
 
 
 class Replay(_Strict):
+    """The replay file a variant was scored from: repository path and sha256 (contract §11)."""
+
     path: str
     sha256: str = Field(pattern=_SHA256)
 
 
 class CaseFlags(_Strict):
+    """The case-level flags (contract §2) in gold and in the live run, and whether they match."""
+
     gold: list[str]
     live: list[str]
     correct: bool
 
 
 class CaseBaseline(_Strict):
+    """One dev variant of the baseline (contract §11): its hashes, every condition and claim row,
+    and counts that must equal the rows."""
+
     input_hash: str = Field(pattern=_SHA256)
     gold_sha256: str = Field(pattern=_SHA256)
     replay: Replay | None
@@ -90,6 +103,8 @@ class CaseBaseline(_Strict):
 
 
 class Totals(_Strict):
+    """Sums over all cases; `Baseline` rejects totals that do not match its cases."""
+
     cases: int = Field(ge=0)
     conditions_correct: int = Field(ge=0)
     conditions_total: int = Field(ge=0)
@@ -101,6 +116,8 @@ class Totals(_Strict):
 
 
 class Baseline(_Strict):
+    """The whole of `reports/baseline-dev.json` (contract §11)."""
+
     baseline_version: Literal[1]
     split: Literal["dev"]
     manifest_sha256: str = Field(pattern=_SHA256)
@@ -130,14 +147,19 @@ class Baseline(_Strict):
 
 
 def is_correct(row: ResultRow, *, claim: bool) -> bool:
+    """Same status as gold; a condition also needs the same flags in any order, a claim only the
+    status (`docs/eval.md` §1)."""
     return row.status == row.gold_status and (claim or sorted(row.flags) == sorted(row.gold_flags))
 
 
 def false_support(rows: dict[str, ResultRow]) -> int:
+    """Number of rows the system marks `supported` where gold does not (`docs/eval.md` §1)."""
     return sum(r.status == "supported" and r.gold_status != "supported" for r in rows.values())
 
 
 def missed_exclusion(rows: dict[str, ResultRow]) -> int:
+    """Number of `exclusion.*` rows gold marks `review` that the system marks `insufficient` or
+    `not_supported` (contract §11, definition of regression)."""
     return sum(
         cid.startswith("exclusion.")
         and r.gold_status == "review"

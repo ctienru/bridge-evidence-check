@@ -1,4 +1,4 @@
-"""Quote verification: position, value and assertion checks (contract §6, §7.3; 06 §3).
+"""Quote verification: position, value and assertion checks (contract §6, §7.3).
 
 Every extracted fact becomes exactly one `CheckedEvidence`; nothing is dropped. Two
 independent outputs per fact: where the quote is (`position_status`) and whether the
@@ -85,8 +85,9 @@ DEFAULT_DRUGS_PATH = RULES_DIR / "drugs-v2.yaml"
 CANDIDATE_RATIO = 0.8
 """Minimum `SequenceMatcher.ratio()` between the normalized quote and the best window for a
 `candidate`. A candidate never supports anything; the ratio only decides whether a human
-is shown a likely location (06 §3: "history of stroke" vs "no history of stroke" is 0.92,
-so similarity says nothing about the fact)."""
+is shown a likely location ("history of stroke" vs "no history of stroke" is 0.92, so
+similarity says nothing about the fact; contract §6: a `candidate` cannot support
+`supported`)."""
 
 NORMALIZATIONS: tuple[str, ...] = ("nfkc", "quotes_dashes", "casefold", "whitespace")
 _QUOTES_DASHES: dict[str, str] = {
@@ -232,7 +233,7 @@ class VerifyContext:
 
 @dataclass(frozen=True)
 class CheckedEvidence:
-    """One verified fact; the columns of the `evidence` table (06 §3.5)."""
+    """One verified fact; the columns of the `evidence` table (contract §7.3)."""
 
     field: str
     fact_path: str
@@ -306,7 +307,7 @@ class Normalized:
 
 
 def normalize(text: str, steps: frozenset[str] = frozenset(NORMALIZATIONS)) -> Normalized:
-    """Conservative normalization (06 §3 layer 2), one cluster at a time.
+    """Conservative normalization (position layer 2, contract §6), one cluster at a time.
 
     A cluster is a base character with the combining marks after it, or a run of
     whitespace. Each cluster is NFKC-normalized, quotes and dashes are unified and it is
@@ -1344,7 +1345,7 @@ def _bound_numbers(w: _Window, accept: Callable[[str], bool], kind: str, unit: s
 
 def check_values(fact_field: str, fact: Fact, w: _Window, docs: Docs | None = None) -> _ValueCheck:
     """Layer 3: the raw value as written must be readable from the located span, as a whole
-    token, and bound to the fact it describes (06 §3)."""
+    token, and bound to the fact it describes (`value_not_in_quote`, contract §6)."""
     vc = _ValueCheck()
     m = w.m
     d: dict[str, Any] = fact.model_dump()

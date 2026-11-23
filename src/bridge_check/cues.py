@@ -1,7 +1,7 @@
 """Frozen cue table (`rules/cues-v1.yaml`, guide §3.2) and the drafting cue check.
 
 Shared by the data side and the pipeline. `cue_in_sentence` is the route 1 drafting check
-only (planning 05 §5.2 step 3): it asks whether the sentence holding a quote contains
+only (`docs/dataside.md`, route 1 step 2): it asks whether the sentence holding a quote contains
 *some* cue for each non-default axis value the spec asked for. The scope-aware check of
 contract §6 (cue direction, terminators, right-hand patterns, `matched` / `mismatch` /
 `unrecognized`) is `bridge_check.verify.check_assertion`, which loads the same table.

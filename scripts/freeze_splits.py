@@ -15,7 +15,7 @@ Manifest format (version 1)::
           docs/D2-mtsamples-4985.txt: <sha256>
           expected.json: <sha256>
 
-`--check` does three things (planning doc 13 §11):
+`--check` does three things (contract §11):
 
 (a) require `input.yaml`, `expected.json` and every file under `docs/` to be listed, then
     recompute the sha256 of every listed file (relative to `cases/<variant_id>/`) and

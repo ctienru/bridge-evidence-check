@@ -1,11 +1,11 @@
-"""Deterministic scoring of one case and of a split (planning section 3.1, contract §8).
+"""Deterministic scoring of one case and of a split (`docs/eval.md` §1, contract §8).
 
 Everything here is a count, never a percentage. Inputs are the comparison report of
 `bridge_check.compare` (facts assigned one-to-one on the contract §8 keys), the scoring view
 of the evidence rows (`Store.facts_for_run`), the gold file and the hidden case metadata
 (`bridge_check.casemeta`). Outputs carry ids, enum values and counts only.
 
-Two levels (planning section 3.1, "two-level scoring"):
+Two levels (`docs/eval.md` §1, "Two levels, first upstream error"):
 
 - case level: every condition and claim of the gold, correct or not, with the class of the
   first upstream error (`compare.ERROR_CLASSES`) of each miss; a failed run keeps every row
@@ -47,7 +47,7 @@ FIRST_ERROR_STAGE: dict[str, str] = {
     "compute_timepoint": "compute",
     "rules": "rules",
 }
-"""Pipeline stage of each first-upstream-error class (planning section 3.6.1)."""
+"""Pipeline stage of each first-upstream-error class (`docs/eval.md` §1)."""
 
 TOP_LEVEL_KINDS: frozenset[str] = frozenset({"condition", "path", "exclusion"})
 """The rows a human reads first (contract §3.5): the same set `bridge check` counts."""
@@ -64,10 +64,11 @@ TEST_TYPES: tuple[str, ...] = (
     "integrated_case",
     "ladder_level",
 )
-"""Columns of the coverage matrix (planning section 3.6.1 rule 4)."""
+"""Columns of the coverage matrix (`docs/eval.md` §1, "Coverage matrix")."""
 
 OUT_OF_SCOPE: tuple[str, ...] = ("verifier_ablation", "rules_only_unit_tests")
-"""Rows of planning section 3.1 this module does not produce yet."""
+"""Report rows this module does not produce yet; the report lists them under
+"out of scope" (`docs/eval.md` §2)."""
 
 
 class _Strict(BaseModel):
@@ -102,7 +103,7 @@ class RowScore(_Strict):
 
 
 class FalseSupportCounts(_Strict):
-    """A false support next to its denominators (planning section 3.1): the rows gold does
+    """A false support next to its denominators (`docs/eval.md` §1): the rows gold does
     not support (the opportunities), the rows the system supports, and the gold-automatable
     top-level rows the system settled correctly."""
 
@@ -126,7 +127,7 @@ class FactCounts(_Strict):
 
 
 class CitationCounts(_Strict):
-    """The three citation measures (planning section 3.1): quotes the verifier located
+    """The three citation measures (`docs/eval.md` §1): quotes the verifier located
     (`verbatim` or `normalized`) over all evidence rows; gold facts the system reproduced
     with every key (`matched`) over all gold facts; gold facts whose span a located system
     row overlaps, whatever its value, over all gold facts."""

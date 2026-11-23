@@ -1,4 +1,4 @@
-"""Route 2: candidate facts proposed on real text, located and sanitized (05 §5.2 step 2).
+"""Route 2: candidate facts proposed on real text, located and sanitized (`docs/dataside.md`).
 
 The proposing model returns candidates with a `quote` and value keys. `locate_candidate`
 finds the quote verbatim (`text.locate`): exactly one hit gives `start`, `end`, `sha8`;
