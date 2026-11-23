@@ -311,6 +311,48 @@ def test_htn_complete_list_with_one_drug_is_not_supported_only_by_policy() -> No
     assert relaxed["bmi_path_b.htn"].status == "insufficient"
 
 
+def _htn_note(doc_id: str, *drugs: str, complete: bool | None) -> list[CheckedEvidence]:
+    """A reading above the threshold on the initiation day in `doc_id`, with a medication list
+    of `drugs` (`complete=None`: no list at all)."""
+    rows = [checked("bp_readings", sbp=152, dbp=94, event_date="2025-03-15", doc_id=doc_id)]
+    if complete is not None:
+        rows.append(checked("medication_lists", list_id="L1", complete=complete, doc_id=doc_id))
+    rows += [
+        checked("medications", name=n, list_id="L1", end_kind="ongoing", doc_id=doc_id)
+        for n in drugs
+    ]
+    return rows
+
+
+@pytest.mark.parametrize("refuted_first", [True, False])
+def test_htn_insufficient_reading_outranks_a_refuted_one(refuted_first: bool) -> None:
+    # Only a reading on the initiation day is `at`: the two readings sit in two notes of that day.
+    refuted = _htn_note("D1", "amlodipine", complete=True)
+    unknown = _htn_note("D2", complete=None)
+    notes = refuted + unknown if refuted_first else unknown + refuted
+    d = decide(BASE + [DOC_DATE_D2] + notes)["bmi_path_b.htn"]
+    assert d.status == "insufficient" and d.rule_id == "bmi_path_b.htn:5"
+    assert d.computed["above_threshold"] == [[152, 94], [152, 94]]
+
+
+def test_htn_not_supported_only_when_every_reading_is_refuted() -> None:
+    both = _htn_note("D1", "amlodipine", complete=True) + _htn_note(
+        "D2", "amlodipine", complete=True
+    )
+    d = decide(BASE + [DOC_DATE_D2] + both)["bmi_path_b.htn"]
+    assert d.status == "not_supported" and d.rule_id == "bmi_path_b.htn:4"
+
+
+def test_htn_supported_reading_outranks_the_others() -> None:
+    notes = (
+        _htn_note("D1", "amlodipine", complete=True)
+        + _htn_note("D2", complete=None)
+        + _htn_note("D2", "amlodipine", "metoprolol", complete=False)[1:]
+    )
+    d = decide(BASE + [DOC_DATE_D2] + notes)["bmi_path_b.htn"]
+    assert d.status == "supported" and d.rule_id == "bmi_path_b.htn:3a"
+
+
 def test_htn_no_reading_at_initiation_is_insufficient() -> None:
     rows = BASE + [checked("bp_readings", sbp=160, dbp=100, event_date="2024-01-10")]
     d = decide(rows)["bmi_path_b.htn"]
@@ -410,12 +452,93 @@ def test_prediabetes_table() -> None:
     )
 
 
+def test_denial_together_with_a_lab_in_range() -> None:
+    def a1c(v: str) -> CheckedEvidence:
+        return checked("labs", kind="a1c", raw_value=v, raw_unit="%")
+
+    def denial(concept: str) -> CheckedEvidence:
+        return checked("diagnoses", concept=concept, certainty="negated")
+
+    # rows: 0 start, 1 document date, 2 denial, 3 lab (and 4 the second denial)
+    in_range = decide(BASE + [denial("prediabetes"), a1c("6.0")])["bmi_path_c.prediabetes"]
+    assert in_range.status == "review" and in_range.rule_id == "bmi_path_c.prediabetes:3"
+    assert {2, 3} <= set(in_range.used_evidence) and "denial" in in_range.reason
+
+    diabetic = decide(BASE + [denial("prediabetes"), a1c("6.8"), denial("t2dm")])
+    assert diabetic["bmi_path_c.prediabetes"].status == "insufficient"
+    assert {2, 3} <= set(diabetic["bmi_path_c.prediabetes"].used_evidence)
+    t2dm = diabetic["exclusion.t2dm"]
+    assert t2dm.status == "review" and t2dm.rule_id == "exclusion.t2dm:4-lab"
+    assert {3, 4} <= set(t2dm.used_evidence) and "denial" in t2dm.reason
+
+    below = decide(BASE + [denial("prediabetes"), a1c("5.4"), denial("t2dm")])
+    assert below["bmi_path_c.prediabetes"].status == "not_supported"
+    assert below["exclusion.t2dm"].status == "not_supported"
+
+    both = decide(BASE + [checked("diagnoses", concept="prediabetes"), denial("prediabetes")])
+    assert both["bmi_path_c.prediabetes"].status == "conflict"
+    t2dm_both = decide(BASE + [checked("diagnoses", concept="t2dm"), denial("t2dm"), a1c("6.8")])
+    assert t2dm_both["exclusion.t2dm"].status == "conflict"
+
+
 def test_lab_conflict_across_a_threshold_on_the_same_day() -> None:
     rows = BASE + [
         checked("labs", kind="a1c", raw_value="6.4", raw_unit="%", event_date="2025-03-01"),
         checked("labs", kind="a1c", raw_value="6.6", raw_unit="%", event_date="2025-03-01"),
     ]
     assert decide(rows)["bmi_path_c.prediabetes"].status == "conflict"
+
+
+def _lab(kind: str, value: str, day: str) -> CheckedEvidence:
+    unit = {"a1c": "%", "fpg": "mg/dL", "egfr": ""}[kind]
+    return checked("labs", kind=kind, raw_value=value, raw_unit=unit, event_date=day)
+
+
+@pytest.mark.parametrize(("kind", "low", "high"), [("a1c", "6.4", "6.6"), ("fpg", "120", "130")])
+def test_t2dm_lab_conflict_across_the_diabetes_threshold(kind: str, low: str, high: str) -> None:
+    same_day = BASE + [_lab(kind, low, "2025-03-01"), _lab(kind, high, "2025-03-01")]
+    d = decide(same_day)["exclusion.t2dm"]
+    assert d.status == "conflict" and d.used_evidence == (0, 2, 3)
+    other_day = BASE + [_lab(kind, low, "2025-03-01"), _lab(kind, high, "2025-03-08")]
+    d = decide(other_day)["exclusion.t2dm"]
+    assert d.status == "review" and d.rule_id == "exclusion.t2dm:4-lab" and d.flags == ()
+    # a positive diagnosis is decided by the rows above the labs
+    with_dx = decide(same_day + [checked("diagnoses", concept="t2dm")])["exclusion.t2dm"]
+    assert with_dx.status == "review" and with_dx.rule_id == "exclusion.t2dm:4"
+
+
+def test_labs_on_the_same_side_add_inconsistent_values() -> None:
+    day, later = "2025-03-01", "2025-03-08"
+    t2dm = decide(BASE + [_lab("a1c", "6.6", day), _lab("a1c", "6.9", day)])["exclusion.t2dm"]
+    assert t2dm.status == "review" and t2dm.flags == ("inconsistent_values",)
+    apart = decide(BASE + [_lab("a1c", "6.6", day), _lab("a1c", "6.9", later)])["exclusion.t2dm"]
+    assert apart.status == "review" and apart.flags == ()
+    # the same value twice, and two different lab kinds, are not inconsistent
+    twice = decide(BASE + [_lab("a1c", "6.6", day), _lab("a1c", "6.6", day)])["exclusion.t2dm"]
+    assert twice.flags == ()
+    kinds = decide(BASE + [_lab("a1c", "6.6", day), _lab("fpg", "130", day)])["exclusion.t2dm"]
+    assert kinds.status == "review" and kinds.flags == ()
+
+    pre = decide(BASE + [_lab("a1c", "5.8", day), _lab("a1c", "6.1", day)])
+    assert pre["bmi_path_c.prediabetes"].status == "review"
+    assert pre["bmi_path_c.prediabetes"].flags == ("inconsistent_values",)
+    below = decide(BASE + [_lab("fpg", "88", day), _lab("fpg", "95", day)])
+    assert below["bmi_path_c.prediabetes"].status == "insufficient"
+    assert below["bmi_path_c.prediabetes"].flags == ("inconsistent_values",)
+
+    ckd = checked("diagnoses", concept="ckd")
+    unstaged = decide(BASE + [ckd, _lab("egfr", "41", day), _lab("egfr", "48", day)])
+    assert unstaged["bmi_path_b.ckd"].status == "review"
+    assert unstaged["bmi_path_b.ckd"].flags == ("inconsistent_values",)
+    # eGFR is never compared with a threshold: values around 60 do not conflict
+    around = decide(BASE + [ckd, _lab("egfr", "55", day), _lab("egfr", "65", day)])
+    assert around["bmi_path_b.ckd"].status == "review"
+    assert around["bmi_path_b.ckd"].flags == ("inconsistent_values",)
+    other_days = decide(BASE + [ckd, _lab("egfr", "41", day), _lab("egfr", "48", later)])
+    assert other_days["bmi_path_b.ckd"].status == "review"
+    assert other_days["bmi_path_b.ckd"].flags == ()
+    no_dx = decide(BASE + [_lab("egfr", "41", day), _lab("egfr", "48", day)])["bmi_path_b.ckd"]
+    assert no_dx.status == "insufficient" and no_dx.flags == ("inconsistent_values",)
 
 
 # --- exclusions (contract §3.3)  ------------------------------------------------------------------
@@ -549,13 +672,42 @@ def test_age_from_dob_with_inconsistent_stated_age() -> None:
     assert d.status == "supported" and d.flags == ("inconsistent_values",)
 
 
+def test_age_without_initiation_is_never_supported() -> None:
+    # assessment date 2026-10-15; no verified start, so only an upper bound on the age is known
+    def age(*rows: CheckedEvidence) -> Decision:
+        return decide(list(rows))["age_18"]
+
+    adult = age(checked("patient_identity", dob="1974-04-02", patient_id="P-1"))
+    assert adult.status == "insufficient"
+    assert adult.computed["intervals"] == [[52, 52, "dob", "assessment_date"]]
+    minor = age(checked("patient_identity", dob="2010-05-01", patient_id="P-1"))
+    assert minor.status == "not_supported"
+    # 17 in a note dated two years before the assessment date → 19 or 20 on that date
+    stated = age(checked("patient_identity", stated_age=17, event_date="2024-10-15"))
+    assert stated.status == "insufficient"
+    assert stated.computed["intervals"] == [[19, 19, "stated_age", "assessment_date"]]
+    # one interval below 18 and one at or above: no conflict without an initiation date
+    mixed = age(
+        checked("patient_identity", dob="2010-05-01", patient_id="P-1"),
+        checked("patient_identity", stated_age=30, event_date="2024-10-15"),
+    )
+    assert mixed.status == "insufficient"
+    # with a verified start the same rows decide as before
+    assert (
+        decide(BASE + [checked("patient_identity", dob="1974-04-02", patient_id="P-1")])[
+            "age_18"
+        ].status
+        == "supported"
+    )
+
+
 def test_age_without_initiation_date() -> None:
-    # no verified start: the interval is taken at the document's own date
+    # no verified start: the interval is converted to the assessment date and never supports
     assert (
         decide([checked("patient_identity", stated_age=64, event_date="2025-03-15")])[
             "age_18"
         ].status
-        == "supported"
+        == "insufficient"
     )
     straddle = decide([checked("patient_identity", stated_age=18, event_date="2025")])["age_18"]
     assert straddle.status == "insufficient"
@@ -932,6 +1084,27 @@ def test_negative_claim_on_a_table_only_denial_is_review() -> None:
     d = _decide_claims(BASE + [denial], [_claim("claim.exclusion.t2dm", "no")])
     assert d["exclusion.t2dm"].status == "not_supported"
     assert d["claim.exclusion.t2dm"].status == "review"
+
+
+def test_unrecognized_evidence_does_not_support_not_supported() -> None:
+    def denial(*flags: str) -> CheckedEvidence:
+        return checked("diagnoses", concept="t2dm", certainty="negated", flags=flags)
+
+    flagged = decide(BASE + [denial("unrecognized")])["exclusion.t2dm"]
+    assert flagged.status == "review" and flagged.flags == ("unrecognized",)
+    assert flagged.rule_id == "exclusion.t2dm:5-flagged" and "unrecognized" in flagged.reason
+    assert decide(BASE + [denial()])["exclusion.t2dm"].status == "not_supported"
+    # `table_source` and `timing_disagreement` cap `supported` only
+    assert decide(BASE + [denial("table_source")])["exclusion.t2dm"].status == "not_supported"
+    low_bmi = decide(BASE + [_bmi("24.0", flags=("table_source",))])["bmi_path_a"]
+    assert low_bmi.status == "not_supported"
+    disagreeing = decide(BASE + [_bmi("24.0", relative_llm="before")])["bmi_path_a"]
+    assert disagreeing.status == "not_supported"
+    # the same cap on a pathway comorbidity and on a BMI below the threshold
+    hfpef = checked("diagnoses", concept="hfpef", certainty="negated", flags=("unrecognized",))
+    assert decide(BASE + [hfpef])["bmi_path_b.hfpef"].status == "review"
+    flagged_bmi = decide(BASE + [_bmi("24.0", flags=("unrecognized",))])["bmi_path_a"]
+    assert flagged_bmi.status == "review" and flagged_bmi.flags == ("unrecognized",)
 
 
 def test_decisions_record_only_the_flags_that_changed_them() -> None:
