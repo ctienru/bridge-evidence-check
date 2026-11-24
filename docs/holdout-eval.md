@@ -1,6 +1,6 @@
 # Holdout evaluation: cases 11, 14, 16 (2026-11-10) and cases 09, 10, 12, 18 (2026-11-23)
 
-This page reports two holdout batches that were run on different configurations: cases 11, 14 and 16 on 2026-11-10 (prompt `extract-v4`), from the next paragraph down to "After this run", and cases 09, 10, 12 and 18 on 2026-11-23 (prompt `extract-v5`), under "Second holdout batch". The two batches are reported separately and are never summed. The last section, "Regression runs after the resolver fix (2026-11-23)", reports regression runs made on 2026-11-23 after a code change: the replay of the second batch has two false supports, and regression runs do not replace the results above.
+This page reports two holdout batches that were run on different configurations: cases 11, 14 and 16 on 2026-11-10 (prompt `extract-v4`), from the next paragraph down to "After this run", and cases 09, 10, 12 and 18 on 2026-11-23 (prompt `extract-v5`), under "Second holdout batch". The two batches are reported separately and are never summed. The last section, "Regression runs after the resolver fix (2026-11-23)", reports regression runs made on 2026-11-23 after a code change: the replay of the second batch has two false supports, and regression runs do not replace the results above. A later replay of all seven cases with a rule added afterwards, reported at the end of that section under "Replay with the rule (2026-11-23)", has no false support in either batch, and the rule cost two rows in case-10.
 
 Date: 2026-11-10 (live pass 08:45 to 08:46 UTC). Extractor `claude-sonnet-5-5` (model returned `claude-sonnet-5-5`), prompt `extract-v4`, schema `v2`, rules `bridge-v1`, drugs `drugs-v2`, verify terms as on main, splitter `sentences-v1`. Public code `395173651c75a560286bab6abd1d030120ed41aa` (the commit that wired `--split holdout` on top of main `f82c1463d595658c1a956ec936bd841abd75812d`, with no prompt, schema, rule or gold change). Private data at its main `1e92867`, gold version 1 for all three variants, frozen hashes re-verified before the run.
 
@@ -309,7 +309,7 @@ Added later on 2026-11-23: the regression replay of this batch with that change 
 
 ## Regression runs after the resolver fix (2026-11-23)
 
-**The regression replay of the second batch (R2 below) has two false supports, both in case-09.** `bmi_path_a` is `supported` where gold is `conflict`, and `claim.bmi_bracket` is `supported` where gold is `review`. The published run of 2026-11-23 had both rows at `insufficient` and had no false support. What the run records show: with the resolver change the initiation date of case-09 is verified, so the BMI rows are now decided. The gold `doc_dates` fact that dates the transcription was not returned by the extractor, so the transcription's height, weight and BMI carry no date and are excluded as `timing_unknown`. The only BMI value counted is the one stated in the referral, which is dated at initiation. Gold counts the values of both documents, which disagree (`inconsistent_values`); the system saw one value, did not see the disagreement between the documents, and returned `supported`. Before the change the same missing date was hidden behind the unresolved drug name: the rows stopped at "no verified GLP-1 initiation date". Not fixed.
+**The regression replay of the second batch (R2 below) has two false supports, both in case-09.** `bmi_path_a` is `supported` where gold is `conflict`, and `claim.bmi_bracket` is `supported` where gold is `review`. The published run of 2026-11-23 had both rows at `insufficient` and had no false support. What the run records show: with the resolver change the initiation date of case-09 is verified, so the BMI rows are now decided. The gold `doc_dates` fact that dates the transcription was not returned by the extractor, so the transcription's height, weight and BMI carry no date and are excluded as `timing_unknown`. The only BMI value counted is the one stated in the referral, which is dated at initiation. Gold counts the values of both documents, which disagree (`inconsistent_values`); the system saw one value, did not see the disagreement between the documents, and returned `supported`. Before the change the same missing date was hidden behind the unresolved drug name: the rows stopped at "no verified GLP-1 initiation date". Not fixed in these runs; a rule was added afterwards, and the replay with it is reported under 'Replay with the rule (2026-11-23)' below.
 
 | Case | Row | Kind | Gold | Published 2026-11-23 | R2 regression |
 |---|---|---|---|---|---|
@@ -619,4 +619,188 @@ No expected-gap attribution is made for R1: the six gaps were written down for t
 
 ### After these runs
 
-Added 2026-11-23. After these runs, and using the failure R2 reported (verified values of one document carried no date, were excluded as `timing_unknown`, and the BMI rows were decided from the other document's value alone), one rule was added (contract §3.1 step 9). A BMI sub-result that would be `supported` or `not_supported` becomes `review` with the flag `undated_counterevidence` when a verified value of unknown timing lies on the other side of that threshold from the value at initiation; `claim.bmi_bracket` becomes `review` when such a value lies in another bracket. The rule was written from the description of the failure and tested on values and documents invented for the tests. No holdout case was run for it, and no replay with the rule is reported here: the tables above are those of the runs before the rule, and nothing above this subsection was changed.
+Added 2026-11-23. After these runs, and using the failure R2 reported (verified values of one document carried no date, were excluded as `timing_unknown`, and the BMI rows were decided from the other document's value alone), one rule was added (contract §3.1 step 9). A BMI sub-result that would be `supported` or `not_supported` becomes `review` with the flag `undated_counterevidence` when a verified value of unknown timing lies on the other side of that threshold from the value at initiation; `claim.bmi_bracket` becomes `review` when such a value lies in another bracket. The rule was written from the description of the failure and tested on values and documents invented for the tests. The replay of the seven cases with the rule, made afterwards, is reported under "Replay with the rule (2026-11-23)" below; the tables above this subsection are those of the runs before the rule.
+
+### Replay with the rule (2026-11-23)
+
+**With the rule, false supports are 0 in both replays, on conditions and on claims.** The seven cases were replayed from stored responses with the rule described under "After these runs": P2 is the replay of cases 09, 10, 12 and 18, P1 the replay of cases 11, 14 and 16. In the order published, before the rule, with the rule, the false supports are 0, 1, 0 on conditions and 0, 1, 0 on claims in P2, and 0, 0, 0 on conditions and 0, 0, 0 on claims in P1. "Published" is the published run of each batch, "before the rule" is its regression run above (R2 for P2, R1 for P1), and "with the rule" is this replay. The two rows of case-09 that were false supports before the rule are no longer `supported`. `claim.bmi_bracket` is `review`, which is gold's status, and the row is correct. `bmi_path_a` is `review` with the flag `undated_counterevidence` where gold is `conflict` with no flag: it is no longer a false support, and it is still a wrong row.
+
+**The rule cost two rows, both in case-10.** `bmi_path_a`: gold is `not_supported` with the flags `height_from_other_date` and `inconsistent_values`. Before the rule the system said `not_supported` with `height_from_other_date`, so the status was gold's and one flag was missing; with the rule it says `review` with `height_from_other_date` and `undated_counterevidence`, so the status is wrong as well, one flag is a flag gold does not carry, and `inconsistent_values` is still missing. The row was wrong before and is more wrong now. `claim.bmi_bracket`: gold is `conflict`, the system said `conflict` before the rule and was right, and it says `review` now and is wrong. It is the only row of the seven cases that went from right to wrong. Why the rule fired, as the run records hold it: the visit note of case-10 holds a weight and a stated BMI that the extractor returned without a date and labelled as historical; their computed timepoint is `unknown`, and they lie at or above the path A threshold while the value computed at initiation lies below it. Gold holds the same two facts the same way (no date, timing `unknown`; the comparison with gold counts them as matched) and still concludes `not_supported` for path A and `conflict` for the claimed bracket. So in case-10 the rule's premise is met exactly as written, and gold's conclusion differs from the rule's.
+
+| Case | Row | Gold | Published | Before the rule | With the rule | Correct before | Correct now | Evidence that triggered the rule |
+|---|---|---|---|---|---|---|---|---|
+| case-09 | bmi_path_a | con | ins | sup **(false support)** | rev `undated_counterevidence` | no | no | 3 spans of `D2-mtsamples-doc` (weight, height, stated BMI) |
+| case-09 | claim.bmi_bracket | rev | ins | sup **(false support)** | rev | no | **yes** | 3 spans of `D2-mtsamples-doc` (weight, height, stated BMI) |
+| case-10 | bmi_path_a | not `height_from_other_date`, `inconsistent_values` | ins | not `height_from_other_date` | rev `height_from_other_date`, `undated_counterevidence` | no | no | 3 spans of `D2-visit-note` (weight, height, stated BMI) |
+| case-10 | claim.bmi_bracket | con | ins | con | rev | yes | **no** | 3 spans of `D2-visit-note` (weight, height, stated BMI) |
+
+The evidence is given by document and kind only. In case-09 the transcription's weight, height and BMI are verified and undated (the document-date fact that would date them was not returned by the extractor), and they lie below the path A threshold while the referral's dated BMI lies above it; the same values lie in another bracket than the chart's.
+
+**The columns "before the rule" and "with the rule" use the same stored responses**, so every difference between them is the effect of the rule and of nothing else. P2 reuses the responses of the published run of 2026-11-23, which R2 also used; P1 reuses the responses of the live regression run R1, recorded under `extract-v5`. The stored evidence rows of every case are identical between the run before the rule and this replay (verify and compute gave the same output); this was checked row by row and field by field. In P2, 106 rows were compared (80 conditions, 26 claims) and 4 differ in status or flags: the four rows of the table above. The stored decision of the other 102 rows (status, reason, rule id, used and excluded evidence, computed values, flags) is identical. In P1, 79 rows were compared (60 conditions, 19 claims) and 0 differ; all 79 stored decisions are identical.
+
+**P1 did not exercise the rule.** In all three cases of P1, and in cases 12 and 18 of P2, every BMI row is `insufficient` in the system before the rule, so the rule had no conclusion to act on. P1 shows that the rule changed nothing there; it does not show the rule tested there. In case-09 and case-10 the sub-results `bmi_path_b.bmi` and `bmi_path_c.bmi` (thresholds 30 and 27) are also unchanged, because the undated values lie on the same side of those thresholds; they stay `supported` without the flag `inconsistent_values` that gold carries, and are counted wrong as before.
+
+**These are regression replays on used cases. The published results stand** and are not replaced by anything in this subsection: conditions 27/60 and claims 4/19 for cases 11, 14 and 16 (2026-11-10), conditions 60/80 and claims 9/26 for cases 09, 10, 12 and 18 (2026-11-23). All seven cases had been run and read before the rule was written, and the rule was written because of what R2 showed on case-09, so no number here is a holdout measurement, and neither replay is a new measurement of the extractor. The three columns are never summed, and the two replays are never summed either. Nothing was changed in response to what the replays showed: no gold, document, rule, prompt or code edit. Single annotator, one model, one stored response per case; counts, not rates. Not a validation on real records. Nothing above this subsection was changed for it, except the sentence under the page title and the last sentence of "After these runs".
+
+#### Totals (P2): published, before the rule and with the rule, never summed
+
+| Measure | Published 2026-11-23 (live, `a62edc7`) | Before the rule: R2 regression (replay, `3b8f0fc`) | With the rule: this replay (`dc69ba5`) |
+|---|---|---|---|
+| Conditions correct (status and flags) | 60/80 | 64/80 | 64/80 |
+| Claims correct (status) | 9/26 | 18/26 | 18/26 |
+| False supports, conditions (target 0) | 0 of 64 gold non-supported rows; system supported 1 | 1 of 64 gold non-supported rows; system supported 10 | 0 of 64 gold non-supported rows; system supported 9 |
+| False supports, claims | 0 of 13 gold non-supported rows; system supported 2 | 1 of 13 gold non-supported rows; system supported 11 | 0 of 13 gold non-supported rows; system supported 10 |
+| Wrong refutations (system `not_supported`, gold something else), conditions / claims | 0 / 0 | 0 / 0 | 0 / 0 |
+| Missed exclusion evidence (gold `review` exclusion rows) | 0 of 3 | 0 of 3 | 0 of 3 |
+| Human workload (top-level `review` + `conflict` + `insufficient`) | 33 | 27 | 29 |
+| Packets with at least one human item | 4/4 | 4/4 | 4/4 |
+| Correctly automated among gold-automatable | 3/11 | 7/11 | 7/11 |
+| Gold facts matched / wrong value / missed | 37 / 55 / 5 of 106 (9 more matched but excluded by the verifier; 11 of the wrong values differ on timing only) | 46 / 46 / 5 of 106 (9 more matched but excluded by the verifier; 7 of the wrong values differ on timing only) | 46 / 46 / 5 of 106 (9 more matched but excluded by the verifier; 7 of the wrong values differ on timing only) |
+| Quotes located | 130/130 | 130/130 | 130/130 |
+| Runs failed | 0 | 0 | 0 |
+| First upstream error of the wrong rows | compute_timepoint 2 · extraction_missed 6 · extraction_wrong_value 29 | compute_timepoint 5 · extraction_missed 4 · extraction_wrong_value 15 | compute_timepoint 6 · extraction_missed 4 · extraction_wrong_value 14 |
+| Cost (USD) | $0.336016 (4 calls) | 0 (no call) | 0 (no call) |
+
+| Case | Conditions, published | Conditions, before the rule | Conditions, with the rule | Claims, published | Claims, before the rule | Claims, with the rule |
+|---|---|---|---|---|---|---|
+| case-09 | 13/20 | 14/20 | 14/20 | 3/7 | 5/7 | 6/7 |
+| case-10 | 15/20 | 16/20 | 16/20 | 0/6 | 3/6 | 2/6 |
+| case-12 | 16/20 | 17/20 | 17/20 | 4/8 | 6/8 | 6/8 |
+| case-18 | 16/20 | 17/20 | 17/20 | 2/5 | 4/5 | 4/5 |
+
+**The equal totals of the last two columns cover different rows.** Conditions correct 64/80 and claims correct 18/26 are the same counts before and with the rule, over different rows: case-09 claims 5/7 → 6/7, case-10 claims 3/6 → 2/6. One claim row went from wrong to right and one from right to wrong. Between the last two columns: false supports 1 → 0 on conditions and 1 → 0 on claims; system `supported` rows 10 → 9 and 11 → 10; human workload 27 → 29 (case-09 7 → 8, case-10 5 → 6: the two `bmi_path_a` rows now go to a human); first upstream errors `extraction_wrong_value` 15 → 14 (case-09 `claim.bmi_bracket` is now right) and `compute_timepoint` 5 → 6 (case-10 `claim.bmi_bracket` is now wrong). Everything that depends on extraction and verification only (gold facts, quotes located, exclusion evidence) is identical.
+
+#### Totals (P1): published, before the rule and with the rule, never summed
+
+| Measure | Published 2026-11-10 (live, `3951736`, `extract-v4`) | Before the rule: R1 regression (live, `3b8f0fc`, `extract-v5`) | With the rule: this replay of the R1 responses (`dc69ba5`) |
+|---|---|---|---|
+| Conditions correct (status and flags) | 27/60 | 47/60 | 47/60 |
+| Claims correct (status) | 4/19 | 10/19 | 10/19 |
+| False supports, conditions (target 0) | 0 of 51 gold non-supported rows; system supported 2 | 0 of 51 gold non-supported rows; system supported 2 | 0 of 51 gold non-supported rows; system supported 2 |
+| False supports, claims | 0 of 10 gold non-supported rows; system supported 2 | 0 of 10 gold non-supported rows; system supported 5 | 0 of 10 gold non-supported rows; system supported 5 |
+| Wrong refutations (system `not_supported`, gold something else), conditions / claims | 0 / 0 | 0 / 0 | 0 / 0 |
+| Missed exclusion evidence (gold `review` exclusion rows) | 3 of 3 | 0 of 3 | 0 of 3 |
+| Human workload (top-level `review` + `conflict` + `insufficient`) | 16 | 23 | 23 |
+| Packets with at least one human item | 3/3 | 3/3 | 3/3 |
+| Correctly automated among gold-automatable | 2/7 | 4/7 | 4/7 |
+| Gold facts matched / wrong value / missed | 11 / 15 / 31 of 64 (7 more matched but excluded by the verifier; 0 of the wrong values differ on timing only) | 26 / 24 / 2 of 64 (12 more matched but excluded by the verifier; 1 of the wrong values differ on timing only) | 26 / 24 / 2 of 64 (12 more matched but excluded by the verifier; 1 of the wrong values differ on timing only) |
+| Quotes located | 37/37 | 82/82 | 82/82 |
+| Runs failed | 1 | 0 | 0 |
+| First upstream error of the wrong rows | extraction_missed 9 · extraction_wrong_value 12 · run_failed 27 | compute_timepoint 1 · extraction_extra 1 · extraction_missed 4 · extraction_wrong_value 12 · verify_excluded 4 | compute_timepoint 1 · extraction_extra 1 · extraction_missed 4 · extraction_wrong_value 12 · verify_excluded 4 |
+| Cost (USD) | $0.180228 (3 calls, pass 1) | $0.219444 (3 calls) | 0 (no call) |
+
+| Case | Conditions, published | Conditions, before the rule | Conditions, with the rule | Claims, published | Claims, before the rule | Claims, with the rule |
+|---|---|---|---|---|---|---|
+| case-11 | 0/20 (run failed) | 19/20 | 19/20 | 0/7 (run failed) | 4/7 | 4/7 |
+| case-14 | 13/20 | 13/20 | 13/20 | 2/6 | 3/6 | 3/6 |
+| case-16 | 14/20 | 15/20 | 15/20 | 2/6 | 3/6 | 3/6 |
+
+The last two columns are identical in every measure except cost and extraction source: the replay made no call. P1 cannot be compared with the published run of 2026-11-10 as the effect of any single change (that run used `extract-v4` and other responses); it can be compared with R1 as the effect of the rule alone, and that effect is nil. The published run of case-11 failed at parsing, so its 27 rows are wrong by rule in the published column; the published human workload of 16 counts two completed runs only.
+
+#### Wrong refutations
+
+A wrong refutation is a row where the system says `not_supported` and gold says something else; it is a wrong conclusion in the same sense as a false support.
+
+| Replay | Kind | Published | Before the rule | With the rule |
+|---|---|---|---|---|
+| P2 (cases 09, 10, 12, 18) | conditions | 0 | 0 | 0 |
+| P2 (cases 09, 10, 12, 18) | claims | 0 | 0 | 0 |
+| P1 (cases 11, 14, 16) | conditions | 0 | 0 | 0 |
+| P1 (cases 11, 14, 16) | claims | 0 | 0 | 0 |
+
+0 in every column of both replays. System `not_supported` rows, for scale: P2 4 published, 5 before the rule, 4 with the rule; P1 0, 2, 2. Each of them has gold `not_supported`. The one P2 row that left this group with the rule is case-10 `bmi_path_a`: its `not_supported` agreed with gold's status and is now `review`.
+
+#### Wrong rows that remain (P2): first upstream error and expected-gap attribution
+
+The six expected gaps are the six items under "Gaps these cases are expected to meet" above, numbered in that order. The same rule as on 2026-11-23: a row is listed under a gap only if the report's upstream error shows that gap; otherwise "none of the six" or "not attributed". The notes say what the run records hold; they do not change any count.
+
+24 rows are wrong (16 conditions, 8 claims); before the rule 24 (16 conditions, 8 claims); published 37 (20 conditions, 17 claims). The 24 are not the same 24 as before the rule: case-09 `claim.bmi_bracket` left the list and case-10 `claim.bmi_bracket` joined it. First upstream error as the report gives it: compute_timepoint 6 · extraction_missed 4 · extraction_wrong_value 14. Attributed to one of the six expected gaps: **0**. "None of the six": 14. "Not attributed": 10. Before the rule: 0 / 14 / 10. Published: 0 / 27 / 10.
+
+First upstream error `compute_timepoint`: 6 rows.
+
+| Case | Row | Gold | Published | Before the rule | With the rule | Expected gap | Note |
+|---|---|---|---|---|---|---|---|
+| case-09 | bmi_path_b.ckd | sup | ins | ins | ins | not attributed | C |
+| case-09 | claim.bmi_path_b.ckd | sup | ins | ins | ins | not attributed | C |
+| case-10 | bmi_path_a | not `height_from_other_date`, `inconsistent_values` | ins | not `height_from_other_date` | rev `height_from_other_date`, `undated_counterevidence` | none of the six | H, L |
+| case-10 | bmi_path_b.bmi | sup `height_from_other_date`, `inconsistent_values` | ins | sup `height_from_other_date` | sup `height_from_other_date` | none of the six | H |
+| case-10 | bmi_path_c.bmi | sup `height_from_other_date`, `inconsistent_values` | ins | sup `height_from_other_date` | sup `height_from_other_date` | none of the six | H |
+| case-10 | claim.bmi_bracket | con | ins | con | rev | none of the six | L |
+
+First upstream error `extraction_missed`: 4 rows.
+
+| Case | Row | Gold | Published | Before the rule | With the rule | Expected gap | Note |
+|---|---|---|---|---|---|---|---|
+| case-09 | bmi_path_a | con | ins | sup **(false support)** | rev `undated_counterevidence` | none of the six | G |
+| case-09 | bmi_path_b | sup | ins | ins | ins | not attributed | C |
+| case-09 | bmi_path_b.bmi | sup `inconsistent_values` | ins | sup | sup | none of the six | G |
+| case-09 | bmi_path_c.bmi | sup `inconsistent_values` | ins | sup | sup | none of the six | G |
+
+First upstream error `extraction_wrong_value`: 14 rows.
+
+| Case | Row | Gold | Published | Before the rule | With the rule | Expected gap | Note |
+|---|---|---|---|---|---|---|---|
+| case-09 | bmi_path_b.htn | rev `class_ambiguous`, `same_note_list` | ins | ins | ins | not attributed | D |
+| case-10 | bmi_path_b.htn | not `same_note_list` | ins | ins | ins | none of the six | I |
+| case-10 | claim.bmi_path_b.htn | con | rev | rev | rev | none of the six | I |
+| case-10 | claim.exclusion.mash | ins | – | – | – | none of the six | E |
+| case-10 | claim.exclusion.t2dm | con | – | – | – | not attributed | E, F |
+| case-12 | bmi_path_a | sup | ins | ins | ins | none of the six | J |
+| case-12 | bmi_path_b.bmi | sup | ins | ins | ins | none of the six | J |
+| case-12 | bmi_path_c.bmi | sup | ins | ins | ins | none of the six | J |
+| case-12 | claim.bmi_bracket | sup | ins | ins | ins | none of the six | J |
+| case-12 | claim.bmi_path_b.htn | rev | ins | ins | ins | not attributed | K |
+| case-18 | bmi_path_a | not | ins | ins | ins | not attributed | B |
+| case-18 | bmi_path_b.bmi | sup | ins | ins | ins | not attributed | B |
+| case-18 | bmi_path_c.bmi | sup | ins | ins | ins | not attributed | B |
+| case-18 | claim.bmi_bracket | sup | ins | ins | ins | not attributed | B |
+
+Notes. Letters B to K are those of the R2 section above; B, C, D, E, F, I, J and K are unchanged, because the stored decisions of their rows are identical to those of the run before the rule. G and H are restated for the rows the rule changed, and L is new.
+
+- **B.** Not attributed. The report charges these rows to extraction: the first error is `extraction_wrong_value`, and the three gold facts (baseline weight, height and BMI) differ on `relative_to_glp1_initiation` only. So the report does not show gap 1, and the rows are not listed under it. What the run records hold: the rows are decided at the step where gap 1 acts (the initiation date is verified; the stored decision is "no weight or BMI at initiation"), and the stored evidence is consistent with gap 1: gold has the three values as `at` with no date, on the baseline wording; in the run they are located verbatim, pass the assertion check, are undated, have a computed timepoint of `unknown` and are excluded as `timing_unknown`. The extractor labelled the values `before`, not `at`. The new rule does not act here: the rows are `insufficient`, not a conclusion.
+- **C.** Report class `compute_timepoint` (`extraction_missed` for the parent row). Gold dates the diagnosis by a document date stated in the referral for the transcription; the extractor did not return that document-date fact, and the diagnosis row was also excluded by the verifier (`value_not_in_quote`). Not one of the six as far as the report shows.
+- **D.** Gold flags `same_note_list` and `class_ambiguous` (the area of gaps 3 and 4). The stored decision is "no blood pressure reading at initiation", with a verified initiation date: the reading was excluded by the verifier (`assertion_mismatch`) and carries no date. The row stops before antihypertensives are counted. Neither gap was reached.
+- **E.** The form's box was returned with `certainty: negated` where gold has `present`, and the verifier excluded it (`assertion_mismatch`); no claim decision was produced for the row.
+- **F.** Expected gap 5 (the claim rule against a chart that documents type 2 diabetes in remission) is the rule for this row; because of E the rule did not run.
+- **G.** Case-09, the rows that were the two false supports and their two sibling rows. The document-date fact for the transcription was not returned, so the transcription's weight, height and BMI are undated; gold dates them by the document date and counts them at initiation, where they disagree with the referral's BMI (`conflict` for path A, `inconsistent_values` on the two sub-results that stay `supported`). With the rule, `bmi_path_a` is `review` + `undated_counterevidence` instead of `supported`: no longer a false support, still not gold's `conflict`. `bmi_path_b.bmi` and `bmi_path_c.bmi` are unchanged (`supported` without `inconsistent_values`): the undated values are on the same side of their thresholds, so the rule does not act. `claim.bmi_bracket` is now right and has left this list. Gold dates these values by the document date, not by baseline wording, so this is not gap 1; none of the six.
+- **H.** Case-10, report class `compute_timepoint`: the BMI stated in the visit note for the initiation visit was returned with the right date and labelled `at`, but its date was not bound and its computed timepoint is `unknown` (the gold fact differs on timing only), so it was excluded and only the computed BMI was counted; the flag `inconsistent_values` is therefore missing. For `bmi_path_b.bmi` and `bmi_path_c.bmi` nothing changed: status equals gold, one flag missing. For `bmi_path_a` see also L. Gold dates the value explicitly, so this is not gap 1; none of the six.
+- **L.** New with the rule; case-10 `bmi_path_a` and `claim.bmi_bracket`, the two rows the rule cost. The rule fired on an undated historical weight and stated BMI of the visit note that lie across the path A threshold and in another bracket. Gold holds those facts as undated too and concludes `not_supported` and `conflict`. The report's class for both rows is `compute_timepoint` (the fact of note H), and its `rules` class counts 0; the report does not attribute the rows to the rule, and the row comparison at the top of this subsection does. Not gap 1: gold does not read these values as the baseline. None of the six.
+- **I.** The row reaches the antihypertensive count: a reading at initiation above the threshold is found, and 0 antihypertensives are counted as certainly in use. The note's medication is in the drug table (not gap 3) and its list was read as a current list (not the unknown heading of gap 4), but the list fact was excluded by the verifier (`value_not_in_quote`), which leaves the medication's period unknown. First error `extraction_wrong_value`. None of the six. The claim row follows the condition.
+- **J.** Stored decision "no weight or BMI at initiation" ("no BMI at initiation" for the claim), with a verified initiation date. The transcription's weight and height were excluded by the verifier (`value_not_in_quote`, `unparseable_value`) and differ from gold on value and date. Gold dates them by the document date. None of the six. The new rule does not act: no conclusion, and the values are excluded by the verifier, not left undated.
+- **K.** The stored decision is "chart holds nothing related"; the hypertension diagnosis was excluded by the verifier (`assertion_mismatch`).
+
+Gaps 1, 3 and 4 stand where the R2 section left them: gap 1 is reached and not attributed by the report (case-18, four rows, note B); gaps 3 and 4 are not reached (case-09 `bmi_path_b.htn`, note D). The rule changed none of these rows.
+
+#### Configuration and proof that no API call was made
+
+Prompt `extract-v5`, schema `v2`, rules `bridge-v1`, splitter `sentences-v1`; the stored responses were returned by `claude-sonnet-5-5`. Public code main `dc69ba5b9b56f49182d579b15f9fbba6d2553175`, clean tree before and after each command, nothing written into it. Private data at its main `b40b212` (gold version 1 for cases 10, 11, 14, 16 and 18, version 2 for cases 09 and 12; no gold or document file differs from the regression runs). The code difference from R2 (`3b8f0fc`) that reaches a decision is the rule (`rules.py`, one enum value).
+
+Compared with: the published runs (2026-11-23 on public `a62edc7`, `extract-v5`; 2026-11-10 on public `3951736`, `extract-v4`) and the regression runs of 2026-11-23 on public `3b8f0fc` (R2 replay for cases 09, 10, 12, 18; R1 live for cases 11, 14, 16).
+
+Staged manifests, one batch per run: the public `splits.yaml` at `dc69ba5` with the other batch's holdout rows removed and nothing else changed, next to real copies of the case directories (no links).
+
+| Manifest | sha256 |
+|---|---|
+| public `splits.yaml` at `dc69ba5` (unchanged since `a62edc7`) | `449ee7a0df62c170ef1b60defb05110d352ddf85064ec3ec76304a6023dc1c65` |
+| P2 staged (rows of cases 11, 14, 16 removed; byte-identical to the one of 2026-11-23) | `a86345f6a025beb79b7be6dd1926c48a42fcc8a991302aa75652cc8219076191` |
+| P1 staged (rows of cases 09, 10, 12, 18 removed; byte-identical to the R1 one) | `405a69992bf891ec15283416236a6334879083657718093128b2d3df6e512066` |
+
+Each report's `manifest_sha256` is its staged value. Before each run the frozen files were verified: the private manifest check passed (8 variants: 1 dev, 7 holdout); P2, 45 of 45 files against the private manifest and 21 of 21 against the public rows (19 plain sha256 values, the two MTSamples documents by salted hash); P1, 33 of 33 and 15 of 15 (all plain).
+
+Commands (each run once, from the public checkout, with the API key absent from the environment of the process):
+
+```
+bridge eval --split holdout --data-root <private>/.stage/eval --db <scratch>/p2.db --out <scratch>/p2 --json
+bridge eval --split holdout --data-root <private>/.stage/eval --db <scratch>/p1.db --out <scratch>/p1 --json
+```
+
+Exit code 0 for both. P2 ran at 2026-11-24 01:09:35 UTC and P1 at 01:09:42 UTC (the evening of 2026-11-23 local time).
+
+Proof that no API call was made:
+
+- The API key was absent from the environment of each command: the variable was removed for that process and its absence was checked in the same environment immediately before the run. No fake client was configured. A cache miss would therefore have failed the run instead of calling.
+- Event logs: P2 has one `extract_cache_hit` per case (4) and P1 one per case (3); neither has an `attempt_started` event. Each log is 8 `eval_skipped` (other split), then `run_started`, `extract_cache_hit`, `extraction_ready`, `verification_stored`, `facts_stored`, `run_completed` per case.
+- Databases. `<scratch>/p2.db` was a copy of the archived database of the published run (sha256 `5ce50587…3b6738`, equal to the archive before the run). After the run it holds exactly the 4 attempt rows of 2026-11-23 (newest attempt timestamp 21:57 UTC on 2026-11-23) and 4 extractions, next to 4 new run rows (ids 5 to 8, code `dc69ba5`) with `extraction_source: cache`, each pointing at the extraction of the published run of the same case. `<scratch>/p1.db` was a copy of the R1 database (sha256 `6b31080a…bee647`); after the run it holds exactly the 3 attempt rows of R1 (newest 23:30 UTC on 2026-11-23) and 3 extractions, next to 3 new run rows (ids 4 to 6) with `extraction_source: cache`, each pointing at the R1 extraction of the same case.
+- Every case of both replays was served from a stored response; none was stopped. The cost of each pass is 0 in the report (`cost_usd: 0.0`, and 0.0 for every case).
+
+The report files are `reports/eval-holdout-round2-replay-after-rule.json` and `reports/eval-holdout-round2-replay-after-rule.md` (P2) and `reports/eval-holdout-replay-after-rule.json` and `reports/eval-holdout-replay-after-rule.md` (P1): each replay wrote them as `eval-holdout.json` and `eval-holdout.md`, and they are stored here under the new names, byte for byte. The header of each file is the one the command writes for every `--split holdout` evaluation (it says "holdout", "mode=online" and "frozen before the run"); the files are the reports of replays that made no call. The eight earlier report files of the published and regression runs are unchanged. No document text, quote or patient name appears here or in the report files.
