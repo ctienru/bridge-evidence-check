@@ -11,7 +11,7 @@
   "eval_version": 1,
   "exit_code": 0,
   "generated_from": {
-    "code_sha": "e2f451dc2e3de678bc8cdede9a54708acd8a5c63",
+    "code_sha": "dc69ba5b9b56f49182d579b15f9fbba6d2553175",
     "model_returned": "claude-sonnet-5-5",
     "prompt_version": "extract-v5",
     "rules_version": "bridge-v1",
