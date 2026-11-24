@@ -26,6 +26,7 @@ from bridge_check.compute import (
     EXACT,
     GLP1_BRANDS,
     AgeInterval,
+    BmiCandidate,
     ComputedFacts,
     DateInterval,
     Dx,
@@ -417,7 +418,10 @@ def decide_bmi(ri: RuleInput, condition: str, threshold: Decimal) -> Decision:
     when the unrounded `bmi_raw >= threshold` and `not_supported` when it is below (`review` when
     the evidence below the threshold carries `unrecognized`); `bmi_raw` is the value computed from
     height and weight when there is one, else the stated value. Same-side candidates more than 0.2
-    apart add `inconsistent_values`.
+    apart add `inconsistent_values`. A `supported` or `not_supported` result becomes `review` +
+    `undated_counterevidence` when a candidate of unknown timing lies on the other side of the
+    threshold from `bmi_raw` (step 9); that candidate stays in `excluded_evidence` as
+    `timing_unknown` and its value is recorded in `computed`.
     """
     facts = ri.facts
     cands = facts.bmi_candidates
@@ -526,7 +530,7 @@ def decide_bmi(ri: RuleInput, condition: str, threshold: Decimal) -> Decision:
                 computed=computed,
                 flags=flags,
             )
-        return _decision(
+        decision = _decision(
             ri,
             condition,
             "supported",
@@ -538,17 +542,55 @@ def decide_bmi(ri: RuleInput, condition: str, threshold: Decimal) -> Decision:
             flags=flags,
             timing_sensitive=True,
         )
+    else:
+        decision = _decision(
+            ri,
+            condition,
+            "not_supported",
+            "7",
+            f"bmi_raw {bmi_raw} < {threshold} at initiation ({_refs(used)})",
+            used=used,
+            excluded=excluded,
+            computed=computed,
+            flags=flags,
+        )
+    # Step 9 (contract §3.1): a conclusion does not stand against a verified value of unknown
+    # timing on the other side of this threshold. A result the earlier steps left at `review`
+    # (step 8, or the flag cap inside `_decision`) is not touched.
+    if decision.status not in ("supported", "not_supported"):
+        return decision
+    across = [
+        c for c in _undated_bmi_candidates(ri) if (c.value >= threshold) != (bmi_raw >= threshold)
+    ]
+    if not across:
+        return decision
+    side = "below" if bmi_raw >= threshold else "at or above"
     return _decision(
         ri,
         condition,
-        "not_supported",
-        "7",
-        f"bmi_raw {bmi_raw} < {threshold} at initiation ({_refs(used)})",
+        "review",
+        "9",
+        f"bmi_raw {bmi_raw} at initiation, but a value of unknown timing lies {side} {threshold} "
+        f"({_refs(s for c in across for s in c.sources)})",
         used=used,
         excluded=excluded,
-        computed=computed,
-        flags=flags,
+        computed={**computed, "undated_counterevidence": _undated_computed(across)},
+        flags=flags | {"undated_counterevidence"},
     )
+
+
+def _undated_bmi_candidates(ri: RuleInput) -> list[BmiCandidate]:
+    """The BMI candidates of unknown timing (contract §3.1 step 9), as compute built them: a
+    stated BMI with no usable date, or a weight with no usable date and the height compute paired
+    it with. Compute builds candidates only from verified patient facts, so none of them carries
+    an evidence-level exclusion reason; candidates before or after initiation are not returned."""
+    return [c for c in ri.facts.bmi_candidates if c.tp.relative == "unknown"]
+
+
+def _undated_computed(cands: Iterable[BmiCandidate]) -> list[dict[str, Any]]:
+    return [
+        {"value": str(c.value), "origin": c.origin, "evidence": list(c.evidence_ids)} for c in cands
+    ]
 
 
 # --- Diagnoses (contract §3.2, §4) ----------------------------------------------------------------
@@ -1975,7 +2017,8 @@ def claim_rule(claim_id: str) -> RuleFn:
     Different values for one box → `review`. `claim.drug`: `supported` when the claimed drug is the
     verified course's, `conflict` when it differs, `insufficient` without a verified initiation.
     `claim.bmi_bracket`: an unreadable bracket or candidates in different brackets → `review`, no
-    BMI at initiation → `insufficient`, otherwise `supported` or `conflict` by bracket equality. Any
+    BMI at initiation → `insufficient`, otherwise `supported` or `conflict` by bracket equality,
+    and `review` instead of either when a candidate of unknown timing lies in another bracket. Any
     other box is compared with its condition by `_claim_vs_condition`: agreement → `supported`,
     contradiction → `conflict`, a chart left at `review` or `conflict` stays so; an `insufficient`
     condition gives `review` when the chart holds related material that cannot answer the box
@@ -2082,7 +2125,7 @@ def claim_rule(claim_id: str) -> RuleFn:
                 )
             agrees = actual.lo == bracket.lo and actual.hi == bracket.hi
             chart = [s for c in ri.facts.bmi_candidates if c.tp.relative == "at" for s in c.sources]
-            return _decision(
+            decision = _decision(
                 ri,
                 claim_id,
                 "supported" if agrees else "conflict",
@@ -2092,6 +2135,23 @@ def claim_rule(claim_id: str) -> RuleFn:
                 timing_sensitive=True,
                 excluded=excluded,
                 computed=computed,
+            )
+            # The bracket guard of contract §2: neither an agreement nor a contradiction stands
+            # against a verified value of unknown timing that lies in another bracket.
+            elsewhere = [c for c in _undated_bmi_candidates(ri) if not actual.contains(c.value)]
+            if decision.status not in ("supported", "conflict") or not elsewhere:
+                return decision
+            undated = [s for c in elsewhere for s in c.sources]
+            return _decision(
+                ri,
+                claim_id,
+                "review",
+                "5",
+                f"chart bracket {actual.label()}, but a value of unknown timing lies in "
+                f"another bracket ({_refs(undated)})",
+                used=[*used, *chart],
+                excluded=[*excluded, *_timing_excluded(undated, ("at",))],
+                computed={**computed, "undated_counterevidence": _undated_computed(elsewhere)},
             )
         condition = ri.decided.get(target)
         if condition is None:

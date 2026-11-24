@@ -4,8 +4,8 @@ Errors made by the two kinds of AI in this project, what caught them, and the fi
 extractor is the model under test (`claude-sonnet-5-5`); the coding agent writes code under
 prompts and stops before commit. Sources: `docs/checkpoint-a.md`, `docs/live-run-01.md` and
 the review rounds of the pull requests. Every row but the last one of the extractor table was
-caught by a test, a gold comparison or a review before it reached `main`; that last row is on
-`main` and is not fixed.
+caught by a test, a gold comparison or a review before it reached `main`; that last row reached
+`main`, a rule was added for it afterwards, and no replay has confirmed the rule yet.
 
 ## Extractor
 
@@ -18,7 +18,7 @@ caught by a test, a gold comparison or a review before it reached `main`; that l
 | A commercial nutrition program was given `end_kind: unknown` instead of `ended`. | Gold comparison | Left as a sampled extraction error; the result erred toward `review` |
 | On the holdout cases one document date was written in a shape the schema rejects and failed the whole run; baseline values carried a wrong `event_date` or none bound to them; exclusion evidence was returned with a wrong assertion or not at all. | The holdout evaluation of 2026-11-10 (`docs/holdout-eval.md`): local schema validation, then the gold comparison | One more attempt after a failed validation; prompt `extract-v5` (date shapes, `event_date` only from the quote, document dates, every exclusion mention); the verifier binds the only date of a clause to its value across a label. The three holdout cases are no longer untouched |
 | On the second holdout batch the drug of the GLP-1 start was returned as a brand name followed by the ingredient in parentheses. The name resolver, which mapped only a bare brand or a bare ingredient, did not resolve that form, so no initiation date was verified. Behind 30 of the 37 wrong rows of that run. | The holdout evaluation of 2026-11-23 (`docs/holdout-eval.md`): the gold comparison, then a call of the resolver on the stored strings | The resolver accepts a brand written with exactly its own ingredient in parentheses, in either order, and leaves every other parenthetical name unresolved (contract §5). The holdout cases were not run again |
-| Evidence excluded for unknown timing is ignored when it contradicts the counted evidence. In one case of the second holdout batch the document-date fact for one document was not returned, so that document's height, weight and BMI carried no date and were excluded as `timing_unknown`; only the BMI stated in another document was counted, the disagreement between the two documents was not seen, and two rows are `supported` where gold has `conflict` and `review`: two false supports. | The regression replay of holdout batch 2 made on 2026-11-23 after the resolver fix (`docs/holdout-eval.md`): the gold comparison | Not fixed |
+| Evidence excluded for unknown timing is ignored when it contradicts the counted evidence. In one case of the second holdout batch the document-date fact for one document was not returned, so that document's height, weight and BMI carried no date and were excluded as `timing_unknown`; only the BMI stated in another document was counted, the disagreement between the two documents was not seen, and two rows are `supported` where gold has `conflict` and `review`: two false supports. | The regression replay of holdout batch 2 made on 2026-11-23 after the resolver fix (`docs/holdout-eval.md`): the gold comparison | A BMI sub-result that would be `supported` or `not_supported` becomes `review` + `undated_counterevidence` when a verified value of unknown timing lies on the other side of that threshold, and `claim.bmi_bracket` becomes `review` when such a value lies in another bracket (contract §3.1 step 9). Written and tested on invented values; the holdout cases were not run for it, and no replay has confirmed it yet |
 
 ## Coding agent
 
