@@ -1436,7 +1436,7 @@
     }
   },
   "generated_from": {
-    "code_sha": "62706e81fbcddb1dadab67de394bdeb472444984",
+    "code_sha": "3b8f0fc7336ab5ac7c23baea952bfea03a5c1dc4",
     "model_returned": "claude-sonnet-5-5",
     "prompt_version": "extract-v5",
     "rules_version": "bridge-v1",

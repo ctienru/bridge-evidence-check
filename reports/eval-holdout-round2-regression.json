@@ -1,0 +1,4981 @@
+{
+  "baseline": {
+    "bootstrap": true,
+    "found": false,
+    "gold_changed": [],
+    "problem": null,
+    "ref": null,
+    "sha256": null
+  },
+  "cost_usd": 0.0,
+  "eval_version": 1,
+  "exit_code": 0,
+  "generated_from": {
+    "code_sha": "3b8f0fc7336ab5ac7c23baea952bfea03a5c1dc4",
+    "model_returned": "claude-sonnet-5-5",
+    "prompt_version": "extract-v5",
+    "rules_version": "bridge-v1",
+    "schema_version": "v2",
+    "splitter_version": "sentences-v1"
+  },
+  "incomplete": false,
+  "manifest_sha256": "a86345f6a025beb79b7be6dd1926c48a42fcc8a991302aa75652cc8219076191",
+  "mode": "online",
+  "regression": {
+    "detected": false,
+    "items": []
+  },
+  "score": {
+    "cases": {
+      "case-09": {
+        "case_flags": {
+          "correct": true,
+          "gold": [],
+          "live": []
+        },
+        "case_id": "case-09",
+        "citations": {
+          "facts_correct": {
+            "n": 10,
+            "of": 25
+          },
+          "gold_evidence_recalled": {
+            "n": 24,
+            "of": 25
+          },
+          "quotes_located": {
+            "n": 32,
+            "of": 32
+          }
+        },
+        "claims": {
+          "claim.age_18": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "claim.age_18",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "supported"
+          },
+          "claim.bmi_bracket": {
+            "correct": false,
+            "false_support": true,
+            "first_error": "extraction_wrong_value",
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "review",
+            "id": "claim.bmi_bracket",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "supported"
+          },
+          "claim.bmi_path_b.ckd": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "compute_timepoint",
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "claim.bmi_path_b.ckd",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "insufficient"
+          },
+          "claim.bmi_path_b.htn": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "review",
+            "id": "claim.bmi_path_b.htn",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "review"
+          },
+          "claim.bmi_path_c.mi": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "claim.bmi_path_c.mi",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "insufficient"
+          },
+          "claim.drug": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "claim.drug",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "supported"
+          },
+          "claim.exclusion.t2dm": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "review",
+            "id": "claim.exclusion.t2dm",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "review"
+          }
+        },
+        "claims_correct": {
+          "n": 5,
+          "of": 7
+        },
+        "claims_false_supports": {
+          "correctly_automated": {
+            "n": 0,
+            "of": 0
+          },
+          "count": 1,
+          "gold_non_supported": 4,
+          "system_supported": 3
+        },
+        "conditions": {
+          "age_18": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "age_18",
+            "kind": "condition",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "supported"
+          },
+          "bmi_path_a": {
+            "correct": false,
+            "false_support": true,
+            "first_error": "extraction_missed",
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "conflict",
+            "id": "bmi_path_a",
+            "kind": "path",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "supported"
+          },
+          "bmi_path_b": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "extraction_missed",
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "bmi_path_b",
+            "kind": "path",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_b.bmi": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "extraction_missed",
+            "flags": [],
+            "gold_flags": [
+              "inconsistent_values"
+            ],
+            "gold_status": "supported",
+            "id": "bmi_path_b.bmi",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "supported"
+          },
+          "bmi_path_b.ckd": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "compute_timepoint",
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "bmi_path_b.ckd",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_b.hfpef": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_b.hfpef",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_b.htn": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "extraction_wrong_value",
+            "flags": [],
+            "gold_flags": [
+              "class_ambiguous",
+              "same_note_list"
+            ],
+            "gold_status": "review",
+            "id": "bmi_path_b.htn",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "factsheet",
+            "status": "insufficient"
+          },
+          "bmi_path_c": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c",
+            "kind": "path",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_c.bmi": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "extraction_missed",
+            "flags": [],
+            "gold_flags": [
+              "inconsistent_values"
+            ],
+            "gold_status": "supported",
+            "id": "bmi_path_c.bmi",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "supported"
+          },
+          "bmi_path_c.mi": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c.mi",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_c.pad": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c.pad",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_c.prediabetes": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c.prediabetes",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_c.stroke": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c.stroke",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "exclusion.mash": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "exclusion.mash",
+            "kind": "exclusion",
+            "missed_exclusion": false,
+            "policy_source": "form",
+            "status": "insufficient"
+          },
+          "exclusion.osa": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "exclusion.osa",
+            "kind": "exclusion",
+            "missed_exclusion": false,
+            "policy_source": "form",
+            "status": "insufficient"
+          },
+          "exclusion.part_d_glp1": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "exclusion.part_d_glp1",
+            "kind": "exclusion",
+            "missed_exclusion": false,
+            "policy_source": "partd",
+            "status": "insufficient"
+          },
+          "exclusion.t2dm": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "review",
+            "id": "exclusion.t2dm",
+            "kind": "exclusion",
+            "missed_exclusion": false,
+            "policy_source": "form",
+            "status": "review"
+          },
+          "lifestyle.activity": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "lifestyle.activity",
+            "kind": "lifestyle",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "insufficient"
+          },
+          "lifestyle.nutrition": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "lifestyle.nutrition",
+            "kind": "lifestyle",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "insufficient"
+          },
+          "patient_identity": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [
+              "id_missing"
+            ],
+            "gold_flags": [
+              "id_missing"
+            ],
+            "gold_status": "review",
+            "id": "patient_identity",
+            "kind": "condition",
+            "missed_exclusion": false,
+            "policy_source": "form",
+            "status": "review"
+          }
+        },
+        "conditions_correct": {
+          "n": 14,
+          "of": 20
+        },
+        "cost_usd": 0.0,
+        "exclusion_evidence_found": 1,
+        "exclusion_reasons": {
+          "assertion_mismatch": 1,
+          "claim_document": 3,
+          "value_not_in_quote": 2
+        },
+        "extraction_source": "cache",
+        "facts": {
+          "absent_correct": 13,
+          "absent_false_positive": 0,
+          "excluded_unmatched": 2,
+          "false_positives": 8,
+          "gold_facts": 25,
+          "matched": 10,
+          "matched_but_excluded": 2,
+          "missed": 2,
+          "wrong_value": 11,
+          "wrong_value_timing_only": 3
+        },
+        "failed_stage": null,
+        "false_supports": {
+          "correctly_automated": {
+            "n": 1,
+            "of": 2
+          },
+          "count": 1,
+          "gold_non_supported": 15,
+          "system_supported": 4
+        },
+        "first_errors": {
+          "compute_timepoint": 2,
+          "extraction_extra": 0,
+          "extraction_missed": 4,
+          "extraction_wrong_value": 2,
+          "gold_question": 0,
+          "rules": 0,
+          "run_failed": 0,
+          "verify_excluded": 0
+        },
+        "gold_origin": {
+          "model_candidate": 11,
+          "spec": 14
+        },
+        "gold_sha256": "f60b9ea80a1e58e539a1a1227e7bfef42fcf5ae16ebc727bb493f704e81b7bde",
+        "gold_with_clause": {
+          "n": 25,
+          "of": 25
+        },
+        "human_workload": 7,
+        "missed_exclusions": {
+          "n": 0,
+          "of": 1
+        },
+        "needs_human": true,
+        "positions": {
+          "candidate": 0,
+          "normalized": 0,
+          "not_found": 0,
+          "verbatim": 32
+        },
+        "run_id": 5,
+        "run_status": "completed",
+        "section": "mtsamples",
+        "traps": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_b.ckd",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.ckd"
+            ],
+            "first_error": "extraction_missed",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-ischemic-heart-disease-not-mi",
+            "variant_id": "case-09"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_b.ckd",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.ckd"
+            ],
+            "first_error": "extraction_missed",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-diabetes-type-unspecified",
+            "variant_id": "case-09"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_b.ckd",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.ckd"
+            ],
+            "first_error": "extraction_missed",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-ckd-stage-iv-stated",
+            "variant_id": "case-09"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_b.ckd",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.ckd"
+            ],
+            "first_error": "extraction_missed",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-htn-two-distinct-drugs-above-threshold",
+            "variant_id": "case-09"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_b.ckd",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.ckd"
+            ],
+            "first_error": "extraction_missed",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-cross-doc-bmi-conflict-across-threshold",
+            "variant_id": "case-09"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_b.ckd",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.ckd"
+            ],
+            "first_error": "extraction_missed",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-same-note-med-list-date",
+            "variant_id": "case-09"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_b.ckd",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.ckd"
+            ],
+            "first_error": "extraction_missed",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-pa-claim-contradicts-record",
+            "variant_id": "case-09"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_b.ckd",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.ckd"
+            ],
+            "first_error": "extraction_missed",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-document-missing-patient-id",
+            "variant_id": "case-09"
+          }
+        ],
+        "variant_id": "case-09"
+      },
+      "case-10": {
+        "case_flags": {
+          "correct": true,
+          "gold": [],
+          "live": []
+        },
+        "case_id": "case-10",
+        "citations": {
+          "facts_correct": {
+            "n": 19,
+            "of": 29
+          },
+          "gold_evidence_recalled": {
+            "n": 29,
+            "of": 29
+          },
+          "quotes_located": {
+            "n": 34,
+            "of": 34
+          }
+        },
+        "claims": {
+          "claim.age_18": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "claim.age_18",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "supported"
+          },
+          "claim.bmi_bracket": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "conflict",
+            "id": "claim.bmi_bracket",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "conflict"
+          },
+          "claim.bmi_path_b.htn": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "extraction_wrong_value",
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "conflict",
+            "id": "claim.bmi_path_b.htn",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "review"
+          },
+          "claim.drug": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "claim.drug",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "supported"
+          },
+          "claim.exclusion.mash": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "extraction_wrong_value",
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "claim.exclusion.mash",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": null
+          },
+          "claim.exclusion.t2dm": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "extraction_wrong_value",
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "conflict",
+            "id": "claim.exclusion.t2dm",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": null
+          }
+        },
+        "claims_correct": {
+          "n": 3,
+          "of": 6
+        },
+        "claims_false_supports": {
+          "correctly_automated": {
+            "n": 0,
+            "of": 0
+          },
+          "count": 0,
+          "gold_non_supported": 4,
+          "system_supported": 2
+        },
+        "conditions": {
+          "age_18": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "age_18",
+            "kind": "condition",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "supported"
+          },
+          "bmi_path_a": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "compute_timepoint",
+            "flags": [
+              "height_from_other_date"
+            ],
+            "gold_flags": [
+              "height_from_other_date",
+              "inconsistent_values"
+            ],
+            "gold_status": "not_supported",
+            "id": "bmi_path_a",
+            "kind": "path",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "not_supported"
+          },
+          "bmi_path_b": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_b",
+            "kind": "path",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_b.bmi": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "compute_timepoint",
+            "flags": [
+              "height_from_other_date"
+            ],
+            "gold_flags": [
+              "height_from_other_date",
+              "inconsistent_values"
+            ],
+            "gold_status": "supported",
+            "id": "bmi_path_b.bmi",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "supported"
+          },
+          "bmi_path_b.ckd": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_b.ckd",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_b.hfpef": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_b.hfpef",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_b.htn": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "extraction_wrong_value",
+            "flags": [],
+            "gold_flags": [
+              "same_note_list"
+            ],
+            "gold_status": "not_supported",
+            "id": "bmi_path_b.htn",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "factsheet",
+            "status": "insufficient"
+          },
+          "bmi_path_c": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c",
+            "kind": "path",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_c.bmi": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "compute_timepoint",
+            "flags": [
+              "height_from_other_date"
+            ],
+            "gold_flags": [
+              "height_from_other_date",
+              "inconsistent_values"
+            ],
+            "gold_status": "supported",
+            "id": "bmi_path_c.bmi",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "supported"
+          },
+          "bmi_path_c.mi": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c.mi",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_c.pad": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c.pad",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_c.prediabetes": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c.prediabetes",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_c.stroke": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c.stroke",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "exclusion.mash": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "exclusion.mash",
+            "kind": "exclusion",
+            "missed_exclusion": false,
+            "policy_source": "form",
+            "status": "insufficient"
+          },
+          "exclusion.osa": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "exclusion.osa",
+            "kind": "exclusion",
+            "missed_exclusion": false,
+            "policy_source": "form",
+            "status": "insufficient"
+          },
+          "exclusion.part_d_glp1": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "not_supported",
+            "id": "exclusion.part_d_glp1",
+            "kind": "exclusion",
+            "missed_exclusion": false,
+            "policy_source": "partd",
+            "status": "not_supported"
+          },
+          "exclusion.t2dm": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "review",
+            "id": "exclusion.t2dm",
+            "kind": "exclusion",
+            "missed_exclusion": false,
+            "policy_source": "form",
+            "status": "review"
+          },
+          "lifestyle.activity": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "lifestyle.activity",
+            "kind": "lifestyle",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "insufficient"
+          },
+          "lifestyle.nutrition": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "lifestyle.nutrition",
+            "kind": "lifestyle",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "insufficient"
+          },
+          "patient_identity": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "patient_identity",
+            "kind": "condition",
+            "missed_exclusion": false,
+            "policy_source": "form",
+            "status": "supported"
+          }
+        },
+        "conditions_correct": {
+          "n": 16,
+          "of": 20
+        },
+        "cost_usd": 0.0,
+        "exclusion_evidence_found": 1,
+        "exclusion_reasons": {
+          "assertion_mismatch": 3,
+          "claim_document": 4,
+          "value_not_in_quote": 1
+        },
+        "extraction_source": "cache",
+        "facts": {
+          "absent_correct": 12,
+          "absent_false_positive": 0,
+          "excluded_unmatched": 3,
+          "false_positives": 3,
+          "gold_facts": 29,
+          "matched": 19,
+          "matched_but_excluded": 3,
+          "missed": 0,
+          "wrong_value": 7,
+          "wrong_value_timing_only": 1
+        },
+        "failed_stage": null,
+        "false_supports": {
+          "correctly_automated": {
+            "n": 3,
+            "of": 4
+          },
+          "count": 0,
+          "gold_non_supported": 16,
+          "system_supported": 4
+        },
+        "first_errors": {
+          "compute_timepoint": 3,
+          "extraction_extra": 0,
+          "extraction_missed": 0,
+          "extraction_wrong_value": 4,
+          "gold_question": 0,
+          "rules": 0,
+          "run_failed": 0,
+          "verify_excluded": 0
+        },
+        "gold_origin": {
+          "spec": 29
+        },
+        "gold_sha256": "c6070a69afbc8ccf169b57ee4c8f917b2f157021368fe89aa2f627909fd8b3a8",
+        "gold_with_clause": {
+          "n": 29,
+          "of": 29
+        },
+        "human_workload": 5,
+        "missed_exclusions": {
+          "n": 0,
+          "of": 1
+        },
+        "needs_human": true,
+        "positions": {
+          "candidate": 0,
+          "normalized": 0,
+          "not_found": 0,
+          "verbatim": 34
+        },
+        "run_id": 6,
+        "run_status": "completed",
+        "section": "authored",
+        "traps": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_c.bmi",
+              "claim.bmi_path_b.htn",
+              "claim.exclusion.t2dm",
+              "claim.exclusion.mash"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-presurgical-bmi-as-baseline",
+            "variant_id": "case-10"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_c.bmi",
+              "claim.bmi_path_b.htn",
+              "claim.exclusion.t2dm",
+              "claim.exclusion.mash"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-stated-vs-computed-bmi-mismatch",
+            "variant_id": "case-10"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_c.bmi",
+              "claim.bmi_path_b.htn",
+              "claim.exclusion.t2dm",
+              "claim.exclusion.mash"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-prior-glp1-self-pay",
+            "variant_id": "case-10"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_c.bmi",
+              "claim.bmi_path_b.htn",
+              "claim.exclusion.t2dm",
+              "claim.exclusion.mash"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-t2dm-in-remission",
+            "variant_id": "case-10"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_c.bmi",
+              "claim.bmi_path_b.htn",
+              "claim.exclusion.t2dm",
+              "claim.exclusion.mash"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-sedentary-explicit",
+            "variant_id": "case-10"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_c.bmi",
+              "claim.bmi_path_b.htn",
+              "claim.exclusion.t2dm",
+              "claim.exclusion.mash"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-steatosis-not-mash",
+            "variant_id": "case-10"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_c.bmi",
+              "claim.bmi_path_b.htn",
+              "claim.exclusion.t2dm",
+              "claim.exclusion.mash"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-pa-claim-contradicts-record",
+            "variant_id": "case-10"
+          }
+        ],
+        "variant_id": "case-10"
+      },
+      "case-12": {
+        "case_flags": {
+          "correct": true,
+          "gold": [],
+          "live": []
+        },
+        "case_id": "case-12",
+        "citations": {
+          "facts_correct": {
+            "n": 10,
+            "of": 26
+          },
+          "gold_evidence_recalled": {
+            "n": 26,
+            "of": 26
+          },
+          "quotes_located": {
+            "n": 39,
+            "of": 39
+          }
+        },
+        "claims": {
+          "claim.age_18": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "claim.age_18",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "supported"
+          },
+          "claim.bmi_bracket": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "extraction_wrong_value",
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "claim.bmi_bracket",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "insufficient"
+          },
+          "claim.bmi_path_b.htn": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "extraction_wrong_value",
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "review",
+            "id": "claim.bmi_path_b.htn",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "insufficient"
+          },
+          "claim.bmi_path_c.mi": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "claim.bmi_path_c.mi",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "supported"
+          },
+          "claim.bmi_path_c.prediabetes": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "claim.bmi_path_c.prediabetes",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "insufficient"
+          },
+          "claim.drug": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "claim.drug",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "supported"
+          },
+          "claim.exclusion.osa": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "claim.exclusion.osa",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "insufficient"
+          },
+          "claim.exclusion.t2dm": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "review",
+            "id": "claim.exclusion.t2dm",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "review"
+          }
+        },
+        "claims_correct": {
+          "n": 6,
+          "of": 8
+        },
+        "claims_false_supports": {
+          "correctly_automated": {
+            "n": 0,
+            "of": 0
+          },
+          "count": 0,
+          "gold_non_supported": 4,
+          "system_supported": 3
+        },
+        "conditions": {
+          "age_18": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "age_18",
+            "kind": "condition",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "supported"
+          },
+          "bmi_path_a": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "extraction_wrong_value",
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "bmi_path_a",
+            "kind": "path",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_b": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_b",
+            "kind": "path",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_b.bmi": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "extraction_wrong_value",
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "bmi_path_b.bmi",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_b.ckd": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_b.ckd",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_b.hfpef": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_b.hfpef",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_b.htn": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_b.htn",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "factsheet",
+            "status": "insufficient"
+          },
+          "bmi_path_c": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c",
+            "kind": "path",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_c.bmi": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "extraction_wrong_value",
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "bmi_path_c.bmi",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_c.mi": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "not_supported",
+            "id": "bmi_path_c.mi",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "not_supported"
+          },
+          "bmi_path_c.pad": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c.pad",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_c.prediabetes": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c.prediabetes",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_c.stroke": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "not_supported",
+            "id": "bmi_path_c.stroke",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "not_supported"
+          },
+          "exclusion.mash": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "exclusion.mash",
+            "kind": "exclusion",
+            "missed_exclusion": false,
+            "policy_source": "form",
+            "status": "insufficient"
+          },
+          "exclusion.osa": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "exclusion.osa",
+            "kind": "exclusion",
+            "missed_exclusion": false,
+            "policy_source": "form",
+            "status": "insufficient"
+          },
+          "exclusion.part_d_glp1": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "exclusion.part_d_glp1",
+            "kind": "exclusion",
+            "missed_exclusion": false,
+            "policy_source": "partd",
+            "status": "insufficient"
+          },
+          "exclusion.t2dm": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "review",
+            "id": "exclusion.t2dm",
+            "kind": "exclusion",
+            "missed_exclusion": false,
+            "policy_source": "form",
+            "status": "review"
+          },
+          "lifestyle.activity": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "lifestyle.activity",
+            "kind": "lifestyle",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "insufficient"
+          },
+          "lifestyle.nutrition": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "lifestyle.nutrition",
+            "kind": "lifestyle",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "insufficient"
+          },
+          "patient_identity": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [
+              "id_missing"
+            ],
+            "gold_flags": [
+              "id_missing"
+            ],
+            "gold_status": "review",
+            "id": "patient_identity",
+            "kind": "condition",
+            "missed_exclusion": false,
+            "policy_source": "form",
+            "status": "review"
+          }
+        },
+        "conditions_correct": {
+          "n": 17,
+          "of": 20
+        },
+        "cost_usd": 0.0,
+        "exclusion_evidence_found": 1,
+        "exclusion_reasons": {
+          "assertion_mismatch": 10,
+          "claim_document": 8,
+          "unparseable_value": 1,
+          "value_not_in_quote": 4
+        },
+        "extraction_source": "cache",
+        "facts": {
+          "absent_correct": 8,
+          "absent_false_positive": 0,
+          "excluded_unmatched": 14,
+          "false_positives": 2,
+          "gold_facts": 26,
+          "matched": 10,
+          "matched_but_excluded": 2,
+          "missed": 2,
+          "wrong_value": 12,
+          "wrong_value_timing_only": 3
+        },
+        "failed_stage": null,
+        "false_supports": {
+          "correctly_automated": {
+            "n": 1,
+            "of": 2
+          },
+          "count": 0,
+          "gold_non_supported": 16,
+          "system_supported": 1
+        },
+        "first_errors": {
+          "compute_timepoint": 0,
+          "extraction_extra": 0,
+          "extraction_missed": 0,
+          "extraction_wrong_value": 5,
+          "gold_question": 0,
+          "rules": 0,
+          "run_failed": 0,
+          "verify_excluded": 0
+        },
+        "gold_origin": {
+          "model_candidate": 12,
+          "spec": 14
+        },
+        "gold_sha256": "5f5e88847cf680fc7877e9b9dc0ddd956b81a78246acaeb13cdfc0f59badca85",
+        "gold_with_clause": {
+          "n": 26,
+          "of": 26
+        },
+        "human_workload": 8,
+        "missed_exclusions": {
+          "n": 0,
+          "of": 1
+        },
+        "needs_human": true,
+        "positions": {
+          "candidate": 0,
+          "normalized": 0,
+          "not_found": 0,
+          "verbatim": 39
+        },
+        "run_id": 7,
+        "run_status": "completed",
+        "section": "mtsamples",
+        "traps": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.htn"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-negated-history-statements",
+            "variant_id": "case-12"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.htn"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-bmi-from-lb-in",
+            "variant_id": "case-12"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.htn"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-osa-probable-uncertain",
+            "variant_id": "case-12"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.htn"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-controlled-statement-vs-reading",
+            "variant_id": "case-12"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.htn"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-borderline-diabetes-with-labs",
+            "variant_id": "case-12"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.htn"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-pa-claim-contradicts-record",
+            "variant_id": "case-12"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.htn"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-document-missing-patient-id",
+            "variant_id": "case-12"
+          }
+        ],
+        "variant_id": "case-12"
+      },
+      "case-18": {
+        "case_flags": {
+          "correct": true,
+          "gold": [],
+          "live": []
+        },
+        "case_id": "case-18",
+        "citations": {
+          "facts_correct": {
+            "n": 7,
+            "of": 26
+          },
+          "gold_evidence_recalled": {
+            "n": 17,
+            "of": 26
+          },
+          "quotes_located": {
+            "n": 25,
+            "of": 25
+          }
+        },
+        "claims": {
+          "claim.age_18": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "claim.age_18",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "supported"
+          },
+          "claim.bmi_bracket": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "extraction_wrong_value",
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "claim.bmi_bracket",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "insufficient"
+          },
+          "claim.bmi_path_c.prediabetes": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "claim.bmi_path_c.prediabetes",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "insufficient"
+          },
+          "claim.drug": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "claim.drug",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "supported"
+          },
+          "claim.exclusion.t2dm": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "claim.exclusion.t2dm",
+            "kind": "claim",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "supported"
+          }
+        },
+        "claims_correct": {
+          "n": 4,
+          "of": 5
+        },
+        "claims_false_supports": {
+          "correctly_automated": {
+            "n": 0,
+            "of": 0
+          },
+          "count": 0,
+          "gold_non_supported": 1,
+          "system_supported": 3
+        },
+        "conditions": {
+          "age_18": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "age_18",
+            "kind": "condition",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "supported"
+          },
+          "bmi_path_a": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "extraction_wrong_value",
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "not_supported",
+            "id": "bmi_path_a",
+            "kind": "path",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_b": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_b",
+            "kind": "path",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_b.bmi": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "extraction_wrong_value",
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "bmi_path_b.bmi",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_b.ckd": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_b.ckd",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_b.hfpef": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_b.hfpef",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_b.htn": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_b.htn",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "factsheet",
+            "status": "insufficient"
+          },
+          "bmi_path_c": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c",
+            "kind": "path",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_c.bmi": {
+            "correct": false,
+            "false_support": false,
+            "first_error": "extraction_wrong_value",
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "supported",
+            "id": "bmi_path_c.bmi",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_c.mi": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c.mi",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_c.pad": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c.pad",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_c.prediabetes": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c.prediabetes",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "bmi_path_c.stroke": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "bmi_path_c.stroke",
+            "kind": "sub",
+            "missed_exclusion": false,
+            "policy_source": "faq",
+            "status": "insufficient"
+          },
+          "exclusion.mash": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "exclusion.mash",
+            "kind": "exclusion",
+            "missed_exclusion": false,
+            "policy_source": "form",
+            "status": "insufficient"
+          },
+          "exclusion.osa": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "exclusion.osa",
+            "kind": "exclusion",
+            "missed_exclusion": false,
+            "policy_source": "form",
+            "status": "insufficient"
+          },
+          "exclusion.part_d_glp1": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "exclusion.part_d_glp1",
+            "kind": "exclusion",
+            "missed_exclusion": false,
+            "policy_source": "partd",
+            "status": "insufficient"
+          },
+          "exclusion.t2dm": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "not_supported",
+            "id": "exclusion.t2dm",
+            "kind": "exclusion",
+            "missed_exclusion": false,
+            "policy_source": "form",
+            "status": "not_supported"
+          },
+          "lifestyle.activity": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "lifestyle.activity",
+            "kind": "lifestyle",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "insufficient"
+          },
+          "lifestyle.nutrition": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [],
+            "gold_flags": [],
+            "gold_status": "insufficient",
+            "id": "lifestyle.nutrition",
+            "kind": "lifestyle",
+            "missed_exclusion": false,
+            "policy_source": null,
+            "status": "insufficient"
+          },
+          "patient_identity": {
+            "correct": true,
+            "false_support": false,
+            "first_error": null,
+            "flags": [
+              "id_missing"
+            ],
+            "gold_flags": [
+              "id_missing"
+            ],
+            "gold_status": "review",
+            "id": "patient_identity",
+            "kind": "condition",
+            "missed_exclusion": false,
+            "policy_source": "form",
+            "status": "review"
+          }
+        },
+        "conditions_correct": {
+          "n": 17,
+          "of": 20
+        },
+        "cost_usd": 0.0,
+        "exclusion_evidence_found": 0,
+        "exclusion_reasons": {
+          "claim_document": 5,
+          "value_not_in_quote": 1
+        },
+        "extraction_source": "cache",
+        "facts": {
+          "absent_correct": 13,
+          "absent_false_positive": 0,
+          "excluded_unmatched": 4,
+          "false_positives": 6,
+          "gold_facts": 26,
+          "matched": 7,
+          "matched_but_excluded": 2,
+          "missed": 1,
+          "wrong_value": 16,
+          "wrong_value_timing_only": 0
+        },
+        "failed_stage": null,
+        "false_supports": {
+          "correctly_automated": {
+            "n": 2,
+            "of": 3
+          },
+          "count": 0,
+          "gold_non_supported": 17,
+          "system_supported": 1
+        },
+        "first_errors": {
+          "compute_timepoint": 0,
+          "extraction_extra": 0,
+          "extraction_missed": 0,
+          "extraction_wrong_value": 4,
+          "gold_question": 0,
+          "rules": 0,
+          "run_failed": 0,
+          "verify_excluded": 0
+        },
+        "gold_origin": {
+          "model_candidate": 16,
+          "spec": 10
+        },
+        "gold_sha256": "c83302a3cde96e009ddaa4b2a3382f9555e412a223c40460d4e981ad1cd1c313",
+        "gold_with_clause": {
+          "n": 26,
+          "of": 26
+        },
+        "human_workload": 7,
+        "missed_exclusions": {
+          "n": 0,
+          "of": 0
+        },
+        "needs_human": true,
+        "positions": {
+          "candidate": 0,
+          "normalized": 0,
+          "not_found": 0,
+          "verbatim": 25
+        },
+        "run_id": 8,
+        "run_status": "completed",
+        "section": "case_report",
+        "traps": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-explicit-baseline-bmi",
+            "variant_id": "case-18"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-metric-and-imperial-side-by-side",
+            "variant_id": "case-18"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-pause-and-resume-not-new-start",
+            "variant_id": "case-18"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-post-initiation-measurements",
+            "variant_id": "case-18"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-a1c-below-range-not-counterevidence",
+            "variant_id": "case-18"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-t2dm-explicitly-negated",
+            "variant_id": "case-18"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-disability-not-activity-exception",
+            "variant_id": "case-18"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-nutrition-structured-strong",
+            "variant_id": "case-18"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-pa-claim-contradicts-record",
+            "variant_id": "case-18"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-document-missing-patient-id",
+            "variant_id": "case-18"
+          }
+        ],
+        "variant_id": "case-18"
+      }
+    },
+    "condition_sources": {
+      "age_18": "faq",
+      "bmi_path_a": "faq",
+      "bmi_path_b": "faq",
+      "bmi_path_b.bmi": "faq",
+      "bmi_path_b.ckd": "faq",
+      "bmi_path_b.hfpef": "faq",
+      "bmi_path_b.htn": "factsheet",
+      "bmi_path_c": "faq",
+      "bmi_path_c.bmi": "faq",
+      "bmi_path_c.mi": "faq",
+      "bmi_path_c.pad": "faq",
+      "bmi_path_c.prediabetes": "faq",
+      "bmi_path_c.stroke": "faq",
+      "exclusion.mash": "form",
+      "exclusion.osa": "form",
+      "exclusion.part_d_glp1": "partd",
+      "exclusion.t2dm": "form",
+      "patient_identity": "form"
+    },
+    "coverage": {
+      "cells": {
+        "T-a1c-below-range-not-counterevidence": {
+          "integrated_case": [
+            "case-18"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-antihypertensive-class-ambiguous": {
+          "integrated_case": [],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": [
+            "htn-combination-pill"
+          ]
+        },
+        "T-bmi-exact-threshold": {
+          "integrated_case": [],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": [
+            "bmi-29.9-vs-30.1"
+          ]
+        },
+        "T-bmi-from-lb-in": {
+          "integrated_case": [
+            "case-12"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-borderline-diabetes-with-labs": {
+          "integrated_case": [
+            "case-12"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-ckd-stage-iv-stated": {
+          "integrated_case": [
+            "case-09"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-combination-pill": {
+          "integrated_case": [],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": [
+            "htn-combination-pill"
+          ]
+        },
+        "T-controlled-statement-vs-reading": {
+          "integrated_case": [
+            "case-12"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-cross-doc-bmi-conflict-across-threshold": {
+          "integrated_case": [
+            "case-09"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-diabetes-type-unspecified": {
+          "integrated_case": [
+            "case-09"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-disability-not-activity-exception": {
+          "integrated_case": [
+            "case-18"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-document-missing-patient-id": {
+          "integrated_case": [
+            "case-09",
+            "case-12",
+            "case-18"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-explicit-baseline-bmi": {
+          "integrated_case": [
+            "case-18"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-htn-two-distinct-drugs-above-threshold": {
+          "integrated_case": [
+            "case-09"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-ischemic-heart-disease-not-mi": {
+          "integrated_case": [
+            "case-09"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-metric-and-imperial-side-by-side": {
+          "integrated_case": [
+            "case-18"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-negated-history-statements": {
+          "integrated_case": [
+            "case-12"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-nutrition-structured-strong": {
+          "integrated_case": [
+            "case-18"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-osa-probable-uncertain": {
+          "integrated_case": [
+            "case-12"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-pa-claim-contradicts-record": {
+          "integrated_case": [
+            "case-09",
+            "case-10",
+            "case-12",
+            "case-18"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-part-d-2026": {
+          "integrated_case": [],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": [
+            "part-d-2025"
+          ]
+        },
+        "T-pause-and-resume-not-new-start": {
+          "integrated_case": [
+            "case-18"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-post-initiation-measurements": {
+          "integrated_case": [
+            "case-18"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-presurgical-bmi-as-baseline": {
+          "integrated_case": [
+            "case-10"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-prior-glp1-self-pay": {
+          "integrated_case": [
+            "case-10"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-same-note-med-list-date": {
+          "integrated_case": [
+            "case-09"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-sedentary-explicit": {
+          "integrated_case": [
+            "case-10"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-stated-vs-computed-bmi-mismatch": {
+          "integrated_case": [
+            "case-10"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-steatosis-not-mash": {
+          "integrated_case": [
+            "case-10"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-t2dm-explicitly-negated": {
+          "integrated_case": [
+            "case-18"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-t2dm-in-remission": {
+          "integrated_case": [
+            "case-10"
+          ],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": []
+        },
+        "T-wrong-patient-same-dob": {
+          "integrated_case": [],
+          "isolated_minimal_pair": [],
+          "isolated_real": [],
+          "ladder_level": [],
+          "rules_fixture": [
+            "identity-mismatch"
+          ]
+        }
+      },
+      "filled": {
+        "n": 32,
+        "of": 160
+      },
+      "not_covered": [
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-a1c-below-range-not-counterevidence"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-a1c-below-range-not-counterevidence"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-a1c-below-range-not-counterevidence"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-a1c-below-range-not-counterevidence"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-antihypertensive-class-ambiguous"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-antihypertensive-class-ambiguous"
+        },
+        {
+          "test_type": "integrated_case",
+          "trap_id": "T-antihypertensive-class-ambiguous"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-antihypertensive-class-ambiguous"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-bmi-exact-threshold"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-bmi-exact-threshold"
+        },
+        {
+          "test_type": "integrated_case",
+          "trap_id": "T-bmi-exact-threshold"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-bmi-exact-threshold"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-bmi-from-lb-in"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-bmi-from-lb-in"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-bmi-from-lb-in"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-bmi-from-lb-in"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-borderline-diabetes-with-labs"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-borderline-diabetes-with-labs"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-borderline-diabetes-with-labs"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-borderline-diabetes-with-labs"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-ckd-stage-iv-stated"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-ckd-stage-iv-stated"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-ckd-stage-iv-stated"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-ckd-stage-iv-stated"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-combination-pill"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-combination-pill"
+        },
+        {
+          "test_type": "integrated_case",
+          "trap_id": "T-combination-pill"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-combination-pill"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-controlled-statement-vs-reading"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-controlled-statement-vs-reading"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-controlled-statement-vs-reading"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-controlled-statement-vs-reading"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-cross-doc-bmi-conflict-across-threshold"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-cross-doc-bmi-conflict-across-threshold"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-cross-doc-bmi-conflict-across-threshold"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-cross-doc-bmi-conflict-across-threshold"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-diabetes-type-unspecified"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-diabetes-type-unspecified"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-diabetes-type-unspecified"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-diabetes-type-unspecified"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-disability-not-activity-exception"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-disability-not-activity-exception"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-disability-not-activity-exception"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-disability-not-activity-exception"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-document-missing-patient-id"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-document-missing-patient-id"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-document-missing-patient-id"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-document-missing-patient-id"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-explicit-baseline-bmi"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-explicit-baseline-bmi"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-explicit-baseline-bmi"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-explicit-baseline-bmi"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-htn-two-distinct-drugs-above-threshold"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-htn-two-distinct-drugs-above-threshold"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-htn-two-distinct-drugs-above-threshold"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-htn-two-distinct-drugs-above-threshold"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-ischemic-heart-disease-not-mi"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-ischemic-heart-disease-not-mi"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-ischemic-heart-disease-not-mi"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-ischemic-heart-disease-not-mi"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-metric-and-imperial-side-by-side"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-metric-and-imperial-side-by-side"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-metric-and-imperial-side-by-side"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-metric-and-imperial-side-by-side"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-negated-history-statements"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-negated-history-statements"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-negated-history-statements"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-negated-history-statements"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-nutrition-structured-strong"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-nutrition-structured-strong"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-nutrition-structured-strong"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-nutrition-structured-strong"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-osa-probable-uncertain"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-osa-probable-uncertain"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-osa-probable-uncertain"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-osa-probable-uncertain"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-pa-claim-contradicts-record"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-pa-claim-contradicts-record"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-pa-claim-contradicts-record"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-pa-claim-contradicts-record"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-part-d-2026"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-part-d-2026"
+        },
+        {
+          "test_type": "integrated_case",
+          "trap_id": "T-part-d-2026"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-part-d-2026"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-pause-and-resume-not-new-start"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-pause-and-resume-not-new-start"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-pause-and-resume-not-new-start"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-pause-and-resume-not-new-start"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-post-initiation-measurements"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-post-initiation-measurements"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-post-initiation-measurements"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-post-initiation-measurements"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-presurgical-bmi-as-baseline"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-presurgical-bmi-as-baseline"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-presurgical-bmi-as-baseline"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-presurgical-bmi-as-baseline"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-prior-glp1-self-pay"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-prior-glp1-self-pay"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-prior-glp1-self-pay"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-prior-glp1-self-pay"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-same-note-med-list-date"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-same-note-med-list-date"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-same-note-med-list-date"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-same-note-med-list-date"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-sedentary-explicit"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-sedentary-explicit"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-sedentary-explicit"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-sedentary-explicit"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-stated-vs-computed-bmi-mismatch"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-stated-vs-computed-bmi-mismatch"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-stated-vs-computed-bmi-mismatch"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-stated-vs-computed-bmi-mismatch"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-steatosis-not-mash"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-steatosis-not-mash"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-steatosis-not-mash"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-steatosis-not-mash"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-t2dm-explicitly-negated"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-t2dm-explicitly-negated"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-t2dm-explicitly-negated"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-t2dm-explicitly-negated"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-t2dm-in-remission"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-t2dm-in-remission"
+        },
+        {
+          "test_type": "rules_fixture",
+          "trap_id": "T-t2dm-in-remission"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-t2dm-in-remission"
+        },
+        {
+          "test_type": "isolated_real",
+          "trap_id": "T-wrong-patient-same-dob"
+        },
+        {
+          "test_type": "isolated_minimal_pair",
+          "trap_id": "T-wrong-patient-same-dob"
+        },
+        {
+          "test_type": "integrated_case",
+          "trap_id": "T-wrong-patient-same-dob"
+        },
+        {
+          "test_type": "ladder_level",
+          "trap_id": "T-wrong-patient-same-dob"
+        }
+      ],
+      "test_types": [
+        "isolated_real",
+        "isolated_minimal_pair",
+        "rules_fixture",
+        "integrated_case",
+        "ladder_level"
+      ],
+      "traps": [
+        "T-a1c-below-range-not-counterevidence",
+        "T-antihypertensive-class-ambiguous",
+        "T-bmi-exact-threshold",
+        "T-bmi-from-lb-in",
+        "T-borderline-diabetes-with-labs",
+        "T-ckd-stage-iv-stated",
+        "T-combination-pill",
+        "T-controlled-statement-vs-reading",
+        "T-cross-doc-bmi-conflict-across-threshold",
+        "T-diabetes-type-unspecified",
+        "T-disability-not-activity-exception",
+        "T-document-missing-patient-id",
+        "T-explicit-baseline-bmi",
+        "T-htn-two-distinct-drugs-above-threshold",
+        "T-ischemic-heart-disease-not-mi",
+        "T-metric-and-imperial-side-by-side",
+        "T-negated-history-statements",
+        "T-nutrition-structured-strong",
+        "T-osa-probable-uncertain",
+        "T-pa-claim-contradicts-record",
+        "T-part-d-2026",
+        "T-pause-and-resume-not-new-start",
+        "T-post-initiation-measurements",
+        "T-presurgical-bmi-as-baseline",
+        "T-prior-glp1-self-pay",
+        "T-same-note-med-list-date",
+        "T-sedentary-explicit",
+        "T-stated-vs-computed-bmi-mismatch",
+        "T-steatosis-not-mash",
+        "T-t2dm-explicitly-negated",
+        "T-t2dm-in-remission",
+        "T-wrong-patient-same-dob"
+      ]
+    },
+    "gold_origin": {
+      "model_candidate": 39,
+      "spec": 67
+    },
+    "gold_with_clause": {
+      "n": 106,
+      "of": 106
+    },
+    "macro": {
+      "claims": [
+        {
+          "by_variant": {
+            "case-09": "supported",
+            "case-10": "supported",
+            "case-12": "supported",
+            "case-18": "supported"
+          },
+          "correct": {
+            "n": 4,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "claim.age_18",
+          "kind": "claim",
+          "policy_source": null
+        },
+        {
+          "by_variant": {
+            "case-09": "supported",
+            "case-10": "conflict",
+            "case-12": "insufficient",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 1,
+            "of": 4
+          },
+          "false_supports": 1,
+          "id": "claim.bmi_bracket",
+          "kind": "claim",
+          "policy_source": null
+        },
+        {
+          "by_variant": {
+            "case-09": "insufficient"
+          },
+          "correct": {
+            "n": 0,
+            "of": 1
+          },
+          "false_supports": 0,
+          "id": "claim.bmi_path_b.ckd",
+          "kind": "claim",
+          "policy_source": null
+        },
+        {
+          "by_variant": {
+            "case-09": "review",
+            "case-10": "review",
+            "case-12": "insufficient"
+          },
+          "correct": {
+            "n": 1,
+            "of": 3
+          },
+          "false_supports": 0,
+          "id": "claim.bmi_path_b.htn",
+          "kind": "claim",
+          "policy_source": null
+        },
+        {
+          "by_variant": {
+            "case-09": "insufficient",
+            "case-12": "supported"
+          },
+          "correct": {
+            "n": 2,
+            "of": 2
+          },
+          "false_supports": 0,
+          "id": "claim.bmi_path_c.mi",
+          "kind": "claim",
+          "policy_source": null
+        },
+        {
+          "by_variant": {
+            "case-12": "insufficient",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 2,
+            "of": 2
+          },
+          "false_supports": 0,
+          "id": "claim.bmi_path_c.prediabetes",
+          "kind": "claim",
+          "policy_source": null
+        },
+        {
+          "by_variant": {
+            "case-09": "supported",
+            "case-10": "supported",
+            "case-12": "supported",
+            "case-18": "supported"
+          },
+          "correct": {
+            "n": 4,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "claim.drug",
+          "kind": "claim",
+          "policy_source": null
+        },
+        {
+          "by_variant": {
+            "case-10": null
+          },
+          "correct": {
+            "n": 0,
+            "of": 1
+          },
+          "false_supports": 0,
+          "id": "claim.exclusion.mash",
+          "kind": "claim",
+          "policy_source": null
+        },
+        {
+          "by_variant": {
+            "case-12": "insufficient"
+          },
+          "correct": {
+            "n": 1,
+            "of": 1
+          },
+          "false_supports": 0,
+          "id": "claim.exclusion.osa",
+          "kind": "claim",
+          "policy_source": null
+        },
+        {
+          "by_variant": {
+            "case-09": "review",
+            "case-10": null,
+            "case-12": "review",
+            "case-18": "supported"
+          },
+          "correct": {
+            "n": 3,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "claim.exclusion.t2dm",
+          "kind": "claim",
+          "policy_source": null
+        }
+      ],
+      "conditions": [
+        {
+          "by_variant": {
+            "case-09": "supported",
+            "case-10": "supported",
+            "case-12": "supported",
+            "case-18": "supported"
+          },
+          "correct": {
+            "n": 4,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "age_18",
+          "kind": "condition",
+          "policy_source": "faq"
+        },
+        {
+          "by_variant": {
+            "case-09": "supported",
+            "case-10": "not_supported",
+            "case-12": "insufficient",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 0,
+            "of": 4
+          },
+          "false_supports": 1,
+          "id": "bmi_path_a",
+          "kind": "path",
+          "policy_source": "faq"
+        },
+        {
+          "by_variant": {
+            "case-09": "insufficient",
+            "case-10": "insufficient",
+            "case-12": "insufficient",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 3,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "bmi_path_b",
+          "kind": "path",
+          "policy_source": "faq"
+        },
+        {
+          "by_variant": {
+            "case-09": "supported",
+            "case-10": "supported",
+            "case-12": "insufficient",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 0,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "bmi_path_b.bmi",
+          "kind": "sub",
+          "policy_source": "faq"
+        },
+        {
+          "by_variant": {
+            "case-09": "insufficient",
+            "case-10": "insufficient",
+            "case-12": "insufficient",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 3,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "bmi_path_b.ckd",
+          "kind": "sub",
+          "policy_source": "faq"
+        },
+        {
+          "by_variant": {
+            "case-09": "insufficient",
+            "case-10": "insufficient",
+            "case-12": "insufficient",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 4,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "bmi_path_b.hfpef",
+          "kind": "sub",
+          "policy_source": "faq"
+        },
+        {
+          "by_variant": {
+            "case-09": "insufficient",
+            "case-10": "insufficient",
+            "case-12": "insufficient",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 2,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "bmi_path_b.htn",
+          "kind": "sub",
+          "policy_source": "factsheet"
+        },
+        {
+          "by_variant": {
+            "case-09": "insufficient",
+            "case-10": "insufficient",
+            "case-12": "insufficient",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 4,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "bmi_path_c",
+          "kind": "path",
+          "policy_source": "faq"
+        },
+        {
+          "by_variant": {
+            "case-09": "supported",
+            "case-10": "supported",
+            "case-12": "insufficient",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 0,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "bmi_path_c.bmi",
+          "kind": "sub",
+          "policy_source": "faq"
+        },
+        {
+          "by_variant": {
+            "case-09": "insufficient",
+            "case-10": "insufficient",
+            "case-12": "not_supported",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 4,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "bmi_path_c.mi",
+          "kind": "sub",
+          "policy_source": "faq"
+        },
+        {
+          "by_variant": {
+            "case-09": "insufficient",
+            "case-10": "insufficient",
+            "case-12": "insufficient",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 4,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "bmi_path_c.pad",
+          "kind": "sub",
+          "policy_source": "faq"
+        },
+        {
+          "by_variant": {
+            "case-09": "insufficient",
+            "case-10": "insufficient",
+            "case-12": "insufficient",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 4,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "bmi_path_c.prediabetes",
+          "kind": "sub",
+          "policy_source": "faq"
+        },
+        {
+          "by_variant": {
+            "case-09": "insufficient",
+            "case-10": "insufficient",
+            "case-12": "not_supported",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 4,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "bmi_path_c.stroke",
+          "kind": "sub",
+          "policy_source": "faq"
+        },
+        {
+          "by_variant": {
+            "case-09": "insufficient",
+            "case-10": "insufficient",
+            "case-12": "insufficient",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 4,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "exclusion.mash",
+          "kind": "exclusion",
+          "policy_source": "form"
+        },
+        {
+          "by_variant": {
+            "case-09": "insufficient",
+            "case-10": "insufficient",
+            "case-12": "insufficient",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 4,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "exclusion.osa",
+          "kind": "exclusion",
+          "policy_source": "form"
+        },
+        {
+          "by_variant": {
+            "case-09": "insufficient",
+            "case-10": "not_supported",
+            "case-12": "insufficient",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 4,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "exclusion.part_d_glp1",
+          "kind": "exclusion",
+          "policy_source": "partd"
+        },
+        {
+          "by_variant": {
+            "case-09": "review",
+            "case-10": "review",
+            "case-12": "review",
+            "case-18": "not_supported"
+          },
+          "correct": {
+            "n": 4,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "exclusion.t2dm",
+          "kind": "exclusion",
+          "policy_source": "form"
+        },
+        {
+          "by_variant": {
+            "case-09": "insufficient",
+            "case-10": "insufficient",
+            "case-12": "insufficient",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 4,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "lifestyle.activity",
+          "kind": "lifestyle",
+          "policy_source": null
+        },
+        {
+          "by_variant": {
+            "case-09": "insufficient",
+            "case-10": "insufficient",
+            "case-12": "insufficient",
+            "case-18": "insufficient"
+          },
+          "correct": {
+            "n": 4,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "lifestyle.nutrition",
+          "kind": "lifestyle",
+          "policy_source": null
+        },
+        {
+          "by_variant": {
+            "case-09": "review",
+            "case-10": "supported",
+            "case-12": "review",
+            "case-18": "review"
+          },
+          "correct": {
+            "n": 4,
+            "of": 4
+          },
+          "false_supports": 0,
+          "id": "patient_identity",
+          "kind": "condition",
+          "policy_source": "form"
+        }
+      ]
+    },
+    "manifest_sha256": "a86345f6a025beb79b7be6dd1926c48a42fcc8a991302aa75652cc8219076191",
+    "micro": {
+      "case_families": 4,
+      "citations": {
+        "facts_correct": {
+          "n": 46,
+          "of": 106
+        },
+        "gold_evidence_recalled": {
+          "n": 96,
+          "of": 106
+        },
+        "quotes_located": {
+          "n": 130,
+          "of": 130
+        }
+      },
+      "claims_correct": {
+        "n": 18,
+        "of": 26
+      },
+      "claims_false_supports": {
+        "correctly_automated": {
+          "n": 0,
+          "of": 0
+        },
+        "count": 1,
+        "gold_non_supported": 13,
+        "system_supported": 11
+      },
+      "conditions_correct": {
+        "n": 64,
+        "of": 80
+      },
+      "exclusion_evidence_found": 3,
+      "exclusion_reasons": {
+        "assertion_mismatch": 14,
+        "claim_document": 20,
+        "unparseable_value": 1,
+        "value_not_in_quote": 8
+      },
+      "facts": {
+        "absent_correct": 46,
+        "absent_false_positive": 0,
+        "excluded_unmatched": 23,
+        "false_positives": 19,
+        "gold_facts": 106,
+        "matched": 46,
+        "matched_but_excluded": 9,
+        "missed": 5,
+        "wrong_value": 46,
+        "wrong_value_timing_only": 7
+      },
+      "false_supports": {
+        "correctly_automated": {
+          "n": 7,
+          "of": 11
+        },
+        "count": 1,
+        "gold_non_supported": 64,
+        "system_supported": 10
+      },
+      "first_errors": {
+        "compute_timepoint": 5,
+        "extraction_extra": 0,
+        "extraction_missed": 4,
+        "extraction_wrong_value": 15,
+        "gold_question": 0,
+        "rules": 0,
+        "run_failed": 0,
+        "verify_excluded": 0
+      },
+      "human_workload": 27,
+      "missed_exclusions": {
+        "n": 0,
+        "of": 3
+      },
+      "packets_needing_human": {
+        "n": 4,
+        "of": 4
+      },
+      "positions": {
+        "candidate": 0,
+        "normalized": 0,
+        "not_found": 0,
+        "verbatim": 130
+      },
+      "runs_failed": 0,
+      "variants": 4
+    },
+    "out_of_scope": [
+      "verifier_ablation",
+      "rules_only_unit_tests"
+    ],
+    "policy_sources": [
+      {
+        "id": "faq",
+        "last_modified": "2026-08-06"
+      },
+      {
+        "id": "factsheet",
+        "last_modified": null
+      },
+      {
+        "id": "form",
+        "last_modified": null
+      },
+      {
+        "id": "partd",
+        "last_modified": "2026-08-06"
+      }
+    ],
+    "rules_version": "bridge-v1",
+    "scoring_version": 1,
+    "sections": {
+      "authored": {
+        "micro": {
+          "case_families": 1,
+          "citations": {
+            "facts_correct": {
+              "n": 19,
+              "of": 29
+            },
+            "gold_evidence_recalled": {
+              "n": 29,
+              "of": 29
+            },
+            "quotes_located": {
+              "n": 34,
+              "of": 34
+            }
+          },
+          "claims_correct": {
+            "n": 3,
+            "of": 6
+          },
+          "claims_false_supports": {
+            "correctly_automated": {
+              "n": 0,
+              "of": 0
+            },
+            "count": 0,
+            "gold_non_supported": 4,
+            "system_supported": 2
+          },
+          "conditions_correct": {
+            "n": 16,
+            "of": 20
+          },
+          "exclusion_evidence_found": 1,
+          "exclusion_reasons": {
+            "assertion_mismatch": 3,
+            "claim_document": 4,
+            "value_not_in_quote": 1
+          },
+          "facts": {
+            "absent_correct": 12,
+            "absent_false_positive": 0,
+            "excluded_unmatched": 3,
+            "false_positives": 3,
+            "gold_facts": 29,
+            "matched": 19,
+            "matched_but_excluded": 3,
+            "missed": 0,
+            "wrong_value": 7,
+            "wrong_value_timing_only": 1
+          },
+          "false_supports": {
+            "correctly_automated": {
+              "n": 3,
+              "of": 4
+            },
+            "count": 0,
+            "gold_non_supported": 16,
+            "system_supported": 4
+          },
+          "first_errors": {
+            "compute_timepoint": 3,
+            "extraction_extra": 0,
+            "extraction_missed": 0,
+            "extraction_wrong_value": 4,
+            "gold_question": 0,
+            "rules": 0,
+            "run_failed": 0,
+            "verify_excluded": 0
+          },
+          "human_workload": 5,
+          "missed_exclusions": {
+            "n": 0,
+            "of": 1
+          },
+          "packets_needing_human": {
+            "n": 1,
+            "of": 1
+          },
+          "positions": {
+            "candidate": 0,
+            "normalized": 0,
+            "not_found": 0,
+            "verbatim": 34
+          },
+          "runs_failed": 0,
+          "variants": 1
+        },
+        "section": "authored",
+        "variants": [
+          "case-10"
+        ]
+      },
+      "case_report": {
+        "micro": {
+          "case_families": 1,
+          "citations": {
+            "facts_correct": {
+              "n": 7,
+              "of": 26
+            },
+            "gold_evidence_recalled": {
+              "n": 17,
+              "of": 26
+            },
+            "quotes_located": {
+              "n": 25,
+              "of": 25
+            }
+          },
+          "claims_correct": {
+            "n": 4,
+            "of": 5
+          },
+          "claims_false_supports": {
+            "correctly_automated": {
+              "n": 0,
+              "of": 0
+            },
+            "count": 0,
+            "gold_non_supported": 1,
+            "system_supported": 3
+          },
+          "conditions_correct": {
+            "n": 17,
+            "of": 20
+          },
+          "exclusion_evidence_found": 0,
+          "exclusion_reasons": {
+            "claim_document": 5,
+            "value_not_in_quote": 1
+          },
+          "facts": {
+            "absent_correct": 13,
+            "absent_false_positive": 0,
+            "excluded_unmatched": 4,
+            "false_positives": 6,
+            "gold_facts": 26,
+            "matched": 7,
+            "matched_but_excluded": 2,
+            "missed": 1,
+            "wrong_value": 16,
+            "wrong_value_timing_only": 0
+          },
+          "false_supports": {
+            "correctly_automated": {
+              "n": 2,
+              "of": 3
+            },
+            "count": 0,
+            "gold_non_supported": 17,
+            "system_supported": 1
+          },
+          "first_errors": {
+            "compute_timepoint": 0,
+            "extraction_extra": 0,
+            "extraction_missed": 0,
+            "extraction_wrong_value": 4,
+            "gold_question": 0,
+            "rules": 0,
+            "run_failed": 0,
+            "verify_excluded": 0
+          },
+          "human_workload": 7,
+          "missed_exclusions": {
+            "n": 0,
+            "of": 0
+          },
+          "packets_needing_human": {
+            "n": 1,
+            "of": 1
+          },
+          "positions": {
+            "candidate": 0,
+            "normalized": 0,
+            "not_found": 0,
+            "verbatim": 25
+          },
+          "runs_failed": 0,
+          "variants": 1
+        },
+        "section": "case_report",
+        "variants": [
+          "case-18"
+        ]
+      },
+      "dirty": {
+        "micro": {
+          "case_families": 0,
+          "citations": {
+            "facts_correct": {
+              "n": 0,
+              "of": 0
+            },
+            "gold_evidence_recalled": {
+              "n": 0,
+              "of": 0
+            },
+            "quotes_located": {
+              "n": 0,
+              "of": 0
+            }
+          },
+          "claims_correct": {
+            "n": 0,
+            "of": 0
+          },
+          "claims_false_supports": {
+            "correctly_automated": {
+              "n": 0,
+              "of": 0
+            },
+            "count": 0,
+            "gold_non_supported": 0,
+            "system_supported": 0
+          },
+          "conditions_correct": {
+            "n": 0,
+            "of": 0
+          },
+          "exclusion_evidence_found": 0,
+          "exclusion_reasons": {},
+          "facts": {
+            "absent_correct": 0,
+            "absent_false_positive": 0,
+            "excluded_unmatched": 0,
+            "false_positives": 0,
+            "gold_facts": 0,
+            "matched": 0,
+            "matched_but_excluded": 0,
+            "missed": 0,
+            "wrong_value": 0,
+            "wrong_value_timing_only": 0
+          },
+          "false_supports": {
+            "correctly_automated": {
+              "n": 0,
+              "of": 0
+            },
+            "count": 0,
+            "gold_non_supported": 0,
+            "system_supported": 0
+          },
+          "first_errors": {},
+          "human_workload": 0,
+          "missed_exclusions": {
+            "n": 0,
+            "of": 0
+          },
+          "packets_needing_human": {
+            "n": 0,
+            "of": 0
+          },
+          "positions": {
+            "candidate": 0,
+            "normalized": 0,
+            "not_found": 0,
+            "verbatim": 0
+          },
+          "runs_failed": 0,
+          "variants": 0
+        },
+        "section": "dirty",
+        "variants": []
+      },
+      "mtsamples": {
+        "micro": {
+          "case_families": 2,
+          "citations": {
+            "facts_correct": {
+              "n": 20,
+              "of": 51
+            },
+            "gold_evidence_recalled": {
+              "n": 50,
+              "of": 51
+            },
+            "quotes_located": {
+              "n": 71,
+              "of": 71
+            }
+          },
+          "claims_correct": {
+            "n": 11,
+            "of": 15
+          },
+          "claims_false_supports": {
+            "correctly_automated": {
+              "n": 0,
+              "of": 0
+            },
+            "count": 1,
+            "gold_non_supported": 8,
+            "system_supported": 6
+          },
+          "conditions_correct": {
+            "n": 31,
+            "of": 40
+          },
+          "exclusion_evidence_found": 2,
+          "exclusion_reasons": {
+            "assertion_mismatch": 11,
+            "claim_document": 11,
+            "unparseable_value": 1,
+            "value_not_in_quote": 6
+          },
+          "facts": {
+            "absent_correct": 21,
+            "absent_false_positive": 0,
+            "excluded_unmatched": 16,
+            "false_positives": 10,
+            "gold_facts": 51,
+            "matched": 20,
+            "matched_but_excluded": 4,
+            "missed": 4,
+            "wrong_value": 23,
+            "wrong_value_timing_only": 6
+          },
+          "false_supports": {
+            "correctly_automated": {
+              "n": 2,
+              "of": 4
+            },
+            "count": 1,
+            "gold_non_supported": 31,
+            "system_supported": 5
+          },
+          "first_errors": {
+            "compute_timepoint": 2,
+            "extraction_extra": 0,
+            "extraction_missed": 4,
+            "extraction_wrong_value": 7,
+            "gold_question": 0,
+            "rules": 0,
+            "run_failed": 0,
+            "verify_excluded": 0
+          },
+          "human_workload": 15,
+          "missed_exclusions": {
+            "n": 0,
+            "of": 2
+          },
+          "packets_needing_human": {
+            "n": 2,
+            "of": 2
+          },
+          "positions": {
+            "candidate": 0,
+            "normalized": 0,
+            "not_found": 0,
+            "verbatim": 71
+          },
+          "runs_failed": 0,
+          "variants": 2
+        },
+        "section": "mtsamples",
+        "variants": [
+          "case-09",
+          "case-12"
+        ]
+      }
+    },
+    "split": "holdout",
+    "traps": [
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-a1c-below-range-not-counterevidence",
+            "variant_id": "case-18"
+          }
+        ],
+        "trap_id": "T-a1c-below-range-not-counterevidence"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.htn"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-bmi-from-lb-in",
+            "variant_id": "case-12"
+          }
+        ],
+        "trap_id": "T-bmi-from-lb-in"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.htn"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-borderline-diabetes-with-labs",
+            "variant_id": "case-12"
+          }
+        ],
+        "trap_id": "T-borderline-diabetes-with-labs"
+      },
+      {
+        "first_errors": {
+          "extraction_missed": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_b.ckd",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.ckd"
+            ],
+            "first_error": "extraction_missed",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-ckd-stage-iv-stated",
+            "variant_id": "case-09"
+          }
+        ],
+        "trap_id": "T-ckd-stage-iv-stated"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.htn"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-controlled-statement-vs-reading",
+            "variant_id": "case-12"
+          }
+        ],
+        "trap_id": "T-controlled-statement-vs-reading"
+      },
+      {
+        "first_errors": {
+          "extraction_missed": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_b.ckd",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.ckd"
+            ],
+            "first_error": "extraction_missed",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-cross-doc-bmi-conflict-across-threshold",
+            "variant_id": "case-09"
+          }
+        ],
+        "trap_id": "T-cross-doc-bmi-conflict-across-threshold"
+      },
+      {
+        "first_errors": {
+          "extraction_missed": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_b.ckd",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.ckd"
+            ],
+            "first_error": "extraction_missed",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-diabetes-type-unspecified",
+            "variant_id": "case-09"
+          }
+        ],
+        "trap_id": "T-diabetes-type-unspecified"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-disability-not-activity-exception",
+            "variant_id": "case-18"
+          }
+        ],
+        "trap_id": "T-disability-not-activity-exception"
+      },
+      {
+        "first_errors": {
+          "extraction_missed": 1,
+          "extraction_wrong_value": 2
+        },
+        "opportunities": 3,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_b.ckd",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.ckd"
+            ],
+            "first_error": "extraction_missed",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-document-missing-patient-id",
+            "variant_id": "case-09"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.htn"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-document-missing-patient-id",
+            "variant_id": "case-12"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-document-missing-patient-id",
+            "variant_id": "case-18"
+          }
+        ],
+        "trap_id": "T-document-missing-patient-id"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-explicit-baseline-bmi",
+            "variant_id": "case-18"
+          }
+        ],
+        "trap_id": "T-explicit-baseline-bmi"
+      },
+      {
+        "first_errors": {
+          "extraction_missed": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_b.ckd",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.ckd"
+            ],
+            "first_error": "extraction_missed",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-htn-two-distinct-drugs-above-threshold",
+            "variant_id": "case-09"
+          }
+        ],
+        "trap_id": "T-htn-two-distinct-drugs-above-threshold"
+      },
+      {
+        "first_errors": {
+          "extraction_missed": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_b.ckd",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.ckd"
+            ],
+            "first_error": "extraction_missed",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-ischemic-heart-disease-not-mi",
+            "variant_id": "case-09"
+          }
+        ],
+        "trap_id": "T-ischemic-heart-disease-not-mi"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-metric-and-imperial-side-by-side",
+            "variant_id": "case-18"
+          }
+        ],
+        "trap_id": "T-metric-and-imperial-side-by-side"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.htn"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-negated-history-statements",
+            "variant_id": "case-12"
+          }
+        ],
+        "trap_id": "T-negated-history-statements"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-nutrition-structured-strong",
+            "variant_id": "case-18"
+          }
+        ],
+        "trap_id": "T-nutrition-structured-strong"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.htn"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-osa-probable-uncertain",
+            "variant_id": "case-12"
+          }
+        ],
+        "trap_id": "T-osa-probable-uncertain"
+      },
+      {
+        "first_errors": {
+          "extraction_missed": 1,
+          "extraction_wrong_value": 3
+        },
+        "opportunities": 4,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_b.ckd",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.ckd"
+            ],
+            "first_error": "extraction_missed",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-pa-claim-contradicts-record",
+            "variant_id": "case-09"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_c.bmi",
+              "claim.bmi_path_b.htn",
+              "claim.exclusion.t2dm",
+              "claim.exclusion.mash"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-pa-claim-contradicts-record",
+            "variant_id": "case-10"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.htn"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-pa-claim-contradicts-record",
+            "variant_id": "case-12"
+          },
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-pa-claim-contradicts-record",
+            "variant_id": "case-18"
+          }
+        ],
+        "trap_id": "T-pa-claim-contradicts-record"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-pause-and-resume-not-new-start",
+            "variant_id": "case-18"
+          }
+        ],
+        "trap_id": "T-pause-and-resume-not-new-start"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-post-initiation-measurements",
+            "variant_id": "case-18"
+          }
+        ],
+        "trap_id": "T-post-initiation-measurements"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_c.bmi",
+              "claim.bmi_path_b.htn",
+              "claim.exclusion.t2dm",
+              "claim.exclusion.mash"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-presurgical-bmi-as-baseline",
+            "variant_id": "case-10"
+          }
+        ],
+        "trap_id": "T-presurgical-bmi-as-baseline"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_c.bmi",
+              "claim.bmi_path_b.htn",
+              "claim.exclusion.t2dm",
+              "claim.exclusion.mash"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-prior-glp1-self-pay",
+            "variant_id": "case-10"
+          }
+        ],
+        "trap_id": "T-prior-glp1-self-pay"
+      },
+      {
+        "first_errors": {
+          "extraction_missed": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_b.ckd",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket",
+              "claim.bmi_path_b.ckd"
+            ],
+            "first_error": "extraction_missed",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-same-note-med-list-date",
+            "variant_id": "case-09"
+          }
+        ],
+        "trap_id": "T-same-note-med-list-date"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_c.bmi",
+              "claim.bmi_path_b.htn",
+              "claim.exclusion.t2dm",
+              "claim.exclusion.mash"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-sedentary-explicit",
+            "variant_id": "case-10"
+          }
+        ],
+        "trap_id": "T-sedentary-explicit"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_c.bmi",
+              "claim.bmi_path_b.htn",
+              "claim.exclusion.t2dm",
+              "claim.exclusion.mash"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-stated-vs-computed-bmi-mismatch",
+            "variant_id": "case-10"
+          }
+        ],
+        "trap_id": "T-stated-vs-computed-bmi-mismatch"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_c.bmi",
+              "claim.bmi_path_b.htn",
+              "claim.exclusion.t2dm",
+              "claim.exclusion.mash"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-steatosis-not-mash",
+            "variant_id": "case-10"
+          }
+        ],
+        "trap_id": "T-steatosis-not-mash"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_c.bmi",
+              "claim.bmi_bracket"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-t2dm-explicitly-negated",
+            "variant_id": "case-18"
+          }
+        ],
+        "trap_id": "T-t2dm-explicitly-negated"
+      },
+      {
+        "first_errors": {
+          "extraction_wrong_value": 1
+        },
+        "opportunities": 1,
+        "passed": 0,
+        "results": [
+          {
+            "failing_rows": [
+              "bmi_path_a",
+              "bmi_path_b.bmi",
+              "bmi_path_b.htn",
+              "bmi_path_c.bmi",
+              "claim.bmi_path_b.htn",
+              "claim.exclusion.t2dm",
+              "claim.exclusion.mash"
+            ],
+            "first_error": "extraction_wrong_value",
+            "passed": false,
+            "stage": "extract",
+            "trap_id": "T-t2dm-in-remission",
+            "variant_id": "case-10"
+          }
+        ],
+        "trap_id": "T-t2dm-in-remission"
+      }
+    ]
+  },
+  "skipped": [
+    {
+      "reason": "other_split",
+      "variant_id": "case-01"
+    },
+    {
+      "reason": "other_split",
+      "variant_id": "case-07"
+    },
+    {
+      "reason": "other_split",
+      "variant_id": "case-07b"
+    },
+    {
+      "reason": "other_split",
+      "variant_id": "case-02"
+    },
+    {
+      "reason": "other_split",
+      "variant_id": "case-04"
+    },
+    {
+      "reason": "other_split",
+      "variant_id": "case-03"
+    },
+    {
+      "reason": "other_split",
+      "variant_id": "case-17"
+    },
+    {
+      "reason": "other_split",
+      "variant_id": "case-15-L0"
+    }
+  ],
+  "split": "holdout"
+}

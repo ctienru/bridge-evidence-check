@@ -39,3 +39,4 @@ One line per merged PR, in merge order. "Why" is the question the PR answered. D
 | #65 | 11-23 | Dev report regenerated from main; history page; README brought up to date | The report named a commit that was not on main, and no page explained the order of the work |
 | #67 | 11-23 | Holdout hashes for cases 09, 10, 12, 18; assisted review instead of a blind draft | The manifest lists a holdout case before the pipeline runs on it; the expected gaps were written down first |
 | #69 | 11-23 | Second holdout batch: one run on cases 09, 10, 12, 18 | The number on four more cases, with the gaps written down first; one unpredicted cause behind most misses |
+| #71 | 11-23 | GLP-1 name resolver accepts a listed brand with its own ingredient in parentheses | The defect behind 30 of the 37 wrong rows of holdout batch 2 |
