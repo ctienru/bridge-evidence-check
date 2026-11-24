@@ -79,6 +79,7 @@ Flag = Literal[
     "post_initiation_exclusion",
     "same_note_list",
     "height_from_other_date",
+    "undated_counterevidence",
     "uncovered_keyword",
     "temporality_unverified",
 ]

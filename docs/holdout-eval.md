@@ -616,3 +616,7 @@ No expected-gap attribution is made for R1: the six gaps were written down for t
 - No row went from right to wrong, and there is no false support.
 - Human workload 16 → 23. The published 16 counts two completed runs only (case-11 produced no decisions), so the two numbers are not like for like.
 - The other differences between the two columns: conditions 27/60 → 47/60, claims 4/19 → 10/19, missed exclusion evidence 3 of 3 → 0 of 3, runs failed 1 → 0. Most of the row gain is case-11 completing (23 of the 26 rows); on cases 14 and 16 three rows changed to right and 18 stay wrong.
+
+### After these runs
+
+Added 2026-11-23. After these runs, and using the failure R2 reported (verified values of one document carried no date, were excluded as `timing_unknown`, and the BMI rows were decided from the other document's value alone), one rule was added (contract §3.1 step 9). A BMI sub-result that would be `supported` or `not_supported` becomes `review` with the flag `undated_counterevidence` when a verified value of unknown timing lies on the other side of that threshold from the value at initiation; `claim.bmi_bracket` becomes `review` when such a value lies in another bracket. The rule was written from the description of the failure and tested on values and documents invented for the tests. No holdout case was run for it, and no replay with the rule is reported here: the tables above are those of the runs before the rule, and nothing above this subsection was changed.
